@@ -126,24 +126,29 @@ const Navbar = ({
               <div className="flex flex-col gap-4">
                 {[
                   { name: 'Home', path: '/' },
-                  { name: 'Our Full Menu', path: '/menu' },
+                  { name: 'Our Full Menu', path: '/#breakfast-lunch-combos' },
                   { name: 'About Heritage', path: '/about' },
                   { name: 'Kitchen Gallery', path: '/gallery' },
                   { name: 'Contact Us', path: '/contact' },
-                ].map((link) => (
-                  <Link 
-                    key={link.path}
-                    to={link.path}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`font-serif text-lg p-3 rounded-xl transition-all ${
-                      isActive(link.path) 
-                        ? 'bg-[#5A3825] text-white font-bold shadow-md' 
-                        : 'text-[#5A3825]/75 hover:bg-[#5A3825]/5 hover:text-[#5A3825]'
-                    }`}
-                  >
-                    {link.name}
-                  </Link>
-                ))}
+                ].map((link) => {
+                  const isCurrentActive = link.path.includes('#')
+                    ? location.hash === link.path.substring(link.path.indexOf('#'))
+                    : isActive(link.path);
+                  return (
+                    <Link 
+                      key={link.path}
+                      to={link.path}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`font-serif text-lg p-3 rounded-xl transition-all ${
+                        isCurrentActive 
+                          ? 'bg-[#5A3825] text-white font-bold shadow-md' 
+                          : 'text-[#5A3825]/75 hover:bg-[#5A3825]/5 hover:text-[#5A3825]'
+                      }`}
+                    >
+                      {link.name}
+                    </Link>
+                  );
+                })}
               </div>
 
               <div className="mt-auto pt-8 border-t border-[#5A3825]/10 space-y-4">
@@ -215,7 +220,7 @@ const BottomNav = ({
         <span className="text-[10px] font-bold uppercase tracking-tighter">Home</span>
       </Link>
       
-      <Link to="/menu" className={`flex flex-col items-center gap-1 ${isActive('/menu') ? 'text-[#D4AF37]' : 'text-white/40'}`}>
+      <Link to="/#breakfast-lunch-combos" className={`flex flex-col items-center gap-1 ${location.hash === '#breakfast-lunch-combos' ? 'text-[#D4AF37]' : 'text-white/40'}`}>
         <Flame className="w-5 h-5" />
         <span className="text-[10px] font-bold uppercase tracking-tighter">Menu</span>
       </Link>
@@ -853,7 +858,7 @@ const BenefitsSection = () => {
           
           <div className="pt-8">
             <Link 
-              to="/menu" 
+              to="/#breakfast-lunch-combos" 
               className="bg-brand-primary text-white px-10 py-5 rounded-2xl font-black text-xl shadow-2xl shadow-brand-primary/30 hover:bg-brand-secondary transition-all active:scale-95 inline-flex items-center gap-4"
             >
               Curate Your Box
@@ -2911,15 +2916,7 @@ export default function App() {
                 <MorningBreakfastCombo onAddToCart={addToCart} />
               </>
             } />
-            <Route path="/menu" element={
-              <div className="pt-40 md:pt-32">
-                <MenuPage 
-                  onAddToCart={addToCart} 
-                  onUpdateQuantity={updateQuantity}
-                  cart={cart}
-                />
-              </div>
-            } />
+            <Route path="/menu" element={<Navigate to="/#breakfast-lunch-combos" replace />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/contact" element={<ContactPage />} />
@@ -2935,8 +2932,6 @@ export default function App() {
             />
           </Routes>
         </div>
-
-        <Footer />
 
         <CartModal 
           isOpen={isCartOpen} 
