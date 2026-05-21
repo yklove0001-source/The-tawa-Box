@@ -1,33 +1,29 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingCart, Clock, Calendar, ChevronRight, Plus, Minus, X, UtensilsCrossed, Flame, Instagram, Facebook, Twitter, Mail, Phone, MapPin, Send, Star, Leaf, LogIn, UserPlus, LogOut, LayoutDashboard, Settings, CheckCircle2, AlertCircle, Package, User as UserIcon } from 'lucide-react';
+import { ShoppingCart, Compass, Clock, Calendar, ChevronRight, ChevronLeft, Plus, Minus, X, UtensilsCrossed, Flame, Instagram, Facebook, Twitter, Mail, Phone, MapPin, Send, Star, Leaf, LogIn, UserPlus, LogOut, LayoutDashboard, Settings, CheckCircle2, AlertCircle, Package, User as UserIcon, Menu, CreditCard, Banknote, Filter, Trophy, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { MenuItem, CartItem, User, OrderDetails } from './types';
+import { HeroAnimation, CustomLogoSvg } from './components/HeroAnimation';
+import { triggerEmailNotification } from './services/emailService';
+
+
+// Declaring image paths directly as strings to bypass TypeScript file declaration restrictions
+const tawaBoxHero = '/src/assets/images/tawa_box_hero_1779282315522.png';
+const namkeenDaliyaImg = '/src/assets/images/namkeen_daliya_1779282338658.png';
+const doodhDaliyaImg = '/src/assets/images/doodh_daliya_1779282359860.png';
+const desiLunchTrayImg = '/src/assets/images/desi_lunch_tray_1779282381475.png';
+const lunchSideMealImg = '/src/assets/images/lunch_side_meal_1779282404443.png';
 
 // --- Mock Data ---
 const MENU_ITEMS: MenuItem[] = [
-  { id: '1', name: 'Chulha Roti (Plain)', description: 'Hand-rolled roti cooked on traditional clay stove.', price: 15, category: 'roti', image: '' },
-  { id: '2', name: 'Ghee Wali Roti', description: 'Smoky chulha roti brushed with pure desi ghee.', price: 20, category: 'roti', image: '' },
-  { id: '3', name: 'Bajra Rotla', description: 'Nutritious pearl millet flatbread, earthy and rustic.', price: 30, category: 'roti', image: '' },
-  { id: '4', name: 'Makki di Roti', description: 'Traditional corn flour bread, perfect with saag.', price: 35, category: 'roti', image: '' },
-  { id: '5', name: 'Missi Roti', description: 'Gram flour and wheat bread with spices and herbs.', price: 25, category: 'roti', image: '' },
-  { id: '6', name: 'Aloo Paratha', description: 'Stuffed with spiced mashed potatoes, tawa toasted.', price: 60, category: 'paratha', image: '' },
-  { id: '7', name: 'Paneer Paratha', description: 'Grated paneer with green chilies and coriander.', price: 80, category: 'paratha', image: '' },
-  { id: '8', name: 'Sarson da Saag', description: 'Authentic mustard greens cooked with spices.', price: 120, category: 'sabji', image: '' },
-  { id: '9', name: 'Dal Makhani', description: 'Slow-cooked black lentils with cream and butter.', price: 110, category: 'sabji', image: '' },
-  { id: '10', name: 'Baingan Bharta', description: 'Fire-roasted eggplant mash with herbs.', price: 100, category: 'sabji', image: '' },
-  { id: '11', name: 'Paneer Bhurji', description: 'Scrambled paneer with onions and tomatoes.', price: 140, category: 'sabji', image: '' },
-  { id: '12', name: 'Mix Veg', description: 'Seasonal vegetables cooked in a rustic gravy.', price: 90, category: 'sabji', image: '' },
-  { id: '13', name: 'Boondi Rayta', description: 'Cooling yogurt with crispy gram flour pearls.', price: 40, category: 'side', image: '' },
-  { id: '14', name: 'Mix Veg Rayta', description: 'Yogurt with finely chopped vegetables.', price: 50, category: 'side', image: '' },
-  { id: '15', name: 'Green Salad', description: 'Fresh seasonal vegetables with lemon.', price: 30, category: 'side', image: '' },
-  { id: '16', name: 'Sarson da Saag Combo', description: '2 Makki Rotis served with authentic mustard greens.', price: 150, category: 'combo', image: '' },
-  { id: '17', name: 'Dal Makhani Combo', description: '2 Chulha Rotis with slow-cooked black lentils.', price: 140, category: 'combo', image: '' },
+  { id: '11', name: 'Namkeen Daliya', description: 'Crushed wheat (daliya) served with refreshing salted buttermilk (chhach), mixed sprouts, and seasonal fruit salad.', price: 120, category: 'healthy', image: namkeenDaliyaImg },
+  { id: '12', name: 'Doodh Daliya', description: 'Sweet milk-based crushed wheat (daliya) paired with a glass of milk, served with sprouted moong and seasonal fruit salad.', price: 130, category: 'healthy', image: doodhDaliyaImg },
+  { id: '15', name: 'Lunch Box', description: 'Gourmet lunch box tray cooked over slow firewood. Includes hot, fresh rotis baked on clay oven, delicious seasonal dry subji, basmati rice, garden salad, and sweet fruits.', price: 199, category: 'combo', image: desiLunchTrayImg },
 ];
 
 const TESTIMONIALS = [
   { id: 1, name: 'Amit Sharma', comment: 'The smoky flavor of the chulha roti took me back to my childhood village. Absolutely authentic!', rating: 5, location: 'Gurgaon' },
-  { id: 2, name: 'Priya Verma', comment: 'Best Makki di Roti I have had in years. The Sarson da Saag combo is a must-try.', rating: 5, location: 'Delhi' },
+  { id: 2, name: 'Priya Verma', comment: 'Best healthy breakfast I have had in years. The Daliya Boxes are a must-try.', rating: 5, location: 'Delhi' },
   { id: 3, name: 'Rahul Gupta', comment: 'Prompt delivery and the rotis were still hot and soft. The Tawa Box is my new favorite.', rating: 4, location: 'Noida' },
 ];
 
@@ -53,122 +49,577 @@ const Navbar = ({
   user: User | null,
   onLogout: () => void
 }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex justify-between items-center bg-white/5 backdrop-blur-xl border-b border-white/10 shadow-lg">
-      <Link to="/" className="flex items-center gap-2 group">
-        <div className="bg-brand-primary p-2 rounded-lg group-hover:rotate-12 transition-transform shadow-lg shadow-brand-primary/20">
-          <Flame className="text-white w-6 h-6" />
+    <>
+      <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-[#9E5638] border-b border-[#B76F50]/45 md:px-12 backdrop-blur-md shadow-lg select-none">
+        {/* Left: Elegant hand-crafted wheat brand logo matching the mockup */}
+        <Link to="/" className="flex items-center gap-2 group">
+          <CustomLogoSvg className="w-16 h-10 select-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-transform hover:scale-102" />
+          <span className="hidden lg:inline-block text-[10px] font-mono uppercase tracking-[0.2em] text-[#EADBBD] font-black opacity-90">ESTD. 2026</span>
+        </Link>
+
+        {/* Center: Main Title "THE TAWA BOX" in premium serif typography and warm gilding */}
+        <Link to="/" className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-auto">
+          <span className="text-xl md:text-3xl font-serif font-black uppercase tracking-[0.16em] text-[#EADBBD] hover:text-[#FAF6ED] transition-colors block drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+            THE TAWA BOX
+          </span>
+        </Link>
+
+        {/* Right: Clean, minimalist Hamburger Menu & Cart access with warm gold tones */}
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={onOpenCart}
+            className="relative p-2 rounded-full text-[#EADBBD] hover:text-[#FAF6ED] hover:bg-white/5 transition-colors cursor-pointer"
+          >
+            <ShoppingCart className="w-5.5 h-5.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#4A2010] text-[#EADBBD] text-[9.5px] font-black w-4.5 h-4.5 flex items-center justify-center rounded-full border border-[#9E5638] shadow-md animate-bounce">
+                {cartCount}
+              </span>
+            )}
+          </button>
+          
+          <button 
+            onClick={() => setIsMenuOpen(true)}
+            className="p-2 rounded-full text-[#EADBBD] hover:text-[#FAF6ED] hover:bg-white/5 transition-colors cursor-pointer"
+          >
+            <Menu className="w-6.5 h-6.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]" />
+          </button>
         </div>
-        <span className="text-2xl font-display font-bold text-white tracking-tight">The Tawa Box</span>
+      </nav>
+
+      {/* Elegant Drawer */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              className="absolute right-0 top-0 bottom-0 w-80 bg-[#F4F1EA] p-8 flex flex-col border-l border-[#5A3825]/10 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-12 border-b border-[#5A3825]/10 pb-6">
+                <div>
+                  <h3 className="font-serif text-2xl uppercase tracking-[0.1em] text-[#5A3825]">THE TAWA BOX</h3>
+                  <p className="text-[10px] text-[#7A8B6B] lowercase italic font-medium">hand-crafted desi meals</p>
+                </div>
+                <button 
+                  onClick={() => setIsMenuOpen(false)}
+                  className="p-2 bg-[#5A3825]/5 rounded-full text-[#5A3825] hover:bg-[#5A3825]/15 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                {[
+                  { name: 'Home', path: '/' },
+                  { name: 'Our Full Menu', path: '/menu' },
+                  { name: 'About Heritage', path: '/about' },
+                  { name: 'Kitchen Gallery', path: '/gallery' },
+                  { name: 'Contact Us', path: '/contact' },
+                ].map((link) => (
+                  <Link 
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={`font-serif text-lg p-3 rounded-xl transition-all ${
+                      isActive(link.path) 
+                        ? 'bg-[#5A3825] text-white font-bold shadow-md' 
+                        : 'text-[#5A3825]/75 hover:bg-[#5A3825]/5 hover:text-[#5A3825]'
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+
+              <div className="mt-auto pt-8 border-t border-[#5A3825]/10 space-y-4">
+                {user ? (
+                  <div className="space-y-3">
+                    <p className="text-xs text-[#5A3825]/60 px-3">Logged in as <strong className="text-[#5A3825] font-bold">{user.name}</strong></p>
+                    <Link 
+                      to={user.role === 'admin' ? '/admin' : '/dashboard'}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center gap-3 p-3 bg-[#5A3825]/5 hover:bg-[#5A3825]/10 rounded-xl text-[#5A3825] font-bold text-sm transition-colors"
+                    >
+                      {user.role === 'admin' ? <Settings className="w-4 h-4" /> : <LayoutDashboard className="w-4 h-4" />}
+                      {user.role === 'admin' ? 'Admin Panel' : 'My Account Logs'}
+                    </Link>
+                    <button 
+                      onClick={() => {
+                        onLogout();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-4 p-3 text-red-700 hover:bg-red-50 rounded-xl font-bold text-sm transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    <Link 
+                      to="/login"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center justify-center py-3 border border-[#5A3825] text-[#5A3825] rounded-xl font-bold text-sm hover:bg-[#5A3825]/5 text-center transition-all"
+                    >
+                      Login
+                    </Link>
+                    <Link 
+                      to="/register"
+                      onClick={() => setIsMenuOpen(false)}
+                      className="flex items-center justify-center py-3 bg-[#5A3825] text-white rounded-xl font-bold text-sm hover:shadow-lg hover:bg-[#523220] text-center transition-all"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
+
+const BottomNav = ({ 
+  cartCount, 
+  onOpenCart, 
+  user 
+}: { 
+  cartCount: number, 
+  onOpenCart: () => void,
+  user: User | null
+}) => {
+  const location = useLocation();
+  const isActive = (path: string) => location.pathname === path;
+
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-[#1A1A1A] border-t border-[#5A3825]/20 px-6 py-3 pb-6 flex justify-between items-center safe-area-bottom shadow-lg">
+      <Link to="/" className={`flex flex-col items-center gap-1 ${isActive('/') ? 'text-[#D4AF37]' : 'text-white/40'}`}>
+        <UtensilsCrossed className="w-5 h-5" />
+        <span className="text-[10px] font-bold uppercase tracking-tighter">Home</span>
       </Link>
       
-      <div className="hidden md:flex items-center gap-8">
-        {[
-          { name: 'Home', path: '/' },
-          { name: 'Menu', path: '/menu' },
-          { name: 'About', path: '/about' },
-          { name: 'Gallery', path: '/gallery' },
-          { name: 'Contact', path: '/contact' },
-        ].map((link) => (
-          <Link 
-            key={link.path}
-            to={link.path}
-            className={`font-bold transition-all hover:text-brand-accent ${isActive(link.path) ? 'text-brand-accent' : 'text-white/70 hover:text-white'}`}
-          >
-            {link.name}
-          </Link>
-        ))}
-      </div>
+      <Link to="/menu" className={`flex flex-col items-center gap-1 ${isActive('/menu') ? 'text-[#D4AF37]' : 'text-white/40'}`}>
+        <Flame className="w-5 h-5" />
+        <span className="text-[10px] font-bold uppercase tracking-tighter">Menu</span>
+      </Link>
 
-      <div className="flex items-center gap-4">
-        {user ? (
-          <div className="flex items-center gap-4">
-            <Link 
-              to={user.role === 'admin' ? '/admin' : '/dashboard'} 
-              className="flex items-center gap-2 text-white font-bold hover:text-brand-accent transition-colors"
-            >
-              {user.role === 'admin' ? <Settings className="w-5 h-5" /> : <LayoutDashboard className="w-5 h-5" />}
-              <span className="hidden sm:inline">{user.role === 'admin' ? 'Admin' : 'Dashboard'}</span>
-            </Link>
-            <button 
-              onClick={onLogout}
-              className="flex items-center gap-2 text-white/50 hover:text-white transition-colors font-bold"
-            >
-              <LogOut className="w-5 h-5" />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Link 
-              to="/register" 
-              title="Register Now"
-              className="bg-brand-primary text-white p-2.5 rounded-full hover:bg-brand-secondary transition-all shadow-lg shadow-brand-primary/20 flex items-center justify-center"
-            >
-              <UserPlus className="w-5 h-5" />
-            </Link>
-          </div>
+      <button 
+        onClick={onOpenCart}
+        className="relative -mt-6 bg-[#5A3825] p-3.5 rounded-full shadow-2xl text-white border-4 border-[#1A1A1A]"
+      >
+        <ShoppingCart className="w-5 h-5" />
+        {cartCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-[#D4AF37] text-[#5A3825] text-[10px] font-black w-4 h-4 flex items-center justify-center rounded-full border border-[#5A3825]">
+            {cartCount}
+          </span>
         )}
+      </button>
 
-        <button 
-          onClick={onOpenCart}
-          className="relative p-2 bg-white/10 rounded-full shadow-md hover:bg-white/20 transition-all text-white"
-        >
-          <ShoppingCart className="w-6 h-6" />
-          {cartCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-brand-accent text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-[#0a150d]">
-              {cartCount}
-            </span>
-          )}
-        </button>
-      </div>
+      <Link to={user?.role === 'admin' ? '/admin' : '/dashboard'} className={`flex flex-col items-center gap-1 ${isActive('/dashboard') || isActive('/admin') ? 'text-[#D4AF37]' : 'text-white/40'}`}>
+        {user?.role === 'admin' ? <Settings className="w-5 h-5" /> : <UserIcon className="w-5 h-5" />}
+        <span className="text-[10px] font-bold uppercase tracking-tighter">{user ? (user.role === 'admin' ? 'Admin' : 'Profile') : 'Login'}</span>
+      </Link>
+
+      <Link to="/about" className={`flex flex-col items-center gap-1 ${isActive('/about') ? 'text-[#D4AF37]' : 'text-white/40'}`}>
+        <Clock className="w-5 h-5" />
+        <span className="text-[10px] font-bold uppercase tracking-tighter">About</span>
+      </Link>
     </nav>
   );
 };
 
+const GoldSealCoin = ({ size = 26 }: { size?: number }) => (
+  <span className="inline-flex items-center justify-center select-none" style={{ width: size, height: size }}>
+    <svg width="100%" height="100%" viewBox="0 0 100 100" className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.15)] animate-pulse">
+      <defs>
+        <linearGradient id="goldGradMenu" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFF4D0" />
+          <stop offset="30%" stopColor="#D4AF37" />
+          <stop offset="70%" stopColor="#8A640F" />
+          <stop offset="100%" stopColor="#B38F24" />
+        </linearGradient>
+        <radialGradient id="goldInnerMenu" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#FFFAE0" />
+          <stop offset="50%" stopColor="#D4AF37" />
+          <stop offset="100%" stopColor="#5A3825" />
+        </radialGradient>
+      </defs>
+      <circle cx="50" cy="50" r="46" fill="url(#goldGradMenu)" stroke="#5A3825" strokeWidth="2.5" />
+      <circle cx="50" cy="50" r="38" fill="url(#goldInnerMenu)" stroke="#B38F24" strokeWidth="1" />
+      <circle cx="50" cy="50" r="32" fill="none" stroke="#FFF4D0" strokeWidth="1.5" strokeDasharray="5 3" />
+      {/* Decorative Traditional T crest stand inside seal */}
+      <path d="M35 34 L65 34 M50 34 L50 68 M40 68 L60 68 M42 46 L58 46" stroke="#5A3825" strokeWidth="6.5" strokeLinecap="round" />
+      <path d="M35 34 L65 34 M50 34 L50 68 M40 68 L60 68 M42 46 L58 46" stroke="#FFFAE0" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  </span>
+);
+
 const Hero = () => {
   return (
-    <section className="relative w-full h-[56.25vw] md:h-[calc(100vh-80px)] overflow-hidden bg-black mt-20">
-      {/* Background Video Layer */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none">
-        <div className="absolute inset-0 w-full h-full md:scale-110">
-          <iframe 
-            className="w-full h-full"
-            src="https://www.youtube.com/embed/MuF1qlWhTqg?autoplay=1&mute=1&loop=1&playlist=MuF1qlWhTqg&controls=0&modestbranding=1&rel=0&iv_load_policy=3" 
-            title="The Tawa Box Experience" 
-            frameBorder="0" 
-            allow="autoplay; encrypted-media" 
-          ></iframe>
-        </div>
-        {/* Subtle Overlay for depth */}
-        <div className="absolute inset-0 bg-brand-primary/10" />
-      </div>
-
-      {/* Content Overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-3xl"
+    <section className="relative h-[48vh] min-h-[360px] flex items-center justify-center overflow-hidden border-b border-[#5A3825]/20">
+      {/* Background Image: Generated top-down Indian meal flatlay table */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ 
+          backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.45)), url(${tawaBoxHero})` 
+        }}
+      />
+      
+      {/* Centered Hero Text exactly matching reference layout */}
+      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full text-center">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1 }}
+          className="space-y-4 max-w-3xl mx-auto"
         >
-          <h1 className="text-4xl md:text-7xl font-display font-black text-white mb-6 drop-shadow-2xl">
-            Authentic <span className="text-brand-primary italic">Chulha</span> Flavors
+          <h1 className="text-xl sm:text-3xl md:text-4xl font-serif font-black tracking-[0.06em] leading-tight text-[#FAF6ED] drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
+            <span className="text-[#F5D061] block sm:inline">HAND-CRAFTED DESI MEALS, </span>
+            <span className="block sm:inline">DELIVERED WITH PASSION.</span>
           </h1>
-          <p className="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto drop-shadow-lg">
-            Experience the rustic soul of village cooking, delivered hot and fresh to your doorstep.
-          </p>
-          <Link 
-            to="/menu" 
-            className="bg-black text-white px-10 py-5 rounded-2xl font-bold text-xl border border-white/20 shadow-2xl hover:bg-white/10 transition-all flex items-center gap-3 group mx-auto w-fit"
-          >
-            Curate Your Box
-            <ChevronRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
-          </Link>
         </motion.div>
+      </div>
+    </section>
+  );
+};
+
+const QuickOrderSteps = () => {
+  return (
+    <section className="py-5 bg-[#FAF8F4] border-b border-[#5A3825]/10">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 flex flex-col items-center">
+        {/* Understated steps title matching layout */}
+        <h2 className="text-[#5A3825] font-serif font-black text-lg md:text-xl uppercase tracking-[0.1em] text-center mb-4">
+          Quick Order Steps
+        </h2>
+        
+        {/* Horizontal flow line of steps with matching Gold coins - single line wrapper */}
+        <div className="w-full overflow-x-auto no-scrollbar py-1 flex justify-start sm:justify-center">
+          <div className="flex items-center gap-x-5 md:gap-x-12 px-2 min-w-max mx-auto">
+            {/* Step 1 */}
+            <div className="flex items-center gap-2 select-none">
+              <GoldSealCoin size={22} />
+              <span className="text-xs md:text-sm font-serif font-extrabold text-[#5A3825] tracking-wide whitespace-nowrap">
+                Discover Your Meal
+              </span>
+            </div>
+
+            {/* Step 2 */}
+            <div className="flex items-center gap-2 select-none">
+              <GoldSealCoin size={22} />
+              <span className="text-xs md:text-sm font-serif font-extrabold text-[#5A3825] tracking-wide whitespace-nowrap">
+                Select Your
+              </span>
+            </div>
+
+            {/* Step 3 */}
+            <div className="flex items-center gap-2 select-none">
+              <GoldSealCoin size={22} />
+              <span className="text-xs md:text-sm font-serif font-extrabold text-[#5A3825] tracking-wide whitespace-nowrap">
+                Receive & Relish
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) => void }) => {
+  const namkeenDaliyaItem = MENU_ITEMS.find(item => item.id === '11') || {
+    id: '11',
+    name: 'Namkeen Daliya',
+    price: 120,
+    description: 'Crushed wheat (daliya) served with refreshing salted buttermilk (chhach), mixed sprouts, and seasonal fruit salad.',
+    image: namkeenDaliyaImg
+  };
+
+  const doodhDaliyaItem = MENU_ITEMS.find(item => item.id === '12') || {
+    id: '12',
+    name: 'Doodh Daliya',
+    price: 130,
+    description: 'Sweet milk-based crushed wheat (daliya) paired with a glass of milk, served with sprouted moong and seasonal fruit salad.',
+    image: doodhDaliyaImg
+  };
+
+  const comboItem = MENU_ITEMS.find(item => item.id === '15') || {
+    id: '15',
+    name: 'Lunch Box',
+    price: 199,
+    description: 'Gourmet lunch box tray cooked over slow firewood. Includes hot, fresh rotis baked on clay oven, delicious seasonal dry subji, basmati rice, garden salad, and sweet fruits.',
+    image: desiLunchTrayImg
+  };
+
+  return (
+    <section id="breakfast-lunch-combos" className="bg-[#E8EFE5] pt-8 pb-10 border-b border-[#5A3825]/5">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
+        
+        {/* Header Ribbon exactly as shown in the mockup */}
+        <div className="bg-[#7A8B6B] rounded-xl py-3.5 px-6 flex items-center justify-between shadow-sm border border-[#7A8B6B]/20 mb-8">
+          <h2 className="text-xs md:text-sm font-serif font-black tracking-[0.2em] text-[#FAF8F4] uppercase">
+            MORNING BREAKFAST
+          </h2>
+          <span className="text-[10px] md:text-xs font-serif font-bold tracking-widest text-[#FAF8F4]/90 uppercase">
+            Time: 7 AM - 11 AM
+          </span>
+        </div>
+
+        {/* 50% Width Side-by-Side Daliya Cards with Large Card Below */}
+        <div className="max-w-4xl mx-auto space-y-6">
+          
+          {/* Row 1: Namkeen Daliya & Doodh Daliya side-by-side (50% each) */}
+          <div className="grid grid-cols-2 gap-4 md:gap-6">
+            
+            {/* Card 1: Namkeen Daliya (50% width) */}
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              onClick={() => onAddToCart(namkeenDaliyaItem as MenuItem)}
+              className="flex flex-col bg-[#FDFBF7] rounded-3xl border-4 border-[#C5A028] p-3 shadow-md hover:shadow-lg transition-all cursor-pointer group"
+            >
+              {/* Image container inside border with gold borders */}
+              <div className="aspect-square w-full relative overflow-hidden rounded-2xl border border-[#D4AF37]/20 flex items-center justify-center bg-white">
+                <img 
+                  src={namkeenDaliyaItem.image} 
+                  alt="Namkeen Daliya" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              {/* Down-centered elegant Title banner exactly matching mockup label */}
+              <div className="mt-3 bg-[#FAF6ED] border border-[#5A3825]/15 rounded-xl py-2 px-3 text-center shadow-sm group-hover:bg-[#F3EAD5] transition-colors flex-grow flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xs sm:text-sm font-serif font-black text-[#5A3825] tracking-wide">
+                    {namkeenDaliyaItem.name}
+                  </h3>
+                  <p className="text-[11px] sm:text-xs font-serif font-extrabold text-[#7A8B6B] mt-1">
+                    ₹{namkeenDaliyaItem.price}
+                  </p>
+                </div>
+                
+                {/* Buy Button to provide explicit purchase option */}
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddToCart(namkeenDaliyaItem as MenuItem);
+                  }}
+                  className="mt-2 w-full py-1.5 bg-[#7A8B6B] hover:bg-[#617054] text-white rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-sm"
+                >
+                  Buy Now
+                </button>
+              </div>
+            </motion.div>
+
+            {/* Card 2: Doodh Daliya (50% width) */}
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              onClick={() => onAddToCart(doodhDaliyaItem as MenuItem)}
+              className="flex flex-col bg-[#FDFBF7] rounded-3xl border-4 border-[#C5A028] p-3 shadow-md hover:shadow-lg transition-all cursor-pointer group"
+            >
+              {/* Image container with gold border */}
+              <div className="aspect-square w-full relative overflow-hidden rounded-2xl border border-[#D4AF37]/20 flex items-center justify-center bg-white">
+                <img 
+                  src={doodhDaliyaItem.image} 
+                  alt="Doodh Daliya" 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              {/* Down-centered elegant Title banner exactly matching mockup label */}
+              <div className="mt-3 bg-[#FAF6ED] border border-[#5A3825]/15 rounded-xl py-2 px-3 text-center shadow-sm group-hover:bg-[#F3EAD5] transition-colors flex-grow flex flex-col justify-between">
+                <div>
+                  <h3 className="text-xs sm:text-sm font-serif font-black text-[#5A3825] tracking-wide">
+                    {doodhDaliyaItem.name}
+                  </h3>
+                  <p className="text-[11px] sm:text-xs font-serif font-extrabold text-[#7A8B6B] mt-1">
+                    ₹{doodhDaliyaItem.price}
+                  </p>
+                </div>
+                
+                {/* Buy Button to provide explicit purchase option */}
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddToCart(doodhDaliyaItem as MenuItem);
+                  }}
+                  className="mt-2 w-full py-1.5 bg-[#7A8B6B] hover:bg-[#617054] text-white rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-sm"
+                >
+                  Buy Now
+                </button>
+              </div>
+            </motion.div>
+
+          </div>
+
+          {/* Heading Lunch Box styled exactly like Morning Breakfast banner */}
+          <div className="bg-[#7A8B6B] rounded-xl py-3.5 px-6 flex items-center justify-between shadow-sm border border-[#7A8B6B]/20 mb-4 mt-8">
+            <h2 className="text-xs md:text-sm font-serif font-black tracking-[0.2em] text-[#FAF8F4] uppercase">
+              LUNCH BOX
+            </h2>
+            <span className="text-[10px] md:text-xs font-serif font-bold tracking-widest text-[#FAF8F4]/90 uppercase">
+              Time: 12 PM - 3 PM
+            </span>
+          </div>
+
+          {/* Row 2: Lunch Box - Full width matching Row 1 with edge-to-edge full column image */}
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="flex flex-col md:flex-row bg-[#FDFBF7] rounded-3xl border-4 border-[#C5A028] shadow-md hover:shadow-lg transition-all overflow-hidden h-auto md:h-72"
+          >
+            {/* Left Column: Image with overlays covering the full section half */}
+            <div className="relative w-full md:w-1/2 h-64 md:h-full flex-shrink-0 bg-white">
+              <img 
+                src={comboItem.image} 
+                alt="Lunch Box" 
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+              
+              {/* Sharp solid brown ribbon badge reading "₹199" */}
+              <div className="absolute bottom-4 left-4 bg-[#5A3825] border border-[#D4AF37]/30 text-white font-serif font-extrabold text-sm px-4 py-2 rounded-md shadow-md">
+                ₹199
+              </div>
+              {/* Gold seal stamp relative */}
+              <div className="absolute bottom-4 right-4 animate-spin-slow">
+                <GoldSealCoin size={26} />
+              </div>
+            </div>
+
+            {/* Right Column: delicious copy of Lunch Box item */}
+            <div className="flex flex-col justify-between flex-1 p-6 md:p-8">
+              <div>
+                <span className="text-[#7A8B6B] text-[10px] font-serif uppercase tracking-[0.25em] font-extrabold mb-1 block">Wood-Fired Gourmet Selection</span>
+                <h3 className="text-xl md:text-2xl font-serif font-black text-[#5A3825] mb-2 leading-tight">
+                  Lunch Box
+                </h3>
+                <p className="text-sm font-serif font-extrabold text-[#7A8B6B] mb-3">
+                  ₹199
+                </p>
+                <p className="text-xs text-[#2E1C12]/85 font-sans leading-relaxed">
+                  {comboItem.description}
+                </p>
+              </div>
+
+              {/* Buy Now button pill shaped styled in olive green */}
+              <div className="mt-4 flex justify-end">
+                <button 
+                  onClick={() => onAddToCart(comboItem as MenuItem)}
+                  className="px-6 py-2.5 bg-[#7A8B6B] hover:bg-[#617054] text-white rounded-full text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95 shadow-sm"
+                >
+                  Buy Now
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const LunchBoxCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) => void }) => {
+  const lunchItem = MENU_ITEMS.find(item => item.id === '14') || {
+    id: '14',
+    name: 'Desi Lunch Thali Box',
+    price: 249,
+    description: 'Premium 3-compartment meal tray with Roti (clay oven), flavorful dry seasonal Subji, basmati Rice, fresh garden Salad, and fresh Fruits.',
+    image: desiLunchTrayImg
+  };
+
+  return (
+    <section className="bg-[#FAF8F4] pb-16">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
+        
+        {/* Full-width Banner Strip matching morning layout */}
+        <div className="w-full bg-[#5A3825] rounded-xl py-3.5 px-6 flex items-center justify-between shadow-sm border border-[#5A3825]/20 mb-8">
+          <h2 className="text-xs md:text-sm font-serif font-black tracking-[0.2em] text-[#FAF8F4] uppercase">
+            LUNCH BOX DIET COMBO
+          </h2>
+          <span className="text-[10px] md:text-xs font-serif font-bold tracking-widest text-[#FAF8F4]/90 uppercase">
+            Time: 12 PM - 3 PM
+          </span>
+        </div>
+
+        {/* Dynamic 3-Compartment Thali representation */}
+        <div className="bg-[#FAF8F4] rounded-3xl border-4 border-[#C5A028] shadow-md overflow-hidden p-6 md:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            {/* Left Column (lg:col-span-4): Top down compartment lunch box tray image */}
+            <div className="lg:col-span-4 flex justify-center">
+              <div className="aspect-[3/4] max-h-80 lg:max-h-[340px] w-full rounded-2xl overflow-hidden relative border border-[#5A3825]/10 bg-white shadow-md p-2">
+                <img 
+                  src={lunchItem.image} 
+                  alt="5-compartment Desi meal tray" 
+                  className="w-full h-full object-cover rounded-xl"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            </div>
+
+            {/* Center Column (lg:col-span-4): Bullet checkmarks and CTA customize button */}
+            <div className="lg:col-span-4 flex flex-col items-center justify-center text-center">
+              <h3 className="text-xl md:text-2xl font-serif font-black text-[#5A3825] mb-4">
+                Desi Lunch Thali Box
+              </h3>
+              
+              {/* Features checkmark bulleted list */}
+              <ul className="space-y-2.5 text-left mb-6 text-xs text-[#2E1C12]/90 font-bold font-serif max-w-xs">
+                <li className="flex items-center gap-2">
+                  <span className="text-[#7A8B6B] font-extrabold text-base">✓</span>
+                  <span>Roti (clay oven), Subji, Rice, Salad, Fruits</span>
+                </li>
+              </ul>
+
+              {/* Price Tag: sharp-edged dark brown ribbon banner */}
+              <div className="inline-block bg-[#5A3825] border border-[#D4AF37]/30 text-white font-serif font-black text-sm px-6 py-2.5 rounded-md mb-6 shadow">
+                ₹249
+              </div>
+
+              {/* Action Button: gold/cream gradient pill-button with deep gold shadows */}
+              <button 
+                onClick={() => onAddToCart(lunchItem as MenuItem)}
+                className="w-full max-w-[280px] py-3 bg-gradient-to-r from-[#D4AF37] via-[#FFF4D0] to-[#D4AF37] text-[#5A3825] font-serif font-black text-[11px] uppercase tracking-widest rounded-full shadow-[0_4px_12px_rgba(212,175,55,0.3)] hover:shadow-[0_6px_16px_rgba(212,175,55,0.45)] transition-all active:scale-95 border border-[#B38F24]/50"
+              >
+                CUSTOMIZE YOUR LUNCH BOX
+              </button>
+            </div>
+
+            {/* Right Column (lg:col-span-4): Side Sprouts and Lassi image */}
+            <div className="lg:col-span-4 flex justify-center">
+              <div className="aspect-square w-full max-h-[300px] rounded-2xl overflow-hidden relative border border-[#D4AF37]/25 bg-white shadow-md p-2">
+                <img 
+                  src={lunchSideMealImg} 
+                  alt="Glass of fresh buttermilk and sprouts side" 
+                  className="w-full h-full object-cover rounded-xl"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -179,10 +630,17 @@ const MenuPage = ({ onAddToCart, onUpdateQuantity, cart }: {
   onUpdateQuantity: (id: string, delta: number) => void,
   cart: CartItem[]
 }) => {
-  const sabjis = MENU_ITEMS.filter(i => i.category === 'sabji');
-  const rotis = MENU_ITEMS.filter(i => i.category === 'roti' || i.category === 'paratha');
-  const sides = MENU_ITEMS.filter(i => i.category === 'side');
-  const combos = MENU_ITEMS.filter(i => i.category === 'combo');
+  const [selectedCategory, setSelectedCategory] = useState<MenuItem['category'] | 'all'>('all');
+  const navigate = useNavigate();
+  
+  const categories: { id: MenuItem['category'] | 'all', label: string }[] = [
+    { id: 'all', label: 'All Items' },
+    { id: 'healthy', label: 'Morning Breakfast' },
+    { id: 'combo', label: 'Lunch Box' },
+  ];
+
+  const filteredItems = MENU_ITEMS.filter(item => selectedCategory === 'all' || item.category === selectedCategory);
+  const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const renderMenuItemCard = (item: MenuItem, idx: number) => {
     const cartItem = cart.find(i => i.id === item.id);
@@ -193,114 +651,238 @@ const MenuPage = ({ onAddToCart, onUpdateQuantity, cart }: {
         key={item.id}
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -5, scale: 1.01 }}
         viewport={{ once: true }}
-        transition={{ delay: idx * 0.05 }}
-        className="group glass-card rounded-3xl p-5 hover:shadow-2xl transition-all duration-300 border-brand-primary/5 flex flex-col justify-between"
+        transition={{ delay: idx * 0.05, duration: 0.4 }}
+        className="group glass-card rounded-[2rem] p-4 sm:p-6 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] transition-all duration-300 border-white/5 flex flex-col gap-4 relative overflow-hidden"
       >
-        <div>
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-lg font-bold text-white leading-tight">{item.name}</h3>
-            <span className="text-brand-accent font-bold whitespace-nowrap ml-2">₹{item.price}</span>
-          </div>
-          <p className="text-white/90 text-xs mb-4 line-clamp-2">{item.description}</p>
+        <div className="aspect-video w-full bg-white/5 rounded-xl overflow-hidden relative">
+          <img 
+            src={item.image} 
+            alt={item.name} 
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+            referrerPolicy="no-referrer" 
+          />
+          {item.category === 'thali' && (
+            <div className="absolute top-2 left-2 bg-brand-primary text-white text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest">
+              Signature
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center justify-between bg-white/5 rounded-2xl p-1.5 mt-auto">
-          <button 
-            onClick={() => onUpdateQuantity(item.id, -1)}
-            disabled={quantity === 0}
-            className={`p-2.5 rounded-xl shadow-sm transition-all ${
-              quantity === 0 
-                ? 'bg-white/5 text-white/20 cursor-not-allowed' 
-                : 'bg-white/10 text-white hover:bg-brand-primary transition-all'
-            }`}
-          >
-            <Minus className="w-4 h-4" />
-          </button>
-          
-          <div className="flex flex-col items-center px-4">
-            <span className="text-[10px] text-white font-black uppercase tracking-widest mb-0.5">Qty</span>
-            <span className={`font-black text-lg leading-none ${quantity > 0 ? 'text-brand-accent' : 'text-white/20'}`}>
-              {quantity}
-            </span>
+        <div className="flex-1 flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="text-xl font-display font-black text-white leading-tight line-clamp-1">{item.name}</h3>
+              <span className="text-lg font-display font-black text-brand-accent ml-2">₹{item.price}</span>
+            </div>
+            <p className="text-white/40 text-[10px] leading-relaxed line-clamp-2 mb-4">{item.description}</p>
           </div>
 
-          <button 
-            onClick={() => {
-              if (quantity === 0) onAddToCart(item);
-              else onUpdateQuantity(item.id, 1);
-            }}
-            className="p-2.5 bg-white/10 text-white rounded-xl shadow-sm hover:bg-brand-primary transition-all"
-          >
-            <Plus className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            {quantity > 0 ? (
+              <div className="flex items-center gap-2 bg-white/5 p-1 rounded-xl border border-white/10 w-full justify-between">
+                <button 
+                  onClick={() => onUpdateQuantity(item.id, -1)}
+                  className="p-2 bg-white/10 rounded-lg hover:text-brand-accent transition-colors text-white"
+                >
+                  <Minus className="w-3 h-3" />
+                </button>
+                <span className="font-black text-brand-primary text-sm">{quantity}</span>
+                <button 
+                  onClick={() => onUpdateQuantity(item.id, 1)}
+                  className="p-2 bg-white/10 rounded-lg hover:text-brand-accent transition-colors text-white"
+                >
+                  <Plus className="w-3 h-3" />
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => onAddToCart(item)}
+                className="w-full bg-brand-primary hover:bg-brand-secondary text-white py-3 rounded-xl font-black text-xs transition-all shadow-lg shadow-brand-primary/10 active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                {item.category === 'thali' ? 'Make Your Box' : 'Add to Box'}
+              </button>
+            )}
+          </div>
         </div>
       </motion.div>
     );
   };
 
   return (
-    <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
-      <div className="text-center mb-16">
-        <h2 className="text-5xl font-display font-black text-brand-primary mb-4">Curate Your Box</h2>
-        <p className="text-white/80 max-w-xl mx-auto">Mix and match your favorite rotis, sabjis, and sides for the perfect meal.</p>
+    <div className="pb-20 px-4 md:px-6 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
+      {/* Sidebar Filters */}
+      <div className="lg:w-64 space-y-8">
+        <div className="sticky top-32 space-y-8">
+          <div className="hidden lg:block glass-card p-6 rounded-[2rem] border-brand-primary/20 bg-brand-primary/5 text-center">
+            <h4 className="text-white font-display font-black text-lg mb-2 leading-tight">Create Your Masterpiece</h4>
+            <p className="text-white/40 text-[10px] mb-6 px-2">Customize the ultimate Chulha Thali with your choices.</p>
+            <button 
+              onClick={() => {
+                const thali = MENU_ITEMS.find(i => i.category === 'thali');
+                if (thali) onAddToCart(thali);
+              }}
+              className="w-full bg-brand-primary text-white py-4 rounded-xl font-black text-xs shadow-lg shadow-brand-primary/10 hover:scale-105 transition-all"
+            >
+              Make Your Box Now
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Main Split Layout: Sabji & Roti */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
-        {/* Left Side: Sabji */}
-        <div className="space-y-8">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="bg-brand-primary/20 p-3 rounded-2xl">
-              <UtensilsCrossed className="text-brand-primary w-6 h-6" />
+      {/* Menu Grid */}
+      <div className="flex-1 min-w-0">
+        <div className="text-center lg:text-left mb-10">
+          <h2 className="text-4xl md:text-6xl font-display font-black text-white mb-2">Our Menu</h2>
+          <p className="text-brand-primary font-black uppercase tracking-widest text-[10px]">Pure Desi • Wood-Fired • Traditional</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredItems.map((item, idx) => renderMenuItemCard(item, idx))}
+        </div>
+        
+        <div className="mt-16 glass-card p-10 rounded-[3rem] text-center border-dashed border-white/10 bg-brand-primary/5">
+          <p className="text-white max-w-2xl mx-auto leading-relaxed text-sm">
+            Our thali system is designed to give you the perfect balance of nutrition and flavor. 
+            Every thali comes with a fresh vegetable salad, a seasonal fruit salad, and aromatic Jeera Basmati rice as standard.
+          </p>
+        </div>
+      </div>
+
+      {/* Desktop Cart Summary */}
+      <div className="hidden xl:block w-80">
+        <div className="sticky top-32 glass-card rounded-[2.5rem] border-white/5 flex flex-col h-[calc(100vh-160px)]">
+          <div className="p-6 border-b border-white/5 flex items-center justify-between">
+            <h3 className="text-xs font-black text-brand-primary uppercase tracking-widest">Cart Summary</h3>
+            <div className="bg-brand-primary/10 text-brand-primary px-2 py-1 rounded-md text-[10px] font-black">
+              {cart.reduce((s, i) => s + i.quantity, 0)} Items
             </div>
-            <h3 className="text-3xl font-display font-bold text-white">Sabji Menu</h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {sabjis.map((item, idx) => renderMenuItemCard(item, idx))}
-          </div>
-        </div>
 
-        {/* Right Side: Roti */}
-        <div className="space-y-8">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="bg-brand-primary/20 p-3 rounded-2xl">
-              <Flame className="text-brand-primary w-6 h-6" />
+          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+            {cart.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40">
+                <ShoppingCart className="w-12 h-12" />
+                <p className="text-xs font-bold uppercase tracking-widest">Box is Empty</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {cart.map((item) => (
+                  <div key={item.id} className="flex flex-col gap-2">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="font-bold text-white text-sm line-clamp-1">{item.name}</div>
+                        <div className="text-xs text-brand-accent font-bold">x{item.quantity} • ₹{item.price * item.quantity}</div>
+                      </div>
+                      <div className="flex gap-1 ml-2">
+                        <button onClick={() => onUpdateQuantity(item.id, -1)} className="p-1 hover:text-brand-primary transition-colors"><Minus className="w-3 h-3" /></button>
+                        <button onClick={() => onUpdateQuantity(item.id, 1)} className="p-1 hover:text-brand-primary transition-colors"><Plus className="w-3 h-3" /></button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="p-6 border-t border-white/5 space-y-4">
+            <div className="flex justify-between items-center px-1">
+              <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Subtotal</span>
+              <span className="text-xl font-display font-black text-brand-primary">₹{cartTotal}</span>
             </div>
-            <h3 className="text-3xl font-display font-bold text-white">Roti & Paratha</h3>
+            <button 
+              disabled={cart.length === 0}
+              className={`w-full py-4 rounded-xl font-black text-xs transition-all shadow-xl ${
+                cart.length > 0 
+                  ? 'bg-brand-primary text-white hover:bg-brand-secondary shadow-brand-primary/20 active:scale-95' 
+                  : 'bg-white/5 text-white/10 cursor-not-allowed'
+              }`}
+            >
+              Checkout Now
+            </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {rotis.map((item, idx) => renderMenuItemCard(item, idx))}
-          </div>
-        </div>
-      </div>
-
-      {/* Below: Sides (Rayta, etc.) */}
-      <div className="space-y-8 mb-20">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="bg-brand-primary/20 p-3 rounded-2xl">
-            <Leaf className="text-brand-primary w-6 h-6" />
-          </div>
-          <h3 className="text-3xl font-display font-bold text-white">Sides & Rayta</h3>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {sides.map((item, idx) => renderMenuItemCard(item, idx))}
-        </div>
-      </div>
-
-      {/* Combos */}
-      <div className="space-y-8">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="bg-brand-primary/20 p-3 rounded-2xl">
-            <Package className="text-brand-primary w-6 h-6" />
-          </div>
-          <h3 className="text-3xl font-display font-bold text-white">Signature Combos</h3>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {combos.map((item, idx) => renderMenuItemCard(item, idx))}
         </div>
       </div>
     </div>
+  );
+};
+
+const BenefitsSection = () => {
+  return (
+    <section className="py-24 px-6 relative overflow-hidden">
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-accent/5 rounded-full blur-[150px] -z-10" />
+      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+        <motion.div 
+          initial={{ opacity: 0, x: -50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          className="flex-1 space-y-8"
+        >
+          <div className="inline-flex items-center gap-2 bg-brand-primary/10 px-4 py-2 rounded-full border border-brand-primary/20">
+            <Star className="w-4 h-4 text-brand-primary fill-brand-primary" />
+            <span className="text-xs font-black uppercase text-brand-primary tracking-widest">Premium Desi Experience</span>
+          </div>
+          <h2 className="text-5xl md:text-7xl font-display font-black text-white leading-tight">
+            The <span className="text-brand-primary italic">Soul</span> of the Village, in a Box.
+          </h2>
+          <div className="space-y-6">
+            {[
+              { title: 'Farmer Sourced', desc: 'Grains and veggies are sourced directly from small local farms.' },
+              { title: 'No Chemicals', desc: 'Pure Desi Ghee and cold-pressed oils. No additives, ever.' }
+            ].map((benefit, bidx) => (
+              <motion.div 
+                key={bidx} 
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 + bidx * 0.1 }}
+                className="flex items-start gap-4"
+              >
+                <div className="bg-brand-primary p-1 rounded-full mt-1.5 shadow-lg shadow-brand-primary/40">
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-white mb-1">{benefit.title}</h4>
+                  <p className="text-white/50 text-sm">{benefit.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          
+          <div className="pt-8">
+            <Link 
+              to="/menu" 
+              className="bg-brand-primary text-white px-10 py-5 rounded-2xl font-black text-xl shadow-2xl shadow-brand-primary/30 hover:bg-brand-secondary transition-all active:scale-95 inline-flex items-center gap-4"
+            >
+              Curate Your Box
+              <ChevronRight className="w-6 h-6" />
+            </Link>
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8, rotate: 10 }}
+          whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="flex-1 relative"
+        >
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4 pt-12">
+              <img src="https://picsum.photos/seed/food-vibe-1/400/600" alt="Vibe 1" className="rounded-3xl shadow-2xl border border-white/5" referrerPolicy="no-referrer" />
+              <img src="https://picsum.photos/seed/food-vibe-2/400/400" alt="Vibe 2" className="rounded-3xl shadow-2xl border border-white/5" referrerPolicy="no-referrer" />
+            </div>
+            <div className="space-y-4">
+              <img src="https://picsum.photos/seed/food-vibe-3/400/400" alt="Vibe 3" className="rounded-3xl shadow-2xl border border-white/5" referrerPolicy="no-referrer" />
+              <img src="https://picsum.photos/seed/food-vibe-4/400/600" alt="Vibe 4" className="rounded-3xl shadow-2xl border border-white/5" referrerPolicy="no-referrer" />
+            </div>
+          </div>
+          <div className="absolute inset-0 bg-brand-bg/20 backdrop-blur-[1px] -z-10 rounded-[3rem]" />
+        </motion.div>
+      </div>
+    </section>
   );
 };
 
@@ -369,7 +951,7 @@ const AboutPage = () => (
         <h2 className="text-5xl font-display font-black text-brand-primary mb-8">Reviving the <span className="text-brand-accent italic">Soul</span> of Desi Cooking.</h2>
         <div className="space-y-6 text-gray-600 leading-relaxed text-lg">
           <p>
-            The Tawa Box was born from a simple longing for the smoky, earthy flavors of a village kitchen. In the hustle of modern life, the traditional "Chulha" (clay stove) has become a rare sight, and with it, the authentic taste of hand-rolled rotis.
+            The Tawa Box was born from a simple longing for the smoky, earthy flavors of a village kitchen. In the hustle of modern life, the traditional "Chulha" (clay Desi chulha) has become a rare sight, and with it, the authentic taste of hand-rolled rotis.
           </p>
           <p>
             Our mission is to bring that rustic soul back to your dining table. Every roti we deliver is hand-rolled with love and cooked over slow-burning wood and coal, just like it has been for generations.
@@ -400,6 +982,7 @@ const AboutPage = () => (
 const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -410,7 +993,12 @@ const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
     
     if (user) {
       const { password: _, ...userWithoutPassword } = user;
-      onLogin(userWithoutPassword);
+      // Migration: ensure points exist
+      const sanitizedUser = {
+        ...userWithoutPassword,
+        points: userWithoutPassword.points || 0
+      };
+      onLogin(sanitizedUser as User);
       navigate(userWithoutPassword.role === 'admin' ? '/admin' : '/dashboard');
     } else {
       setError('Invalid email or password');
@@ -445,16 +1033,26 @@ const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
           </div>
           <div className="space-y-2">
             <label className="text-sm font-bold text-brand-primary ml-1">Password</label>
-            <input 
-              type="password" 
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white/5 border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary outline-none transition-all" 
-              placeholder="••••••••" 
-            />
+            <div className="relative">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-white/5 border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary outline-none transition-all pr-14" 
+                placeholder="••••••••" 
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white/40 hover:text-brand-primary transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
-          <button className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all">
+          <button className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all active:scale-[0.98]">
             Login
           </button>
           <p className="text-center text-white/60 text-sm">
@@ -465,11 +1063,11 @@ const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
     </div>
   );
 };
-
-const RegisterPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
+ const RegisterPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -488,6 +1086,7 @@ const RegisterPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
       email,
       password,
       role: (email.includes('admin') || email === 'yklove0001@gmail.com') ? 'admin' : 'user',
+      points: 0,
       createdAt: new Date().toISOString()
     };
 
@@ -538,16 +1137,26 @@ const RegisterPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
           </div>
           <div className="space-y-2">
             <label className="text-sm font-bold text-brand-primary ml-1">Password</label>
-            <input 
-              type="password" 
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white/5 border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary outline-none transition-all" 
-              placeholder="••••••••" 
-            />
+            <div className="relative">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-white/5 border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary outline-none transition-all pr-14" 
+                placeholder="••••••••" 
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white/40 hover:text-brand-primary transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
-          <button className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all">
+          <button className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all active:scale-[0.98]">
             Create Account
           </button>
           <p className="text-center text-white/60 text-sm">
@@ -559,40 +1168,223 @@ const RegisterPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
   );
 };
 
-const Dashboard = ({ user, orders }: { user: User, orders: OrderDetails[] }) => {
+const OrderStatusSteps = ({ status }: { status: OrderDetails['status'] }) => {
+  const steps = [
+    { id: 'pending', label: 'Confirmed', icon: CheckCircle2 },
+    { id: 'preparing', label: 'Preparing', icon: Flame },
+    { id: 'shipping', label: 'On the Way', icon: Package },
+    { id: 'delivered', label: 'Arrived', icon: MapPin },
+  ];
+
+  const getStatusIndex = (s: string) => {
+    if (s === 'pending') return 0;
+    if (s === 'preparing') return 1;
+    if (s === 'delivered') return 3;
+    if (s === 'cancelled') return -1;
+    return 2; // shipping / ready for pickup
+  };
+
+  const currentIndex = getStatusIndex(status);
+
+  if (status === 'cancelled') return null;
+
+  return (
+    <div className="relative pt-12 pb-4">
+      {/* Background Line */}
+      <div className="absolute top-[4.2rem] left-0 right-0 h-1 bg-white/5 rounded-full" />
+      
+      {/* Progress Line */}
+      <div className="absolute top-[4.2rem] left-0 right-0 h-1 rounded-full overflow-hidden">
+        <motion.div 
+          initial={{ width: '0%' }}
+          animate={{ width: `${(currentIndex / (steps.length - 1)) * 100}%` }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="h-full bg-brand-primary shadow-[0_0_20px_rgba(234,88,12,0.5)]"
+        />
+      </div>
+
+      <div className="flex justify-between relative px-2">
+        {steps.map((step, idx) => {
+          const isCompleted = idx <= currentIndex;
+          const isActive = idx === currentIndex;
+          
+          return (
+            <div key={step.id} className="flex flex-col items-center gap-4 relative">
+              <div 
+                className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-500 border-2 ${
+                  isCompleted 
+                    ? 'bg-brand-primary border-brand-primary text-white shadow-[0_10px_25px_-5px_rgba(234,88,12,0.4)]' 
+                    : 'bg-white/5 border-white/10 text-white/20'
+                } ${isActive ? 'ring-4 ring-brand-primary/20 scale-110 z-10' : ''}`}
+              >
+                {isActive ? (
+                  <motion.div
+                    animate={{ rotate: [0, 10, -10, 0] }}
+                    transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
+                  >
+                    <step.icon className="w-7 h-7" />
+                  </motion.div>
+                ) : (
+                  <step.icon className={`w-6 h-6 ${isCompleted ? 'text-white' : 'text-white/20'}`} />
+                )}
+              </div>
+              
+              <div className="flex flex-col items-center">
+                <span className={`text-[10px] font-black uppercase tracking-widest ${isCompleted ? 'text-brand-primary' : 'text-white/20'}`}>
+                  {step.label}
+                </span>
+                {isActive && (
+                  <motion.span 
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-[8px] text-white/40 font-bold mt-1"
+                  >
+                    Live
+                  </motion.span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const Dashboard = ({ user, orders, onUpdateStatus, onOpenEmailLogs }: { user: User, orders: OrderDetails[], onUpdateStatus: (id: string, status: OrderDetails['status']) => void, onOpenEmailLogs?: () => void }) => {
+  const [statusFilter, setStatusFilter] = useState<OrderDetails['status'] | 'all'>('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
   const userOrders = orders.filter(o => o.userId === user.id);
+
+  const filteredOrders = userOrders.filter(order => {
+    const statusMatch = statusFilter === 'all' || order.status === statusFilter;
+    const orderDate = new Date(order.createdAt).getTime();
+    const startMatch = !startDate || orderDate >= new Date(startDate).setHours(0, 0, 0, 0);
+    const endMatch = !endDate || orderDate <= new Date(endDate).setHours(23, 59, 59, 999);
+    return statusMatch && startMatch && endMatch;
+  });
 
   return (
     <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-12 gap-8">
         <div>
           <h2 className="text-5xl font-display font-black text-brand-primary mb-2">Welcome, {user.name}!</h2>
           <p className="text-white/60">Manage your orders and track your desi cravings.</p>
+          {onOpenEmailLogs && (
+            <button 
+              onClick={onOpenEmailLogs}
+              className="mt-4 flex items-center gap-2 bg-[#7A8B6B]/15 hover:bg-[#7A8B6B]/25 text-[#E8EFE5] px-4 py-2 rounded-xl text-xs font-bold transition-all border border-[#7A8B6B]/30 cursor-pointer shadow-md"
+            >
+              <Mail className="w-4 h-4 text-[#7A8B6B]" />
+              📬 View Dispatched E-mails (Transactional Inbox)
+            </button>
+          )}
         </div>
-        <div className="bg-white/5 p-6 rounded-3xl border border-white/10 flex items-center gap-4">
-          <div className="w-12 h-12 bg-brand-primary/20 rounded-2xl flex items-center justify-center">
-            <Package className="text-brand-primary w-6 h-6" />
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="bg-white/5 p-6 rounded-3xl border border-white/10 flex items-center gap-4">
+            <div className="w-12 h-12 bg-brand-primary/20 rounded-2xl flex items-center justify-center">
+              <Package className="text-brand-primary w-6 h-6" />
+            </div>
+            <div>
+              <div className="text-2xl font-display font-black text-brand-primary">{userOrders.length}</div>
+              <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Total Orders</div>
+            </div>
           </div>
-          <div>
-            <div className="text-2xl font-display font-black text-brand-primary">{userOrders.length}</div>
-            <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Total Orders</div>
+          <div className="bg-brand-primary/5 p-6 rounded-3xl border border-brand-accent/20 flex items-center gap-4 shadow-xl shadow-brand-accent/5">
+            <div className="bg-brand-accent/10 p-4 rounded-2xl">
+              <Trophy className="w-8 h-8 text-brand-accent" />
+            </div>
+            <div>
+              <div className="text-[10px] font-bold text-brand-accent uppercase tracking-widest mb-1">Tawa Rewards</div>
+              <div className="text-2xl font-display font-black text-brand-primary flex items-baseline gap-1">
+                {user.points || 0} 
+                <span className="text-xs font-bold text-brand-accent uppercase tracking-tighter">Points</span>
+              </div>
+              <div className="text-[10px] text-white/30 font-medium whitespace-nowrap">₹{(user.points / 10).toFixed(0)} to redeem</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="space-y-6">
-        <h3 className="text-2xl font-display font-bold text-brand-primary">Order History</h3>
-        {userOrders.length === 0 ? (
-          <div className="glass-card p-20 rounded-[3rem] text-center">
-            <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <UtensilsCrossed className="w-10 h-10 text-white/20" />
+      <div className="space-y-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <h3 className="text-2xl font-display font-bold text-brand-primary">Order History</h3>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="bg-white/5 p-1 rounded-2xl flex items-center gap-1 border border-white/10 flex-wrap">
+              {['all', 'pending', 'preparing', 'shipping', 'delivered', 'cancelled'].map((status) => (
+                <button
+                  key={status}
+                  onClick={() => setStatusFilter(status as any)}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
+                    statusFilter === status 
+                      ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20' 
+                      : 'text-white/40 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  {status === 'shipping' ? 'shipping' : status}
+                </button>
+              ))}
             </div>
-            <p className="text-white/60 text-lg">You haven't placed any orders yet.</p>
-            <Link to="/" className="inline-block mt-6 text-brand-accent font-bold hover:underline">Explore our menu</Link>
+          </div>
+        </div>
+
+        {/* Date Filters */}
+        <div className="flex flex-wrap items-center gap-4 bg-white/5 p-4 rounded-3xl border border-white/5">
+          <div className="flex items-center gap-3 px-4 py-2 bg-black/20 rounded-xl border border-white/10 flex-1 min-w-[200px]">
+            <Calendar className="w-4 h-4 text-brand-primary" />
+            <input 
+              type="date" 
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-transparent border-none focus:ring-0 text-xs font-bold text-white/80 w-full outline-none"
+            />
+            <span className="text-white/20 text-xs">to</span>
+            <input 
+              type="date" 
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-transparent border-none focus:ring-0 text-xs font-bold text-white/80 w-full outline-none"
+            />
+          </div>
+          {(startDate || endDate || statusFilter !== 'all') && (
+            <button 
+              onClick={() => {
+                setStartDate('');
+                setEndDate('');
+                setStatusFilter('all');
+              }}
+              className="px-4 py-2 text-xs font-bold text-brand-accent hover:text-white transition-colors"
+            >
+              Clear Filters
+            </button>
+          )}
+        </div>
+
+        {filteredOrders.length === 0 ? (
+          <div className="glass-card p-20 rounded-[3rem] text-center border-white/5">
+            <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Filter className="w-10 h-10 text-white/20" />
+            </div>
+            <p className="text-white/60 text-lg">No orders match your current filters.</p>
+            {(startDate || endDate || statusFilter !== 'all') && (
+              <button 
+                onClick={() => {
+                  setStartDate('');
+                  setEndDate('');
+                  setStatusFilter('all');
+                }}
+                className="mt-4 text-brand-primary font-bold hover:underline"
+              >
+                Show all orders
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6">
-            {userOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(order => (
+            {filteredOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(order => (
               <motion.div 
                 key={order.id}
                 initial={{ opacity: 0, x: -20 }}
@@ -605,27 +1397,35 @@ const Dashboard = ({ user, orders }: { user: User, orders: OrderDetails[] }) => 
                     <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                       order.status === 'delivered' ? 'bg-green-500/20 text-green-500' :
                       order.status === 'cancelled' ? 'bg-red-500/20 text-red-500' :
+                      order.status === 'shipping' ? 'bg-blue-500/20 text-blue-400' :
                       'bg-brand-accent/20 text-brand-accent'
                     }`}>
-                      {order.status}
+                      {order.status === 'shipping' ? 'shipping' : order.status}
                     </span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6">
                     <div>
-                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Date</div>
-                      <div className="font-bold text-brand-primary">{order.date}</div>
+                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Mobile</div>
+                      <div className="font-bold text-brand-primary">{order.mobile}</div>
                     </div>
-                    <div>
-                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Time</div>
-                      <div className="font-bold text-brand-primary">{order.time}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Items</div>
-                      <div className="font-bold text-brand-primary">{order.items.reduce((s, i) => s + i.quantity, 0)}</div>
+                    <div className="col-span-2">
+                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Address</div>
+                      <div className="font-bold text-brand-primary text-xs line-clamp-1">{order.address}</div>
                     </div>
                     <div>
                       <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Total</div>
                       <div className="font-bold text-brand-primary">₹{order.total}</div>
+                      {order.discountAmount && order.discountAmount > 0 ? (
+                        <div className="text-[10px] text-brand-accent font-bold mt-1 tracking-tighter">-₹{order.discountAmount} saved</div>
+                      ) : null}
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Rewards</div>
+                      <div className="text-brand-accent font-black tracking-tighter">+{order.loyaltyPointsEarned || 0} pts</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Payment</div>
+                      <div className="font-bold text-brand-accent uppercase text-[10px]">{order.paymentMethod === 'cod' ? 'Pay on Delivery' : 'Online'}</div>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -635,21 +1435,81 @@ const Dashboard = ({ user, orders }: { user: User, orders: OrderDetails[] }) => 
                       </span>
                     ))}
                   </div>
-                </div>
-                <div className="flex items-center">
-                  {order.status === 'pending' && (
-                    <div className="flex items-center gap-2 text-brand-accent">
-                      <Clock className="w-5 h-5" />
-                      <span className="font-bold">Preparing soon...</span>
+
+                  {order.notes && (
+                    <div className="mt-4 p-4 bg-brand-primary/5 rounded-2xl border border-brand-primary/10">
+                      <div className="text-[10px] font-bold text-brand-primary uppercase tracking-widest mb-1">Order Notes</div>
+                      <p className="text-white/80 text-sm italic">"{order.notes}"</p>
                     </div>
                   )}
-                  {order.status === 'delivered' && (
-                    <div className="flex items-center gap-2 text-green-500">
-                      <CheckCircle2 className="w-5 h-5" />
-                      <span className="font-bold">Delivered</span>
+
+                  {/* Tracking Progress */}
+                  {order.status !== 'cancelled' && (
+                    <div className="mt-8 pt-6 border-t border-white/5">
+                      <div className="flex justify-between items-end mb-4">
+                        <div>
+                          <div className="text-[10px] font-bold text-brand-accent uppercase tracking-widest mb-1">Live Tracking</div>
+                          <div className="flex items-center gap-2">
+                            <motion.div
+                              animate={{ scale: [1, 1.2, 1] }}
+                              transition={{ duration: 2, repeat: Infinity }}
+                              className="w-2.5 h-2.5 bg-brand-accent rounded-full"
+                            />
+                            <span className="text-sm font-bold text-white uppercase tracking-tight">
+                              {order.status === 'pending' ? 'Order Confirmed' : 
+                               order.status === 'preparing' ? 'Food being prepared' :
+                               order.status === 'shipping' ? 'Out for Delivery 🛵' :
+                               'Arrived & Delivered!'}
+                            </span>
+                          </div>
+                        </div>
+                        {order.estimatedDelivery && order.status !== 'delivered' && (
+                          <div className="text-right">
+                            <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Estimated Delivery</div>
+                            <div className="text-xl font-display font-black text-brand-primary">
+                              {new Date(order.estimatedDelivery).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <OrderStatusSteps status={order.status} />
                     </div>
                   )}
                 </div>
+                  <div className="flex items-center gap-4">
+                    {order.status === 'pending' && (
+                      <div className="flex items-center gap-2 text-brand-accent">
+                        <Clock className="w-5 h-5" />
+                        <span className="font-bold">Preparing soon...</span>
+                      </div>
+                    )}
+                    {order.status === 'shipping' && (
+                      <div className="flex items-center gap-2 text-blue-400">
+                        <Compass className="w-5 h-5 animate-spin" />
+                        <span className="font-bold">On the Way 🛵</span>
+                      </div>
+                    )}
+                    {order.status === 'delivered' && (
+                      <div className="flex items-center gap-2 text-green-500">
+                        <CheckCircle2 className="w-5 h-5" />
+                        <span className="font-bold">Delivered</span>
+                      </div>
+                    )}
+                    {(order.status === 'pending' || order.status === 'preparing') && (
+                      <button 
+                        onClick={() => {
+                          if (window.confirm(`Are you sure you want to cancel order #${order.id}?`)) {
+                            onUpdateStatus(order.id, 'cancelled');
+                            alert('Order cancelled successfully.');
+                          }
+                        }}
+                        className="p-3 bg-red-500/10 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all font-bold text-xs"
+                      >
+                        Cancel Order
+                      </button>
+                    )}
+                  </div>
               </motion.div>
             ))}
           </div>
@@ -659,23 +1519,113 @@ const Dashboard = ({ user, orders }: { user: User, orders: OrderDetails[] }) => 
   );
 };
 
-const AdminPanel = ({ orders, onUpdateStatus }: { orders: OrderDetails[], onUpdateStatus: (id: string, status: OrderDetails['status']) => void }) => {
+const AdminPanel = ({ orders, onUpdateStatus, onOpenEmailLogs }: { orders: OrderDetails[], onUpdateStatus: (id: string, status: OrderDetails['status']) => void, onOpenEmailLogs?: () => void }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<OrderDetails['status'] | 'all'>('all');
+  const [sortBy, setSortBy] = useState<'date_newest' | 'date_oldest' | 'amount_highest' | 'amount_lowest'>('date_newest');
+
+  const filteredOrders = orders.filter(order => {
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = (
+      order.id.toLowerCase().includes(term) ||
+      order.userName.toLowerCase().includes(term) ||
+      order.userEmail.toLowerCase().includes(term)
+    );
+    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const sortedOrders = [...filteredOrders].sort((a, b) => {
+    if (sortBy === 'date_newest') {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    if (sortBy === 'date_oldest') {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    }
+    if (sortBy === 'amount_highest') {
+      return b.total - a.total;
+    }
+    if (sortBy === 'amount_lowest') {
+      return a.total - b.total;
+    }
+    return 0;
+  });
+
   return (
     <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-12">
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-12 gap-8">
         <div>
           <h2 className="text-5xl font-display font-black text-brand-primary mb-2">Admin Panel</h2>
           <p className="text-white/60">Manage all incoming orders and update their status.</p>
+          {onOpenEmailLogs && (
+            <button 
+              onClick={onOpenEmailLogs}
+              className="mt-4 flex items-center gap-2 bg-[#7A8B6B]/15 hover:bg-[#7A8B6B]/25 text-[#E8EFE5] px-4 py-2 rounded-xl text-xs font-bold transition-all border border-[#7A8B6B]/30 cursor-pointer"
+            >
+              <Mail className="w-4 h-4 text-[#7A8B6B]" />
+              📬 View Transactional Email Logs (Resend Outbox)
+            </button>
+          )}
+        </div>
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
+          {/* Search Box */}
+          <div className="relative w-full md:w-64 group">
+            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 group-focus-within:text-brand-primary transition-colors" />
+            <input 
+              type="text" 
+              placeholder="Search ID, Name..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-6 py-3.5 outline-none focus:ring-2 focus:ring-brand-primary transition-all text-white font-medium text-xs"
+            />
+          </div>
+
+          {/* Sorting Dropdown */}
+          <div className="relative w-full md:w-48 group">
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-brand-primary transition-all text-white font-bold text-xs appearance-none cursor-pointer [color-scheme:dark]"
+            >
+              <option value="date_newest">Date: Newest First</option>
+              <option value="date_oldest">Date: Oldest First</option>
+              <option value="amount_highest">Amount: High to Low</option>
+              <option value="amount_lowest">Amount: Low to High</option>
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white/40">
+              <ChevronRight className="w-3 h-3 transform rotate-90" />
+            </div>
+          </div>
+
+          {/* Status Filter Tab Buttons */}
+          <div className="bg-white/5 p-1 rounded-2xl flex items-center gap-1 border border-white/10 w-full md:w-auto flex-wrap">
+            {['all', 'pending', 'preparing', 'shipping', 'delivered'].map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status as any)}
+                className={`flex-1 md:flex-none px-3.5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
+                  statusFilter === status 
+                    ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20' 
+                    : 'text-white/40 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {orders.length === 0 ? (
-          <div className="glass-card p-20 rounded-[3rem] text-center">
-            <p className="text-white/60">No orders placed yet.</p>
+        {sortedOrders.length === 0 ? (
+          <div className="glass-card p-20 rounded-[3rem] text-center border-white/5">
+            <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <X className="w-10 h-10 text-white/20" />
+            </div>
+            <p className="text-white/60 text-lg">{searchTerm ? 'No orders found matching your search.' : 'No orders placed yet.'}</p>
           </div>
         ) : (
-          orders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(order => (
+          sortedOrders.map(order => (
             <motion.div 
               key={order.id}
               className="glass-card p-8 rounded-[2.5rem] border-white/5 flex flex-col lg:flex-row justify-between gap-8"
@@ -690,42 +1640,74 @@ const AdminPanel = ({ orders, onUpdateStatus }: { orders: OrderDetails[], onUpda
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6">
                   <div>
-                    <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Schedule</div>
-                    <div className="font-bold text-brand-primary">{order.date} at {order.time}</div>
+                    <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Mobile</div>
+                    <div className="font-bold text-brand-primary">{order.mobile}</div>
                   </div>
                   <div>
                     <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Total</div>
                     <div className="font-bold text-brand-primary text-xl">₹{order.total}</div>
+                    {order.discountAmount && order.discountAmount > 0 ? (
+                      <div className="text-[10px] text-brand-accent font-bold mt-1 tracking-tighter">-₹{order.discountAmount} redeemed</div>
+                    ) : null}
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Earned</div>
+                    <div className="text-brand-accent font-black tracking-tighter">+{order.loyaltyPointsEarned || 0} pts</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Payment</div>
+                    <div className="font-bold text-brand-accent uppercase text-xs">{order.paymentMethod === 'cod' ? 'Pay on Delivery' : 'Online'}</div>
                   </div>
                   <div className="col-span-2">
-                    <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Items</div>
-                    <div className="flex flex-wrap gap-2">
-                      {order.items.map(item => (
-                        <span key={item.id} className="bg-white/5 px-2 py-1 rounded-lg text-[10px] text-white/80">
-                          {item.name} x{item.quantity}
-                        </span>
-                      ))}
-                    </div>
+                    <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Address</div>
+                    <div className="font-bold text-brand-primary text-xs">{order.address}</div>
                   </div>
+                </div>
+
+                {order.notes && (
+                  <div className="mb-6 p-4 bg-brand-primary/5 rounded-2xl border border-brand-primary/10">
+                    <div className="text-[10px] font-bold text-brand-primary uppercase tracking-widest mb-1">Customer Note</div>
+                    <p className="text-white/80 text-sm italic">"{order.notes}"</p>
+                  </div>
+                )}
+
+                <div className="border-t border-white/5 pt-6">
+                  <OrderStatusSteps status={order.status} />
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row items-center gap-4">
+                {order.status !== 'cancelled' && order.status !== 'delivered' && (
+                  <button 
+                    onClick={() => {
+                      if (window.confirm(`Admin: Cancel order #${order.id}?`)) {
+                        onUpdateStatus(order.id, 'cancelled');
+                        alert(`Order #${order.id} has been cancelled.`);
+                      }
+                    }}
+                    className="px-4 py-2 bg-red-500/10 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all font-bold text-xs flex items-center gap-2 cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                    Cancel
+                  </button>
+                )}
                 <select 
                   value={order.status}
                   onChange={(e) => onUpdateStatus(order.id, e.target.value as any)}
-                  className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm font-bold text-brand-primary outline-none focus:ring-2 focus:ring-brand-primary [color-scheme:dark]"
+                  className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm font-bold text-brand-primary outline-none focus:ring-2 focus:ring-brand-primary [color-scheme:dark] cursor-pointer"
                 >
                   <option value="pending">Pending</option>
                   <option value="preparing">Preparing</option>
+                  <option value="shipping">On the Way</option>
                   <option value="delivered">Delivered</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
                 <div className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest ${
                   order.status === 'delivered' ? 'bg-green-500/20 text-green-500' :
                   order.status === 'cancelled' ? 'bg-red-500/20 text-red-500' :
+                  order.status === 'shipping' ? 'bg-blue-500/20 text-blue-400' :
                   'bg-brand-accent/20 text-brand-accent'
                 }`}>
-                  {order.status}
+                  {order.status === 'shipping' ? 'shipping' : order.status}
                 </div>
               </div>
             </motion.div>
@@ -736,34 +1718,331 @@ const AdminPanel = ({ orders, onUpdateStatus }: { orders: OrderDetails[], onUpda
   );
 };
 
-const GalleryPage = () => (
-  <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto relative">
-    <div className="absolute top-20 left-1/2 -translate-x-1/2 w-full h-full bg-brand-bg/50 blur-3xl -z-10" />
-    <div className="text-center mb-16">
-      <h2 className="text-5xl font-display font-black text-brand-primary mb-4">Rustic Glimpses</h2>
-      <p className="text-gray-500 max-w-xl mx-auto">A visual journey through our kitchen and the traditions we cherish.</p>
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {GALLERY_IMAGES.map((img, idx) => (
-        <motion.div
-          key={idx}
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: idx * 0.1 }}
-          className="aspect-[4/3] rounded-3xl overflow-hidden shadow-lg group"
+const EmailLogsModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  const [emails, setEmails] = useState<any[]>([]);
+  const [selectedEmail, setSelectedEmail] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      const raw = localStorage.getItem('tawabox_sent_emails');
+      const loaded = raw ? JSON.parse(raw) : [];
+      setEmails(loaded);
+      if (loaded.length > 0) {
+        setSelectedEmail(loaded[0]);
+      } else {
+        setSelectedEmail(null);
+      }
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-[110] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+        <motion.div 
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-[#FAF8F4] w-full max-w-4xl h-[80vh] rounded-[2.5rem] border-2 border-[#7A8B6B]/30 overflow-hidden flex flex-col shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
         >
-          <img 
-            src={img} 
-            alt={`Gallery ${idx}`} 
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-            referrerPolicy="no-referrer"
-          />
+          {/* Header */}
+          <div className="bg-[#DFE7DC] p-6 border-b border-[#7A8B6B]/25 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <Mail className="w-6 h-6 text-[#5A3825]" />
+              <div>
+                <h3 className="font-serif font-black text-[#5A3825] text-lg uppercase tracking-wider">Transactional Email Service Log</h3>
+                <p className="text-[10px] text-[#7A8B6B] uppercase tracking-widest font-bold">Resend Outbox Live Delivery status</p>
+              </div>
+            </div>
+            <button 
+              onClick={onClose}
+              className="p-2.5 bg-[#5A3825]/5 text-[#5A3825] rounded-full hover:bg-[#5A3825]/15 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Body */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* List */}
+            <div className="w-80 border-r border-[#7A8B6B]/15 overflow-y-auto p-4 space-y-2 bg-[#FAF6ED] flex-shrink-0">
+              {emails.length === 0 ? (
+                <div className="text-center py-20 text-[#5A3825]/40 font-bold text-sm">
+                  No emails dispatched yet.<br />Place an order or update status as Admin!
+                </div>
+              ) : (
+                emails.map((email) => (
+                  <button
+                    key={email.id}
+                    onClick={() => setSelectedEmail(email)}
+                    className={`w-full text-left p-4 rounded-2xl transition-all border cursor-pointer ${
+                      selectedEmail?.id === email.id 
+                        ? 'bg-[#7A8B6B] text-white border-[#7A8B6B]' 
+                        : 'bg-white text-[#5A3825] border-[#5A3825]/10 hover:border-[#7A8B6B]/40 shadow-sm'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-1 text-[9px] font-bold uppercase tracking-wider">
+                      <span className="opacity-75">{email.type === 'order_confirmed' ? 'Receipt' : 'Update'}</span>
+                      <span className="opacity-50">{new Date(email.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <div className="font-serif font-black text-xs line-clamp-1 leading-tight mb-1">{email.subject}</div>
+                    <div className="text-[9px] opacity-70 truncate">To: {email.recipient}</div>
+                  </button>
+                ))
+              )}
+            </div>
+
+            {/* Viewer preview */}
+            <div className="flex-1 bg-white p-6 overflow-y-auto flex flex-col justify-start">
+              {selectedEmail ? (
+                <div className="space-y-4">
+                  {/* Meta headers */}
+                  <div className="bg-[#FAF8F4] p-4 rounded-2xl border border-[#5A3825]/10 space-y-1">
+                    <div className="text-xs text-slate-500 font-mono"><strong>From:</strong> orders@tawabox.com</div>
+                    <div className="text-xs text-slate-500 font-mono"><strong>To:</strong> {selectedEmail.recipient}</div>
+                    <div className="text-xs text-slate-500 font-mono"><strong>Subject:</strong> {selectedEmail.subject}</div>
+                    <div className="text-xs text-slate-500 font-mono"><strong>Date:</strong> {new Date(selectedEmail.sentAt).toLocaleString()}</div>
+                    <div className="text-xs text-[#7A8B6B] font-mono flex items-center gap-1.5 pt-1">
+                      <span className="inline-block w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
+                      <strong>Delivery Status:</strong> Sent (Delivered securely in sandbox mode)
+                    </div>
+                  </div>
+
+                  {/* Rendered HTML inside an insulated container */}
+                  <div className="border border-[#7A8B6B]/15 rounded-3xl overflow-hidden shadow-sm p-4 bg-transparent max-w-full">
+                    <div className="w-full overflow-x-auto" dangerouslySetInnerHTML={{ __html: selectedEmail.html }} />
+                  </div>
+                </div>
+              ) : (
+                <div className="flex-grow flex flex-col items-center justify-center text-center text-[#5A3825]/40 py-20">
+                  <Mail className="w-12 h-12 text-[#5A3825]/20 mb-3" />
+                  <p className="font-serif font-bold">Review Dispatched E-mails</p>
+                  <p className="text-xs max-w-xs mt-1">Select an email to view full transactional HTML layout and delivery payloads.</p>
+                </div>
+              )}
+            </div>
+          </div>
         </motion.div>
-      ))}
+      </div>
+    </AnimatePresence>
+  );
+};
+
+const THALI_OPTIONS = {
+  rotis: '5 Assorted Wood-fired Rotis (Fixed)',
+  vegetables: ['Seasonal Dry Sabji', 'Slow-Cooked Dal Tadka', 'Village Style Mixed Veg', 'Healthy Sprouts Curry'],
+  vegSalad: 'Garden Fresh Green Salad',
+  fruitSalad: 'Seasonal Fruit Medley',
+  rice: 'Basmati Jeera Rice'
+};
+
+const ThaliCustomizationModal = ({ 
+  isOpen, 
+  onClose, 
+  onConfirm 
+}: { 
+  isOpen: boolean, 
+  onClose: () => void, 
+  onConfirm: (selections: any) => void 
+}) => {
+  const [selectedVegs, setSelectedVegs] = useState<string[]>([]);
+
+  const toggleVeg = (veg: string) => {
+    setSelectedVegs(prev => {
+      if (prev.includes(veg)) return prev.filter(v => v !== veg);
+      if (prev.length < 2) return [...prev, veg];
+      return prev;
+    });
+  };
+
+  const isValid = selectedVegs.length === 2;
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md"
+      >
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.9, opacity: 0, y: 20 }}
+          className="bg-[#0a150d] border border-white/10 w-full max-w-2xl rounded-[3rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+        >
+          <div className="p-8 border-b border-white/10 flex justify-between items-center bg-brand-primary/5">
+            <div>
+              <h2 className="text-3xl font-display font-black text-brand-primary">Setup Your Thali</h2>
+              <p className="text-white/40 text-sm">Select 2 vegetables to complete your meal</p>
+            </div>
+            <button onClick={onClose} className="p-3 bg-white/5 rounded-full text-white hover:bg-white/10 transition-colors">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          <div className="p-8 overflow-y-auto flex-1 space-y-10 custom-scrollbar">
+            {/* Fixed Items Summary */}
+            <div className="bg-white/5 rounded-3xl p-6 border border-white/5 space-y-4">
+              <h3 className="text-xs font-black text-brand-primary uppercase tracking-widest">Included in your Thali</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-brand-primary/20 p-2 rounded-xl"><Flame className="w-4 h-4 text-brand-primary" /></div>
+                  <span className="text-sm font-bold text-white/80">{THALI_OPTIONS.rotis}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-brand-primary/20 p-2 rounded-xl"><UtensilsCrossed className="w-4 h-4 text-brand-primary" /></div>
+                  <span className="text-sm font-bold text-white/80">{THALI_OPTIONS.rice}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-brand-primary/20 p-2 rounded-xl"><Leaf className="w-4 h-4 text-brand-primary" /></div>
+                  <span className="text-sm font-bold text-white/80">{THALI_OPTIONS.vegSalad}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-brand-primary/20 p-2 rounded-xl"><Star className="w-4 h-4 text-brand-primary" /></div>
+                  <span className="text-sm font-bold text-white/80">{THALI_OPTIONS.fruitSalad}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Vegetable Selection */}
+            <div className="space-y-4">
+              <div className="flex justify-between items-end">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <UtensilsCrossed className="w-5 h-5 text-brand-primary" />
+                  Choose 2 Vegetables
+                </h3>
+                <span className={`text-xs font-black p-2 rounded-lg ${selectedVegs.length === 2 ? 'bg-green-500/20 text-green-500' : 'bg-brand-primary/20 text-brand-primary'}`}>
+                  {selectedVegs.length}/2 Selected
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {THALI_OPTIONS.vegetables.map(veg => (
+                  <button
+                    key={veg}
+                    onClick={() => toggleVeg(veg)}
+                    className={`p-5 rounded-[1.5rem] border text-left transition-all relative overflow-hidden group ${
+                      selectedVegs.includes(veg) 
+                        ? 'bg-brand-primary/10 border-brand-primary text-white shadow-lg' 
+                        : 'bg-white/5 border-white/5 text-white/40 hover:border-white/20'
+                    }`}
+                  >
+                    <div className="font-bold relative z-10">{veg}</div>
+                    {selectedVegs.includes(veg) && (
+                      <motion.div 
+                        layoutId="active-veg"
+                        className="absolute inset-0 bg-brand-primary/5 -z-0"
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="p-8 bg-brand-primary/5 border-t border-white/10">
+            <button
+              onClick={() => onConfirm({ 
+                rotis: [THALI_OPTIONS.rotis], 
+                vegetables: selectedVegs,
+                vegSalad: THALI_OPTIONS.vegSalad,
+                fruitSalad: THALI_OPTIONS.fruitSalad,
+                rice: THALI_OPTIONS.rice
+              })}
+              disabled={!isValid}
+              className={`w-full py-5 rounded-2xl font-black text-lg transition-all shadow-xl ${
+                isValid 
+                  ? 'bg-brand-primary text-white hover:bg-brand-secondary shadow-brand-primary/20 active:scale-[0.98]' 
+                  : 'bg-white/10 text-white/20 cursor-not-allowed'
+              }`}
+            >
+              Order This Thali • ₹250
+            </button>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+const GalleryPage = () => {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  return (
+    <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto relative">
+      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-full h-full bg-brand-bg/50 blur-3xl -z-10" />
+      <div className="text-center mb-16">
+        <h2 className="text-5xl font-display font-black text-brand-primary mb-4">Rustic Glimpses</h2>
+        <p className="text-gray-500 max-w-xl mx-auto">A visual journey through our kitchen and the traditions we cherish.</p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {GALLERY_IMAGES.map((img, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: idx * 0.1 }}
+            className="aspect-[4/3] rounded-3xl overflow-hidden shadow-lg group cursor-pointer"
+            onClick={() => setSelectedImage(img)}
+          >
+            <div className="relative w-full h-full overflow-hidden">
+              <img 
+                src={img} 
+                alt={`Gallery ${idx}`} 
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span className="text-white font-black uppercase tracking-widest text-sm bg-brand-primary/80 px-4 py-2 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-transform">
+                  View Large
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl"
+            onClick={() => setSelectedImage(null)}
+          >
+            <motion.button 
+              className="absolute top-8 right-8 text-white bg-white/10 p-4 rounded-full hover:bg-white/20 transition-colors z-[110]"
+              onClick={() => setSelectedImage(null)}
+            >
+              <X className="w-8 h-8" />
+            </motion.button>
+            
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-5xl w-full aspect-[4/3] rounded-[3rem] overflow-hidden shadow-2xl border border-white/10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img 
+                src={selectedImage} 
+                alt="Selected Gallery" 
+                className="w-full h-full object-cover"
+                referrerPolicy="no-referrer"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
-  </div>
-);
+  );
+};
 
 const ContactPage = () => (
   <div className="pt-32 pb-20 px-6 max-w-7xl mx-auto relative">
@@ -835,23 +2114,135 @@ const CartModal = ({
   onClose, 
   cartItems, 
   onUpdateQuantity,
-  orderDate,
-  setOrderDate,
-  orderTime,
-  setOrderTime,
+  orderName,
+  setOrderName,
+  orderMobile,
+  setOrderMobile,
+  orderAddress,
+  setOrderAddress,
+  orderNotes,
+  setOrderNotes,
+  orderLocation,
+  setOrderLocation,
+  orderPaymentMethod,
+  setOrderPaymentMethod,
+  userPoints,
+  pointsToRedeem,
+  setPointsToRedeem,
   onConfirmOrder
 }: { 
   isOpen: boolean, 
   onClose: () => void, 
   cartItems: CartItem[],
   onUpdateQuantity: (id: string, delta: number) => void,
-  orderDate: string,
-  setOrderDate: (v: string) => void,
-  orderTime: string,
-  setOrderTime: (v: string) => void,
-  onConfirmOrder: () => void
+  orderName: string,
+  setOrderName: (v: string) => void,
+  orderMobile: string,
+  setOrderMobile: (v: string) => void,
+  orderAddress: string,
+  setOrderAddress: (v: string) => void,
+  orderNotes: string,
+  setOrderNotes: (v: string) => void,
+  orderLocation: { lat: number; lng: number } | null,
+  setOrderLocation: (v: { lat: number; lng: number } | null) => void,
+  orderPaymentMethod: 'cod' | 'online',
+  setOrderPaymentMethod: (v: 'cod' | 'online') => void,
+  userPoints: number,
+  pointsToRedeem: number,
+  setPointsToRedeem: (v: number) => void,
+  onConfirmOrder: (onSuccess: (order: OrderDetails) => void) => void
 }) => {
+  const [step, setStep] = useState<'cart' | 'delivery' | 'payment' | 'confirmation'>('cart');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [placedOrder, setPlacedOrder] = useState<OrderDetails | null>(null);
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const discount = pointsToRedeem / 10;
+  const finalTotal = Math.max(0, total - discount);
+
+  // Reset step when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      const timer = setTimeout(() => {
+        setStep('cart');
+        setPlacedOrder(null);
+        setIsProcessing(false);
+        setPointsToRedeem(0);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, setPointsToRedeem]);
+
+  const handleGetLocation = () => {
+    if ("geolocation" in navigator) {
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setOrderLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+          // Show a temporary success message in the UI would be better, but user requested feedback
+          alert("📍 Precision location captured successfully!");
+        }, 
+        (error) => {
+          let message = "Could not get location.";
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              message = "Location permission denied. Please allow location access in your browser.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              message = "Location information is unavailable.";
+              break;
+            case error.TIMEOUT:
+              message = "The request to get user location timed out.";
+              break;
+          }
+          console.error("Geolocation Error:", error);
+          alert(message);
+        },
+        options
+      );
+    } else {
+      alert("Geolocation is not supported by your browser.");
+    }
+  };
+
+  const nextStep = () => {
+    if (step === 'cart') {
+      if (cartItems.length === 0) return;
+      setStep('delivery');
+    } else if (step === 'delivery') {
+      if (!orderName || !orderMobile || !orderAddress) {
+        alert("Please fill in all delivery details");
+        return;
+      }
+      setStep('payment');
+    }
+  };
+
+  const prevStep = () => {
+    if (step === 'delivery') setStep('cart');
+    if (step === 'payment') setStep('delivery');
+  };
+
+  const handlePlaceOrder = async () => {
+    if (orderPaymentMethod === 'online') {
+      setIsProcessing(true);
+      // Simulated Payment Process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setIsProcessing(false);
+    }
+    
+    onConfirmOrder((order) => {
+      setPlacedOrder(order);
+      setStep('confirmation');
+    });
+  };
 
   return (
     <AnimatePresence>
@@ -862,106 +2253,381 @@ const CartModal = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md z-[60] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-[#5A3825]/40 backdrop-blur-md z-[60] flex items-end md:items-center justify-center p-0 md:p-4"
           >
             <motion.div 
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg bg-[#0a150d] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-white/5"
+              className="w-full max-w-lg bg-[#E8EFE5] rounded-t-[2.5rem] md:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-[#5A3825]/10"
             >
-              <div className="p-6 border-b border-brand-primary/10 flex justify-between items-center bg-white/5">
-                <h2 className="text-2xl font-display font-bold text-brand-primary flex items-center gap-2">
-                  <UtensilsCrossed className="w-6 h-6" />
-                  Your Tawa Box
-                </h2>
-                <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                  <X className="w-6 h-6" />
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                {cartItems.length === 0 ? (
-                  <div className="py-12 flex flex-col items-center justify-center text-center">
-                    <div className="bg-white/5 p-6 rounded-full mb-4">
-                      <ShoppingCart className="w-12 h-12 text-white/20" />
-                    </div>
-                    <p className="text-white/60 font-medium">Your box is empty.<br/>Start adding some desi goodness!</p>
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-3">
-                      {cartItems.map((item) => (
-                        <div key={item.id} className="flex gap-4 items-center bg-white/5 p-4 rounded-2xl shadow-sm border border-white/5">
-                          <div className="flex-1">
-                            <h4 className="font-bold text-brand-primary">{item.name}</h4>
-                            <p className="text-brand-secondary font-bold">₹{item.price}</p>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <button 
-                              onClick={() => onUpdateQuantity(item.id, -1)}
-                              className="p-1.5 bg-white/5 border border-white/10 rounded-xl hover:border-brand-primary transition-colors text-white"
-                            >
-                              <Minus className="w-4 h-4" />
-                            </button>
-                            <span className="font-bold w-6 text-center text-white">{item.quantity}</span>
-                            <button 
-                              onClick={() => onUpdateQuantity(item.id, 1)}
-                              className="p-1.5 bg-white/5 border border-white/10 rounded-xl hover:border-brand-primary transition-colors text-white"
-                            >
-                              <Plus className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="pt-6 border-t border-brand-primary/10 space-y-4">
-                      <h3 className="font-display font-bold text-brand-primary text-lg">Delivery Schedule</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="bg-white/5 p-4 rounded-2xl border border-white/5 shadow-sm">
-                          <label className="block text-[10px] font-bold text-white/40 uppercase mb-1 tracking-widest">Date</label>
-                          <div className="flex items-center gap-3">
-                            <Calendar className="w-4 h-4 text-brand-secondary" />
-                            <input 
-                              type="date" 
-                              value={orderDate}
-                              onChange={(e) => setOrderDate(e.target.value)}
-                              className="w-full bg-transparent border-none focus:ring-0 text-sm font-bold p-0 text-brand-primary [color-scheme:dark]"
-                            />
-                          </div>
-                        </div>
-                        <div className="bg-white/5 p-4 rounded-2xl border border-white/5 shadow-sm">
-                          <label className="block text-[10px] font-bold text-white/40 uppercase mb-1 tracking-widest">Time</label>
-                          <div className="flex items-center gap-3">
-                            <Clock className="w-4 h-4 text-brand-secondary" />
-                            <input 
-                              type="time" 
-                              value={orderTime}
-                              onChange={(e) => setOrderTime(e.target.value)}
-                              className="w-full bg-transparent border-none focus:ring-0 text-sm font-bold p-0 text-brand-primary [color-scheme:dark]"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </>
+              <div className="p-6 border-b border-brand-primary/15 flex justify-between items-center bg-[#DFE7DC] relative">
+                <div className="w-12 h-1.5 bg-brand-primary/10 rounded-full absolute top-3 left-1/2 -translate-x-1/2 md:hidden" />
+                <div className="flex items-center gap-3">
+                  {step !== 'cart' && (
+                    <button onClick={prevStep} className="p-2 hover:bg-brand-primary/5 rounded-full transition-colors">
+                      <ChevronLeft className="w-6 h-6 text-brand-primary" />
+                    </button>
+                  )}
+                  <h2 className="text-2xl font-display font-black text-brand-primary flex items-center gap-2">
+                    {step === 'cart' && <><UtensilsCrossed className="w-6 h-6" /> Your Tawa Box</>}
+                    {step === 'delivery' && <><MapPin className="w-6 h-6" /> Delivery Details</>}
+                    {step === 'payment' && <><CreditCard className="w-6 h-6" /> Payment Method</>}
+                    {step === 'confirmation' && <><CheckCircle2 className="w-6 h-6 text-brand-secondary" /> Order Confirmed!</>}
+                  </h2>
+                </div>
+                {step !== 'confirmation' && (
+                  <button onClick={onClose} className="p-2 hover:bg-brand-primary/5 rounded-full transition-colors">
+                    <X className="w-6 h-6 text-brand-primary" />
+                  </button>
                 )}
               </div>
 
-              {cartItems.length > 0 && (
-                <div className="p-6 bg-white/5 border-t border-brand-primary/10">
+              <div className="flex-1 overflow-y-auto p-6 bg-[#E8EFE5]">
+                <AnimatePresence mode="wait">
+                  {step === 'cart' && (
+                    <motion.div 
+                      key="cart"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20 }}
+                      className="space-y-6"
+                    >
+                      {cartItems.length === 0 ? (
+                        <div className="py-12 flex flex-col items-center justify-center text-center">
+                          <div className="bg-[#F1F6F0] p-6 rounded-full mb-4 border border-brand-primary/10">
+                            <ShoppingCart className="w-12 h-12 text-brand-primary/20" />
+                          </div>
+                          <p className="text-[#5A3825] font-serif font-bold text-base">Your box is empty.<br/>Start adding some desi goodness!</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {cartItems.map((item) => (
+                            <div key={item.id} className="flex flex-col bg-[#F1F6F0] p-4 rounded-2xl shadow-sm border border-brand-primary/10">
+                              <div className="flex gap-4 items-center w-full">
+                                <div className="flex-1">
+                                  <h4 className="font-serif font-black text-brand-primary text-base">{item.name}</h4>
+                                  <p className="text-brand-secondary font-serif font-extrabold text-sm">₹{item.price}</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <button 
+                                    onClick={() => onUpdateQuantity(item.id, -1)}
+                                    className="p-1.5 bg-white border border-brand-primary/15 rounded-xl hover:border-brand-primary transition-colors text-brand-primary"
+                                  >
+                                    <Minus className="w-4 h-4" />
+                                  </button>
+                                  <span className="font-black w-6 text-center text-brand-primary">{item.quantity}</span>
+                                  <button 
+                                    onClick={() => onUpdateQuantity(item.id, 1)}
+                                    className="p-1.5 bg-white border border-brand-primary/15 rounded-xl hover:border-brand-primary transition-colors text-brand-primary"
+                                  >
+                                    <Plus className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                              {item.customization && (
+                                <div className="mt-3 pt-3 border-t border-brand-primary/10 grid grid-cols-2 gap-2">
+                                  <div className="col-span-2">
+                                    <div className="text-[9px] font-bold text-brand-primary/50 uppercase tracking-widest mb-1">Rotis</div>
+                                    <div className="text-[11px] text-brand-text/80 font-medium font-serif font-semibold">
+                                      {item.customization.rotis?.join(', ')}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="text-[9px] font-bold text-brand-primary/50 uppercase tracking-widest mb-1">Vegetables</div>
+                                    <div className="text-[11px] text-brand-text/80 font-medium font-serif font-semibold">
+                                      {item.customization.vegetables?.join(', ')}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="text-[9px] font-bold text-brand-primary/50 uppercase tracking-widest mb-1">Included Sides</div>
+                                    <div className="text-[11px] text-brand-text/80 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+                                      Veg Salad, Fruit Salad, Rice
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {step === 'delivery' && (
+                    <motion.div 
+                      key="delivery"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-4"
+                    >
+                      <div className="bg-[#F1F6F0] p-4 rounded-2xl border border-brand-primary/10 shadow-sm">
+                        <label className="block text-[10px] font-bold text-brand-primary/50 uppercase mb-1 tracking-widest">Full Name</label>
+                        <input 
+                          type="text" 
+                          placeholder="Enter your name"
+                          value={orderName}
+                          onChange={(e) => setOrderName(e.target.value)}
+                          className="w-full bg-transparent border-none focus:ring-0 text-sm font-black p-0 text-brand-primary placeholder:text-brand-primary/20"
+                        />
+                      </div>
+                      <div className="bg-[#F1F6F0] p-4 rounded-2xl border border-brand-primary/10 shadow-sm">
+                        <label className="block text-[10px] font-bold text-brand-primary/50 uppercase mb-1 tracking-widest">Mobile Number</label>
+                        <input 
+                          type="tel" 
+                          placeholder="Enter mobile number"
+                          value={orderMobile}
+                          onChange={(e) => setOrderMobile(e.target.value)}
+                          className="w-full bg-transparent border-none focus:ring-0 text-sm font-black p-0 text-brand-primary placeholder:text-brand-primary/20"
+                        />
+                      </div>
+                      <div className="bg-[#F1F6F0] p-4 rounded-2xl border border-brand-primary/10 shadow-sm">
+                        <label className="block text-[10px] font-bold text-brand-primary/50 uppercase mb-1 tracking-widest">Delivery Address</label>
+                        <textarea 
+                          placeholder="Enter full address"
+                          value={orderAddress}
+                          onChange={(e) => setOrderAddress(e.target.value)}
+                          className="w-full bg-transparent border-none focus:ring-0 text-sm font-black p-0 text-brand-primary placeholder:text-brand-primary/20 resize-none font-serif font-semibold"
+                          rows={3}
+                        />
+                      </div>
+                      <div className="bg-[#F1F6F0] p-4 rounded-2xl border border-brand-primary/10 shadow-sm">
+                        <label className="block text-[10px] font-bold text-brand-primary/50 uppercase mb-1 tracking-widest">Order Notes (Optional)</label>
+                        <textarea 
+                          placeholder="Any special instructions for the kitchen?"
+                          value={orderNotes}
+                          onChange={(e) => setOrderNotes(e.target.value)}
+                          className="w-full bg-transparent border-none focus:ring-0 text-sm font-black p-0 text-brand-primary placeholder:text-brand-primary/20 resize-none font-serif font-semibold"
+                          rows={2}
+                        />
+                      </div>
+                      <button 
+                        onClick={handleGetLocation}
+                        className={`w-full py-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+                          orderLocation 
+                            ? 'bg-[#7A8B6B]/20 text-[#7A8B6B] border border-[#7A8B6B]/30 font-black' 
+                            : 'bg-brand-primary/10 text-brand-primary border border-brand-primary/10 hover:bg-brand-primary/20'
+                        }`}
+                      >
+                        <MapPin className="w-4 h-4" />
+                        {orderLocation ? 'Location Captured' : 'Share Current Location'}
+                      </button>
+                    </motion.div>
+                  )}
+
+                  {step === 'payment' && (
+                    <motion.div 
+                      key="payment"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-4"
+                    >
+                      <div 
+                        onClick={() => setOrderPaymentMethod('cod')}
+                        className={`p-6 rounded-3xl border-2 cursor-pointer transition-all flex items-center justify-between ${
+                          orderPaymentMethod === 'cod' 
+                            ? 'bg-brand-primary/10 border-brand-primary shadow-lg shadow-brand-primary/10' 
+                            : 'bg-[#F1F6F0] border-brand-primary/10 hover:border-brand-primary/30'
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`p-3 rounded-2xl ${orderPaymentMethod === 'cod' ? 'bg-brand-primary text-white' : 'bg-brand-primary/10 text-brand-primary/60'}`}>
+                            <Banknote className="w-6 h-6" />
+                          </div>
+                          <div>
+                            <div className="font-serif font-black text-brand-primary">Pay on Delivery</div>
+                            <div className="text-xs text-brand-primary/60">Cash or UPI at your doorstep</div>
+                          </div>
+                        </div>
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${orderPaymentMethod === 'cod' ? 'border-brand-primary' : 'border-brand-primary/20'}`}>
+                          {orderPaymentMethod === 'cod' && <div className="w-3 h-3 bg-brand-primary rounded-full" />}
+                        </div>
+                      </div>
+
+                      <div 
+                        onClick={() => setOrderPaymentMethod('online')}
+                        className={`p-6 rounded-3xl border-2 cursor-pointer transition-all flex items-center justify-between ${
+                          orderPaymentMethod === 'online' 
+                            ? 'bg-brand-primary/10 border-brand-primary shadow-lg shadow-brand-primary/10' 
+                            : 'bg-[#F1F6F0] border-brand-primary/10 hover:border-brand-primary/30'
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`p-3 rounded-2xl ${orderPaymentMethod === 'online' ? 'bg-brand-primary text-white' : 'bg-brand-primary/10 text-brand-primary/60'}`}>
+                            <CreditCard className="w-6 h-6" />
+                          </div>
+                          <div>
+                            <div className="font-serif font-black text-brand-primary">Online Payment</div>
+                            <div className="text-xs text-brand-primary/60">UPI, Cards, or Wallet</div>
+                          </div>
+                        </div>
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${orderPaymentMethod === 'online' ? 'border-brand-primary' : 'border-brand-primary/20'}`}>
+                          {orderPaymentMethod === 'online' && <div className="w-3 h-3 bg-brand-primary rounded-full" />}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {step === 'payment' && userPoints >= 10 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-brand-primary/5 p-6 rounded-[2rem] border border-brand-primary/15 mt-6"
+                    >
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-brand-primary/15 p-2 rounded-xl">
+                            <Trophy className="w-5 h-5 text-brand-primary" />
+                          </div>
+                          <div>
+                            <div className="text-xs font-serif font-black text-brand-primary uppercase tracking-widest">Tawa Rewards</div>
+                            <div className="text-[10px] text-brand-primary/60">You have {userPoints} points</div>
+                          </div>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            className="sr-only peer"
+                            checked={pointsToRedeem > 0}
+                            onChange={(e) => {
+                              if (e.target.checked) setPointsToRedeem(Math.floor(userPoints / 10) * 10);
+                              else setPointsToRedeem(0);
+                            }}
+                          />
+                          <div className="w-11 h-6 bg-brand-primary/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-primary"></div>
+                        </label>
+                      </div>
+                      {pointsToRedeem > 0 && (
+                        <div className="flex justify-between items-center text-sm font-bold text-brand-secondary animate-pulse">
+                          <span>Redeeming {pointsToRedeem} points</span>
+                          <span>- ₹{pointsToRedeem / 10}</span>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {step === 'confirmation' && placedOrder && (
+                    <motion.div
+                      key="confirmation"
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="py-10 flex flex-col items-center text-center space-y-8"
+                    >
+                      <div className="relative">
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: 'spring', delay: 0.2 }}
+                          className="w-24 h-24 bg-brand-primary rounded-full flex items-center justify-center shadow-2xl shadow-brand-primary/20"
+                        >
+                          <CheckCircle2 className="w-12 h-12 text-white" />
+                        </motion.div>
+                        <motion.div
+                          animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0, 0.5] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="absolute inset-0 rounded-full border-2 border-brand-primary"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <h3 className="text-3xl font-display font-black text-brand-primary uppercase">Mubarak Ho!</h3>
+                        <p className="text-brand-text/70 font-serif font-bold text-base">Your order #{placedOrder.id} has been placed.</p>
+                      </div>
+
+                      <div className="w-full bg-[#F1F6F0] border border-brand-primary/10 rounded-[2rem] p-6 space-y-4 shadow-sm">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-brand-primary/50 uppercase tracking-widest font-bold text-[10px]">Estimated Arrival</span>
+                          <span className="text-brand-secondary font-black text-base">
+                            {new Date(placedOrder.estimatedDelivery!).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm border-t border-brand-primary/10 pt-4">
+                          <span className="text-brand-primary/50 uppercase tracking-widest font-bold text-[10px]">Total Paid</span>
+                          <span className="text-2xl font-display font-black text-brand-primary">₹{placedOrder.total}</span>
+                        </div>
+                      </div>
+
+                      <div className="w-full space-y-3 pt-4">
+                        <button 
+                          onClick={() => {
+                            onClose();
+                            setTimeout(() => {
+                              window.location.href = '/dashboard';
+                            }, 300);
+                          }}
+                          className="w-full bg-brand-secondary text-white py-4 rounded-2xl font-black uppercase tracking-wider hover:bg-[#617054] transition-all shadow-lg shadow-brand-secondary/20 active:scale-95"
+                        >
+                          Track Order
+                        </button>
+                        <button 
+                          onClick={onClose}
+                          className="w-full py-4 text-brand-primary/60 font-black hover:text-brand-primary transition-colors text-sm uppercase tracking-wider"
+                        >
+                          Back to Menu
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {step !== 'confirmation' && cartItems.length > 0 && (
+                <div className="p-6 bg-[#DFE7DC] border-t border-brand-primary/15">
                   <div className="flex justify-between items-center mb-6">
-                    <span className="text-white/60 font-medium">Total Amount</span>
-                    <span className="text-3xl font-display font-black text-brand-primary">₹{total}</span>
+                    <div className="flex flex-col">
+                      <span className="text-brand-primary/50 text-[10px] font-bold uppercase tracking-widest">Total Amount</span>
+                      <div className="flex items-baseline gap-2">
+                        <span className={`font-display font-black text-brand-primary ${pointsToRedeem > 0 ? 'text-lg line-through opacity-45' : 'text-3xl'}`}>₹{total}</span>
+                        {pointsToRedeem > 0 && (
+                          <span className="text-3xl font-display font-black text-brand-secondary">₹{finalTotal}</span>
+                        )}
+                      </div>
+                    </div>
+                    {step === 'payment' && (
+                      <div className="text-right">
+                        <span className="text-brand-primary/50 text-[10px] font-bold uppercase tracking-widest">Method</span>
+                        <div className="text-brand-secondary font-bold uppercase text-xs tracking-widest">
+                          {orderPaymentMethod === 'cod' ? 'Pay on Delivery' : 'Online'}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <button 
-                    onClick={onConfirmOrder}
-                    className="w-full bg-brand-primary text-white py-4 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all active:scale-[0.98]"
-                  >
-                    Confirm Order
-                  </button>
+                  
+                  {step === 'payment' ? (
+                    <button 
+                      onClick={handlePlaceOrder}
+                      disabled={isProcessing}
+                      className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                          />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          Place Order
+                          <ChevronRight className="w-5 h-5" />
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={nextStep}
+                      className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                    >
+                      {step === 'cart' ? 'Confirm Food Details' : 'Continue to Payment'}
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  )}
                 </div>
               )}
             </motion.div>
@@ -974,14 +2640,14 @@ const CartModal = ({
 
 const Footer = () => (
   <footer className="bg-black/40 backdrop-blur-md text-white pt-20 pb-10 px-6 border-t border-white/5">
-    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-12 mb-8">
       <div className="space-y-6">
         <div className="flex items-center gap-2">
           <Flame className="text-brand-accent w-8 h-8" />
           <span className="text-3xl font-display font-bold tracking-tight">The Tawa Box</span>
         </div>
         <p className="text-white/60 leading-relaxed">
-          Bringing the authentic taste of traditional clay stove cooking to your modern lifestyle.
+          Bringing the authentic taste of traditional clay Desi chulha cooking to your modern lifestyle.
         </p>
         <div className="flex gap-4">
           <a href="#" className="bg-white/5 p-3 rounded-xl hover:bg-brand-accent transition-colors"><Instagram className="w-5 h-5" /></a>
@@ -991,49 +2657,78 @@ const Footer = () => (
       </div>
       
       <div>
-        <h4 className="text-xl font-bold mb-6">Quick Links</h4>
+        <h4 className="text-xl font-bold mb-6">Traditional Feast</h4>
         <ul className="space-y-4 text-white/60">
-          <li><Link to="/" className="hover:text-brand-accent transition-colors">Home</Link></li>
-          <li><Link to="/about" className="hover:text-brand-accent transition-colors">About Us</Link></li>
-          <li><Link to="/gallery" className="hover:text-brand-accent transition-colors">Gallery</Link></li>
-          <li><Link to="/contact" className="hover:text-brand-accent transition-colors">Contact</Link></li>
+          <li>Special Chulha Thali</li>
+          <li>Customizable Roti & Sabji</li>
+          <li>Fresh Village Salads</li>
+          <li>Heritage Village Scents</li>
         </ul>
       </div>
-      
-      <div>
-        <h4 className="text-xl font-bold mb-6">Our Menu</h4>
-        <ul className="space-y-4 text-white/60">
-          <li>Plain Chulha Roti</li>
-          <li>Ghee Wali Roti</li>
-          <li>Bajra Rotla</li>
-          <li>Makki di Roti</li>
-        </ul>
-      </div>
-      
-      <div>
-        <h4 className="text-xl font-bold mb-6">Newsletter</h4>
-        <p className="text-white/60 mb-6">Subscribe to get updates on seasonal specials.</p>
-        <div className="flex gap-2">
-          <input type="email" placeholder="Email" className="bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none flex-1 focus:border-brand-accent" />
-          <button className="bg-brand-accent px-4 py-2 rounded-xl font-bold">Join</button>
-        </div>
-      </div>
-    </div>
-    <div className="max-w-7xl mx-auto pt-8 border-t border-white/5 text-center text-white/40 text-sm">
-      © 2026 The Tawa Box. All rights reserved.
     </div>
   </footer>
 );
 
+function ScrollToHash() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '');
+      const el = document.getElementById(id);
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 120);
+      }
+    }
+  }, [location]);
+
+  return null;
+}
+
 export default function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [orderDate, setOrderDate] = useState('');
-  const [orderTime, setOrderTime] = useState('');
+  const [showThaliModal, setShowThaliModal] = useState(false);
+  const [thaliToCustomize, setThaliToCustomize] = useState<MenuItem | null>(null);
+  const [orderName, setOrderName] = useState('');
+  const [orderMobile, setOrderMobile] = useState('');
+  const [orderAddress, setOrderAddress] = useState('');
+  const [orderNotes, setOrderNotes] = useState('');
+  const [orderLocation, setOrderLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [orderPaymentMethod, setOrderPaymentMethod] = useState<'cod' | 'online'>('cod');
+  const [pointsToRedeem, setPointsToRedeem] = useState(0);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [orders, setOrders] = useState<OrderDetails[]>([]);
+  const [isEmailLogsOpen, setIsEmailLogsOpen] = useState(false);
   
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Simulated Order Progression
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      let changed = false;
+      const updatedOrders = orders.map(order => {
+        const orderTime = new Date(order.createdAt).getTime();
+        const elapsedMinutes = (now - orderTime) / 60000;
+
+        if (order.status === 'pending' && elapsedMinutes > 1) {
+          changed = true;
+          return { ...order, status: 'preparing' as const };
+        }
+        return order;
+      });
+
+      if (changed) {
+        setOrders(updatedOrders);
+        localStorage.setItem('orders', JSON.stringify(updatedOrders));
+      }
+    }, 10000); // Check every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [orders]);
 
   // Persistence
   useEffect(() => {
@@ -1055,47 +2750,98 @@ export default function App() {
   };
 
   const handleUpdateOrderStatus = (id: string, status: OrderDetails['status']) => {
-    const updated = orders.map(o => o.id === id ? { ...o, status } : o);
+    let oldStatus = 'pending';
+    const updated = orders.map(o => {
+      if (o.id === id) {
+        oldStatus = o.status;
+        const newOrderObj = { ...o, status };
+        triggerEmailNotification('status_updated', newOrderObj, oldStatus).catch(err => {
+          console.error('Failed sending status email update', err);
+        });
+        return newOrderObj;
+      }
+      return o;
+    });
     setOrders(updated);
     localStorage.setItem('orders', JSON.stringify(updated));
   };
 
-  const confirmOrder = () => {
+  const confirmOrder = (onSuccess: (order: OrderDetails) => void) => {
     if (!currentUser) {
       alert('Please login to place an order');
       window.location.href = '/login';
       return;
     }
 
-    if (!orderDate || !orderTime) {
-      alert('Please select delivery date and time');
+    if (!orderName || !orderMobile || !orderAddress) {
+      alert('Please fill in all delivery details');
       return;
     }
+
+    const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    const discount = pointsToRedeem / 10;
+    const finalTotal = Math.max(0, subtotal - discount);
+    const pointsEarned = Math.floor(finalTotal / 10);
 
     const newOrder: OrderDetails = {
       id: Math.random().toString(36).substr(2, 6).toUpperCase(),
       userId: currentUser.id,
-      userName: currentUser.name,
+      userName: orderName,
       userEmail: currentUser.email,
-      date: orderDate,
-      time: orderTime,
+      mobile: orderMobile,
+      address: orderAddress,
+      notes: orderNotes || undefined,
+      location: orderLocation || undefined,
       items: [...cart],
-      total: cart.reduce((s, i) => s + i.price * i.quantity, 0),
+      total: finalTotal,
+      loyaltyPointsEarned: pointsEarned,
+      discountAmount: discount,
+      paymentMethod: orderPaymentMethod,
       status: 'pending',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      estimatedDelivery: new Date(Date.now() + 45 * 60000).toISOString()
     };
 
     const updatedOrders = [...orders, newOrder];
     setOrders(updatedOrders);
     localStorage.setItem('orders', JSON.stringify(updatedOrders));
+
+    // Trigger transactional email
+    triggerEmailNotification('order_confirmed', newOrder).catch(err => {
+      console.error('Failed sending order confirmation email', err);
+    });
     
+    // Update User Points
+    const updatedUser = {
+      ...currentUser,
+      points: currentUser.points - pointsToRedeem + pointsEarned
+    };
+    setCurrentUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+
+    // Update global users list
+    const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const updatedAllUsers = allUsers.map((u: any) => u.id === updatedUser.id ? { ...u, points: updatedUser.points } : u);
+    localStorage.setItem('users', JSON.stringify(updatedAllUsers));
+
     setCart([]);
-    setIsCartOpen(false);
-    alert(`Order #${newOrder.id} placed successfully!`);
-    window.location.href = '/dashboard';
+    setOrderName('');
+    setOrderMobile('');
+    setOrderAddress('');
+    setOrderNotes('');
+    setOrderLocation(null);
+    setOrderPaymentMethod('cod');
+    setPointsToRedeem(0);
+    
+    onSuccess(newOrder);
   };
 
   const addToCart = (item: MenuItem) => {
+    if (item.category === 'thali') {
+      setThaliToCustomize(item);
+      setShowThaliModal(true);
+      return;
+    }
     setCart(prev => {
       const existing = prev.find(i => i.id === item.id);
       if (existing) {
@@ -1117,30 +2863,62 @@ export default function App() {
     });
   };
 
+  const handleThaliConfirm = (selections: any) => {
+    if (thaliToCustomize) {
+      setCart(prev => [...prev, { ...thaliToCustomize, quantity: 1, customization: selections }]);
+      setShowThaliModal(false);
+      setThaliToCustomize(null);
+      setIsCartOpen(true);
+    }
+  };
+
   return (
     <Router>
-      <div className="min-h-screen bg-brand-bg selection:bg-brand-accent selection:text-white flex flex-col">
+      <ScrollToHash />
+      <div className="min-h-screen bg-brand-bg selection:bg-brand-accent selection:text-white flex flex-col pb-20 md:pb-0">
         <Navbar 
           cartCount={cart.reduce((s, i) => s + i.quantity, 0)} 
           onOpenCart={() => setIsCartOpen(true)} 
           user={currentUser}
           onLogout={handleLogout}
         />
+
+        <BottomNav 
+          cartCount={cart.reduce((s, i) => s + i.quantity, 0)} 
+          onOpenCart={() => setIsCartOpen(true)} 
+          user={currentUser}
+        />
         
         <div className="flex-1">
           <Routes>
             <Route path="/" element={
               <>
-                <Hero />
-                <TestimonialsSection />
+                <HeroAnimation 
+                  onExploreMenu={() => {
+                    const el = document.getElementById('breakfast-lunch-combos');
+                    if (el) {
+                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                      window.location.href = '/#breakfast-lunch-combos';
+                    }
+                  }}
+                  onTrackOrder={() => {
+                    window.location.href = '/dashboard';
+                  }}
+                  hasActiveOrders={orders.some(o => o.userId === currentUser?.id && o.status !== 'delivered' && o.status !== 'cancelled')}
+                />
+                <QuickOrderSteps />
+                <MorningBreakfastCombo onAddToCart={addToCart} />
               </>
             } />
             <Route path="/menu" element={
-              <MenuPage 
-                onAddToCart={addToCart} 
-                onUpdateQuantity={updateQuantity}
-                cart={cart}
-              />
+              <div className="pt-40 md:pt-32">
+                <MenuPage 
+                  onAddToCart={addToCart} 
+                  onUpdateQuantity={updateQuantity}
+                  cart={cart}
+                />
+              </div>
             } />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/gallery" element={<GalleryPage />} />
@@ -1149,47 +2927,47 @@ export default function App() {
             <Route path="/register" element={<RegisterPage onLogin={handleLogin} />} />
             <Route 
               path="/dashboard" 
-              element={currentUser ? <Dashboard user={currentUser} orders={orders} /> : <Navigate to="/login" />} 
+              element={currentUser ? <Dashboard user={currentUser} orders={orders} onUpdateStatus={handleUpdateOrderStatus} onOpenEmailLogs={() => setIsEmailLogsOpen(true)} /> : <Navigate to="/login" />} 
             />
             <Route 
               path="/admin" 
-              element={currentUser?.role === 'admin' ? <AdminPanel orders={orders} onUpdateStatus={handleUpdateOrderStatus} /> : <Navigate to="/login" />} 
+              element={currentUser?.role === 'admin' ? <AdminPanel orders={orders} onUpdateStatus={handleUpdateOrderStatus} onOpenEmailLogs={() => setIsEmailLogsOpen(true)} /> : <Navigate to="/login" />} 
             />
           </Routes>
         </div>
 
         <Footer />
 
-        {/* Floating Cart Button */}
-        <motion.button
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={() => setIsCartOpen(true)}
-          className="fixed bottom-8 right-8 z-40 bg-brand-primary text-white p-4 rounded-full shadow-2xl shadow-brand-primary/40 flex items-center justify-center group"
-        >
-          <ShoppingCart className="w-6 h-6" />
-          {cart.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-brand-accent text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full border-2 border-brand-bg">
-              {cart.reduce((s, i) => s + i.quantity, 0)}
-            </span>
-          )}
-          <span className="max-w-0 overflow-hidden group-hover:max-w-xs group-hover:ml-2 transition-all duration-500 font-bold whitespace-nowrap text-xs">
-            View Box
-          </span>
-        </motion.button>
-
         <CartModal 
           isOpen={isCartOpen} 
           onClose={() => setIsCartOpen(false)} 
           cartItems={cart}
           onUpdateQuantity={updateQuantity}
-          orderDate={orderDate}
-          setOrderDate={setOrderDate}
-          orderTime={orderTime}
-          setOrderTime={setOrderTime}
+          orderName={orderName}
+          setOrderName={setOrderName}
+          orderMobile={orderMobile}
+          setOrderMobile={setOrderMobile}
+          orderAddress={orderAddress}
+          setOrderAddress={setOrderAddress}
+          orderNotes={orderNotes}
+          setOrderNotes={setOrderNotes}
+          orderLocation={orderLocation}
+          setOrderLocation={setOrderLocation}
+          orderPaymentMethod={orderPaymentMethod}
+          setOrderPaymentMethod={setOrderPaymentMethod}
+          userPoints={currentUser?.points || 0}
+          pointsToRedeem={pointsToRedeem}
+          setPointsToRedeem={setPointsToRedeem}
           onConfirmOrder={confirmOrder}
+        />
+        <ThaliCustomizationModal 
+          isOpen={showThaliModal} 
+          onClose={() => setShowThaliModal(false)} 
+          onConfirm={handleThaliConfirm} 
+        />
+        <EmailLogsModal 
+          isOpen={isEmailLogsOpen} 
+          onClose={() => setIsEmailLogsOpen(false)} 
         />
       </div>
     </Router>

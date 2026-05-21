@@ -1,32 +1,28 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --color-brand-primary: #F97316; /* Vibrant Orange */
-  --color-brand-secondary: #C2410C; /* Burnt Orange */
-  --color-brand-accent: #FDE047; /* Bright Yellow */
-  --color-brand-bg: #0C0A09; /* Stone Black */
-  --color-brand-text: #FAFAF9; /* Warm White */
+  --color-brand-primary: #5A3825; /* Deep earthy brown */
+  --color-brand-secondary: #7A8B6B; /* Warm muted olive green */
+  --color-brand-accent: #D4AF37; /* Muted Gold */
+  --color-brand-bg: #F4F1EA; /* Warm cream/off-white */
+  --color-brand-text: #2E1C12; /* Dark slate/rich brown */
+  --color-brand-charcoal: #1A1A1A; /* Charcoal Slate */
   
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Outfit", sans-serif;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-serif: "Playfair Display", Georgia, serif;
 }
 
 @layer base {
   body {
     @apply text-brand-text font-sans;
-    background-image: 
-    linear-gradient(rgba(12, 10, 9, 0.75), rgba(12, 10, 9, 0.75)),
-    url("https://images.unsplash.com/photo-1585937421612-70a008356fbe?q=80&w=1936&auto=format&fit=crop");
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-    background-color: var(--color-brand-bg);
+    background-color: #F4F1EA;
   }
 }
 
 .glass-card {
-  @apply bg-white/10 backdrop-blur-xl border border-white/10 shadow-2xl;
+  @apply bg-white/90 backdrop-blur-xl border border-brand-primary/10 shadow-lg;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -36,5 +32,10 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.safe-area-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 2rem);
+}
+
 
 
