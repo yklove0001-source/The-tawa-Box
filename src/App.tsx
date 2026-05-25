@@ -9,14 +9,14 @@ import { triggerEmailNotification } from './services/emailService';
 
 // Declaring image paths directly as strings to bypass TypeScript file declaration restrictions
 const tawaBoxHero = '/src/assets/images/tawa_box_hero_1779282315522.png';
-const namkeenDaliyaImg = '/src/assets/images/namkeen_daliya_1779282338658.png';
-const doodhDaliyaImg = '/src/assets/images/doodh_daliya_1779282359860.png';
+const namkeenDaliyaImg = 'https://lh3.googleusercontent.com/d/1x5SgYPX_NnDmcPAYJ1m2_-MeHX1s7PqS';
+const doodhDaliyaImg = 'https://lh3.googleusercontent.com/d/1x5SgYPX_NnDmcPAYJ1m2_-MeHX1s7PqS';
 const desiLunchTrayImg = '/src/assets/images/desi_lunch_tray_1779282381475.png';
 const lunchSideMealImg = '/src/assets/images/lunch_side_meal_1779282404443.png';
 
 // --- Mock Data ---
 const MENU_ITEMS: MenuItem[] = [
-  { id: '11', name: 'Namkeen Daliya', description: 'Crushed wheat (daliya) served with refreshing salted buttermilk (chhach), mixed sprouts, and seasonal fruit salad.', price: 120, category: 'healthy', image: namkeenDaliyaImg },
+  { id: '11', name: 'Chhach Daliya', description: 'Crushed wheat (daliya) served with refreshing salted buttermilk (chhach), mixed sprouts, and seasonal fruit salad.', price: 120, category: 'healthy', image: namkeenDaliyaImg },
   { id: '12', name: 'Doodh Daliya', description: 'Sweet milk-based crushed wheat (daliya) paired with a glass of milk, served with sprouted moong and seasonal fruit salad.', price: 130, category: 'healthy', image: doodhDaliyaImg },
   { id: '15', name: 'Lunch Box', description: 'Gourmet lunch box tray cooked over slow firewood. Includes hot, fresh rotis baked on clay oven, delicious seasonal dry subji, basmati rice, garden salad, and sweet fruits.', price: 199, category: 'combo', image: desiLunchTrayImg },
 ];
@@ -350,7 +350,7 @@ const QuickOrderSteps = () => {
 const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) => void }) => {
   const namkeenDaliyaItem = MENU_ITEMS.find(item => item.id === '11') || {
     id: '11',
-    name: 'Namkeen Daliya',
+    name: 'Chhach Daliya',
     price: 120,
     description: 'Crushed wheat (daliya) served with refreshing salted buttermilk (chhach), mixed sprouts, and seasonal fruit salad.',
     image: namkeenDaliyaImg
@@ -389,10 +389,10 @@ const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) 
         {/* 50% Width Side-by-Side Daliya Cards with Large Card Below */}
         <div className="max-w-4xl mx-auto space-y-6">
           
-          {/* Row 1: Namkeen Daliya & Doodh Daliya side-by-side (50% each) */}
+          {/* Row 1: Chhach Daliya & Doodh Daliya side-by-side (50% each) */}
           <div className="grid grid-cols-2 gap-4 md:gap-6">
             
-            {/* Card 1: Namkeen Daliya (50% width) */}
+            {/* Card 1: Chhach Daliya (50% width) */}
             <motion.div 
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -404,7 +404,7 @@ const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) 
               <div className="aspect-square w-full relative overflow-hidden rounded-2xl border border-[#D4AF37]/20 flex items-center justify-center bg-white">
                 <img 
                   src={namkeenDaliyaItem.image} 
-                  alt="Namkeen Daliya" 
+                  alt="Chhach Daliya" 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   referrerPolicy="no-referrer"
                 />
@@ -415,7 +415,7 @@ const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) 
                   <h3 className="text-xs sm:text-sm font-serif font-black text-[#5A3825] tracking-wide">
                     {namkeenDaliyaItem.name}
                   </h3>
-                  <p className="text-[11px] sm:text-xs font-serif font-extrabold text-[#7A8B6B] mt-1">
+                  <p className="text-sm sm:text-base md:text-lg font-serif font-black text-[#7A8B6B] mt-1">
                     ₹{namkeenDaliyaItem.price}
                   </p>
                 </div>
@@ -456,7 +456,7 @@ const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) 
                   <h3 className="text-xs sm:text-sm font-serif font-black text-[#5A3825] tracking-wide">
                     {doodhDaliyaItem.name}
                   </h3>
-                  <p className="text-[11px] sm:text-xs font-serif font-extrabold text-[#7A8B6B] mt-1">
+                  <p className="text-sm sm:text-base md:text-lg font-serif font-black text-[#7A8B6B] mt-1">
                     ₹{doodhDaliyaItem.price}
                   </p>
                 </div>
