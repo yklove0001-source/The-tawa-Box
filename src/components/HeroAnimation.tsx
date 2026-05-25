@@ -8,7 +8,8 @@ interface HeroAnimationProps {
   hasActiveOrders?: boolean;
 }
 
-const tawaBoxHero = '/src/assets/images/tawa_box_hero_1779282315522.png';
+// @ts-ignore
+import tawaBoxHero from '../assets/images/tawa_box_hero_1779282315522.png';
 
 // Elegant Traditional Golden Logo styled exactly like the provided image logo
 export const CustomLogoSvg = ({ className = "w-16 h-10" }: { className?: string }) => (

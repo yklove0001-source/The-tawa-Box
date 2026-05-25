@@ -7,12 +7,14 @@ import { HeroAnimation, CustomLogoSvg } from './components/HeroAnimation';
 import { triggerEmailNotification } from './services/emailService';
 
 
-// Declaring image paths directly as strings to bypass TypeScript file declaration restrictions
-const tawaBoxHero = '/src/assets/images/tawa_box_hero_1779282315522.png';
-const namkeenDaliyaImg = 'https://lh3.googleusercontent.com/d/1x5SgYPX_NnDmcPAYJ1m2_-MeHX1s7PqS';
-const doodhDaliyaImg = 'https://lh3.googleusercontent.com/d/1x5SgYPX_NnDmcPAYJ1m2_-MeHX1s7PqS';
-const desiLunchTrayImg = '/src/assets/images/desi_lunch_tray_1779282381475.png';
-const lunchSideMealImg = '/src/assets/images/lunch_side_meal_1779282404443.png';
+// @ts-ignore
+import tawaBoxHero from './assets/images/tawa_box_hero_1779282315522.png';
+const namkeenDaliyaImg = 'https://drive.google.com/uc?export=view&id=1x5SgYPX_NnDmcPAYJ1m2_-MeHX1s7PqS';
+const doodhDaliyaImg = 'https://drive.google.com/uc?export=view&id=1x5SgYPX_NnDmcPAYJ1m2_-MeHX1s7PqS';
+// @ts-ignore
+import desiLunchTrayImg from './assets/images/desi_lunch_tray_1779282381475.png';
+// @ts-ignore
+import lunchSideMealImg from './assets/images/lunch_side_meal_1779282404443.png';
 
 // --- Mock Data ---
 const MENU_ITEMS: MenuItem[] = [
