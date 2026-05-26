@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShoppingCart, Compass, Clock, Calendar, ChevronRight, ChevronLeft, Plus, Minus, X, UtensilsCrossed, Flame, Instagram, Facebook, Twitter, Mail, Phone, MapPin, Send, Star, Leaf, LogIn, UserPlus, LogOut, LayoutDashboard, Settings, CheckCircle2, AlertCircle, Package, User as UserIcon, Menu, CreditCard, Banknote, Filter, Trophy, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { ShoppingCart, Compass, Clock, Calendar, ChevronRight, ChevronLeft, Plus, Minus, X, UtensilsCrossed, Flame, Instagram, Facebook, Twitter, Mail, Phone, MapPin, Send, Star, Leaf, LogIn, UserPlus, LogOut, LayoutDashboard, Settings, CheckCircle2, AlertCircle, Package, User as UserIcon, Menu, CreditCard, Banknote, Filter, Trophy, ArrowRight, Eye, EyeOff, Smartphone, Landmark, Check, Wallet } from 'lucide-react';
 import { MenuItem, CartItem, User, OrderDetails } from './types';
 import { HeroAnimation, CustomLogoSvg } from './components/HeroAnimation';
 import { triggerEmailNotification } from './services/emailService';
@@ -9,10 +9,11 @@ import { triggerEmailNotification } from './services/emailService';
 
 // @ts-ignore
 import tawaBoxHero from './assets/images/tawa_box_hero_1779282315522.png';
-const namkeenDaliyaImg = 'https://drive.google.com/uc?export=view&id=1x5SgYPX_NnDmcPAYJ1m2_-MeHX1s7PqS';
-const doodhDaliyaImg = 'https://drive.google.com/uc?export=view&id=1x5SgYPX_NnDmcPAYJ1m2_-MeHX1s7PqS';
 // @ts-ignore
-import desiLunchTrayImg from './assets/images/desi_lunch_tray_1779282381475.png';
+import namkeenDaliyaImg from './assets/images/namkeen_daliya_1779282338658.png';
+// @ts-ignore
+import doodhDaliyaImg from './assets/images/doodh_daliya_1779282359860.png';
+const desiLunchTrayImg = 'https://drive.google.com/uc?export=view&id=1hxLbnG844atKqc1KZU2AcelaRHGRWdfW';
 // @ts-ignore
 import lunchSideMealImg from './assets/images/lunch_side_meal_1779282404443.png';
 
@@ -418,7 +419,7 @@ const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) 
                     {namkeenDaliyaItem.name}
                   </h3>
                   <p className="text-sm sm:text-base md:text-lg font-serif font-black text-[#7A8B6B] mt-1">
-                    ₹{namkeenDaliyaItem.price}
+                    Rs. {namkeenDaliyaItem.price}
                   </p>
                 </div>
                 
@@ -459,7 +460,7 @@ const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) 
                     {doodhDaliyaItem.name}
                   </h3>
                   <p className="text-sm sm:text-base md:text-lg font-serif font-black text-[#7A8B6B] mt-1">
-                    ₹{doodhDaliyaItem.price}
+                    Rs. {doodhDaliyaItem.price}
                   </p>
                 </div>
                 
@@ -504,9 +505,9 @@ const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) 
                 referrerPolicy="no-referrer"
               />
               
-              {/* Sharp solid brown ribbon badge reading "₹199" */}
+              {/* Sharp solid brown ribbon badge reading "Rs. 199" */}
               <div className="absolute bottom-4 left-4 bg-[#5A3825] border border-[#D4AF37]/30 text-white font-serif font-extrabold text-sm px-4 py-2 rounded-md shadow-md">
-                ₹199
+                Rs. 199
               </div>
               {/* Gold seal stamp relative */}
               <div className="absolute bottom-4 right-4 animate-spin-slow">
@@ -522,7 +523,7 @@ const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) 
                   Lunch Box
                 </h3>
                 <p className="text-sm font-serif font-extrabold text-[#7A8B6B] mb-3">
-                  ₹199
+                  Rs. 199
                 </p>
                 <p className="text-xs text-[#2E1C12]/85 font-sans leading-relaxed">
                   {comboItem.description}
@@ -601,7 +602,7 @@ const LunchBoxCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) => void 
 
               {/* Price Tag: sharp-edged dark brown ribbon banner */}
               <div className="inline-block bg-[#5A3825] border border-[#D4AF37]/30 text-white font-serif font-black text-sm px-6 py-2.5 rounded-md mb-6 shadow">
-                ₹249
+                Rs. 249
               </div>
 
               {/* Action Button: gold/cream gradient pill-button with deep gold shadows */}
@@ -681,7 +682,7 @@ const MenuPage = ({ onAddToCart, onUpdateQuantity, cart }: {
           <div>
             <div className="flex justify-between items-start mb-2">
               <h3 className="text-xl font-display font-black text-white leading-tight line-clamp-1">{item.name}</h3>
-              <span className="text-lg font-display font-black text-brand-accent ml-2">₹{item.price}</span>
+              <span className="text-lg font-display font-black text-brand-accent ml-2">Rs. {item.price}</span>
             </div>
             <p className="text-white/40 text-[10px] leading-relaxed line-clamp-2 mb-4">{item.description}</p>
           </div>
@@ -781,7 +782,7 @@ const MenuPage = ({ onAddToCart, onUpdateQuantity, cart }: {
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <div className="font-bold text-white text-sm line-clamp-1">{item.name}</div>
-                        <div className="text-xs text-brand-accent font-bold">x{item.quantity} • ₹{item.price * item.quantity}</div>
+                        <div className="text-xs text-brand-accent font-bold">x{item.quantity} • Rs. {item.price * item.quantity}</div>
                       </div>
                       <div className="flex gap-1 ml-2">
                         <button onClick={() => onUpdateQuantity(item.id, -1)} className="p-1 hover:text-brand-primary transition-colors"><Minus className="w-3 h-3" /></button>
@@ -797,7 +798,7 @@ const MenuPage = ({ onAddToCart, onUpdateQuantity, cart }: {
           <div className="p-6 border-t border-white/5 space-y-4">
             <div className="flex justify-between items-center px-1">
               <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Subtotal</span>
-              <span className="text-xl font-display font-black text-brand-primary">₹{cartTotal}</span>
+              <span className="text-xl font-display font-black text-brand-primary">Rs. {cartTotal}</span>
             </div>
             <button 
               disabled={cart.length === 0}
@@ -1309,7 +1310,7 @@ const Dashboard = ({ user, orders, onUpdateStatus, onOpenEmailLogs }: { user: Us
                 {user.points || 0} 
                 <span className="text-xs font-bold text-brand-accent uppercase tracking-tighter">Points</span>
               </div>
-              <div className="text-[10px] text-white/30 font-medium whitespace-nowrap">₹{(user.points / 10).toFixed(0)} to redeem</div>
+              <div className="text-[10px] text-white/30 font-medium whitespace-nowrap">Rs. {(user.points / 10).toFixed(0)} to redeem</div>
             </div>
           </div>
         </div>
@@ -1421,9 +1422,9 @@ const Dashboard = ({ user, orders, onUpdateStatus, onOpenEmailLogs }: { user: Us
                     </div>
                     <div>
                       <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Total</div>
-                      <div className="font-bold text-brand-primary">₹{order.total}</div>
+                      <div className="font-bold text-brand-primary">Rs. {order.total}</div>
                       {order.discountAmount && order.discountAmount > 0 ? (
-                        <div className="text-[10px] text-brand-accent font-bold mt-1 tracking-tighter">-₹{order.discountAmount} saved</div>
+                        <div className="text-[10px] text-brand-accent font-bold mt-1 tracking-tighter">-Rs. {order.discountAmount} saved</div>
                       ) : null}
                     </div>
                     <div>
@@ -1652,9 +1653,9 @@ const AdminPanel = ({ orders, onUpdateStatus, onOpenEmailLogs }: { orders: Order
                   </div>
                   <div>
                     <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Total</div>
-                    <div className="font-bold text-brand-primary text-xl">₹{order.total}</div>
+                    <div className="font-bold text-brand-primary text-xl">Rs. {order.total}</div>
                     {order.discountAmount && order.discountAmount > 0 ? (
-                      <div className="text-[10px] text-brand-accent font-bold mt-1 tracking-tighter">-₹{order.discountAmount} redeemed</div>
+                      <div className="text-[10px] text-brand-accent font-bold mt-1 tracking-tighter">-Rs. {order.discountAmount} redeemed</div>
                     ) : null}
                   </div>
                   <div>
@@ -1967,7 +1968,7 @@ const ThaliCustomizationModal = ({
                   : 'bg-white/10 text-white/20 cursor-not-allowed'
               }`}
             >
-              Order This Thali • ₹250
+              Order This Thali • Rs. 250
             </button>
           </div>
         </motion.div>
@@ -2162,6 +2163,27 @@ const CartModal = ({
   const [step, setStep] = useState<'cart' | 'delivery' | 'payment' | 'confirmation'>('cart');
   const [isProcessing, setIsProcessing] = useState(false);
   const [placedOrder, setPlacedOrder] = useState<OrderDetails | null>(null);
+
+  // Razorpay Gateway Integration States
+  const [razorpayKey, setRazorpayKey] = useState<string>(
+    // Ensure we safely fallback if key doesn't exist
+    (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_RAZORPAY_KEY_ID) || 
+    localStorage.getItem('VITE_RAZORPAY_KEY_ID') || ''
+  );
+  const [useSimulator, setUseSimulator] = useState<boolean>(
+    !((typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_RAZORPAY_KEY_ID) || localStorage.getItem('VITE_RAZORPAY_KEY_ID'))
+  );
+  const [showSimulatorModal, setShowSimulatorModal] = useState<boolean>(false);
+  const [showRzpManual, setShowRzpManual] = useState<boolean>(false);
+  const [rzpLoading, setRzpLoading] = useState<boolean>(false);
+
+  // Razorpay Simulator UI Form States
+  const [simTab, setSimTab] = useState<'methods' | 'card' | 'upi' | 'processing'>('methods');
+  const [simCardNo, setSimCardNo] = useState('');
+  const [simExpiry, setSimExpiry] = useState('');
+  const [simCVV, setSimCVV] = useState('');
+  const [simHolder, setSimHolder] = useState('');
+  const [simUPIId, setSimUPIId] = useState('user@upi');
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discount = pointsToRedeem / 10;
   const finalTotal = Math.max(0, total - discount);
@@ -2237,14 +2259,118 @@ const CartModal = ({
     if (step === 'payment') setStep('delivery');
   };
 
+  // Load Razorpay script dynamically
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if ((window as any).Razorpay) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.id = 'razorpay-sdk-script';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
   const handlePlaceOrder = async () => {
     if (orderPaymentMethod === 'online') {
+      if (useSimulator) {
+        // Toggle our beautiful Razorpay Sandbox Simulator Overlay
+        setShowSimulatorModal(true);
+        return;
+      }
+
+      // Real SDK Integration Mode
       setIsProcessing(true);
-      // Simulated Payment Process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setIsProcessing(false);
+      setRzpLoading(true);
+      
+      const isScriptLoaded = await loadRazorpayScript();
+      if (!isScriptLoaded) {
+        setIsProcessing(false);
+        setRzpLoading(false);
+        alert("🔒 Load Error: Could not download the official Razorpay script from checkout.razorpay.com. Verify your internet connection or use Sandbox Simulator mode.");
+        return;
+      }
+
+      const activeKey = razorpayKey.trim() || (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_RAZORPAY_KEY_ID) || '';
+      if (!activeKey || !activeKey.startsWith('rzp_')) {
+        setIsProcessing(false);
+        setRzpLoading(false);
+        alert("🔑 Missing Credentials: Valid Key ID starting with 'rzp_' is required for SDK Mode. Please configure one in the checkout control panel below, or run in 'Sandbox Simulator' mode for instant mock testing.");
+        return;
+      }
+
+      // Store in localStorage for persistent testing ease
+      localStorage.setItem('VITE_RAZORPAY_KEY_ID', activeKey);
+
+      const options = {
+        key: activeKey,
+        amount: Math.round(finalTotal * 100), // convert to paisa subunits
+        currency: 'INR',
+        name: 'Tawa Box Gourmet Delivery',
+        description: 'Mubarak Ho! Delicious Daliya & Lunch Box Boxes',
+        image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=150&q=80',
+        handler: function (response: any) {
+          setIsProcessing(false);
+          setRzpLoading(false);
+          
+          // Confirmed Checkout Success Transaction
+          onConfirmOrder((order) => {
+            setPlacedOrder({
+              ...order,
+              paymentMethod: 'online',
+              status: 'pending',
+              razorpayPaymentId: response.razorpay_payment_id || `pay_sim_${Math.random().toString(36).substr(2, 9)}`,
+              razorpayOrderId: response.razorpay_order_id || `order_sim_${Math.random().toString(36).substr(2, 9)}`,
+              razorpaySignature: response.razorpay_signature || 'simulated_signature_hash'
+            });
+            setStep('confirmation');
+          });
+        },
+        prefill: {
+          name: orderName,
+          contact: orderMobile,
+          email: 'yklove0001@gmail.com',
+        },
+        notes: {
+          delivery_address: orderAddress,
+          customer_notes: orderNotes,
+          total_items: cartItems.length.toString()
+        },
+        theme: {
+          color: '#5A3825' // Match our elegant warm brand palette
+        },
+        modal: {
+          ondismiss: function() {
+            setIsProcessing(false);
+            setRzpLoading(false);
+          }
+        }
+      };
+
+      try {
+        const rzp = new (window as any).Razorpay(options);
+        
+        rzp.on('payment.failed', function (response: any) {
+          setIsProcessing(false);
+          setRzpLoading(false);
+          alert(`❌ Payment unsuccessful: ${response.error.description || 'SDK transaction rejected.'}`);
+        });
+
+        rzp.open();
+      } catch (err: any) {
+        setIsProcessing(false);
+        setRzpLoading(false);
+        alert(`❌ Initialization Error: ${err.message || 'Razorpay script failed to build mock payload. Please try again or switch to Sandbox Simulator.'}`);
+      }
+      return;
     }
-    
+
+    // Cash on Delivery standard checkout
     onConfirmOrder((order) => {
       setPlacedOrder(order);
       setStep('confirmation');
@@ -2316,7 +2442,7 @@ const CartModal = ({
                               <div className="flex gap-4 items-center w-full">
                                 <div className="flex-1">
                                   <h4 className="font-serif font-black text-brand-primary text-base">{item.name}</h4>
-                                  <p className="text-brand-secondary font-serif font-extrabold text-sm">₹{item.price}</p>
+                                  <p className="text-brand-secondary font-serif font-extrabold text-[#7A8B6B] text-sm">Rs. {item.price}</p>
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <button 
@@ -2476,6 +2602,165 @@ const CartModal = ({
                           {orderPaymentMethod === 'online' && <div className="w-3 h-3 bg-brand-primary rounded-full" />}
                         </div>
                       </div>
+
+                      {orderPaymentMethod === 'online' && (
+                        <div className="mt-4 bg-[#F1F6F0] p-5 rounded-3xl border border-brand-primary/10 space-y-4 text-brand-primary">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-serif font-black text-brand-primary">Razorpay Hub</span>
+                              <span className="text-[10px] bg-brand-primary/15 text-brand-primary px-2.5 py-0.5 rounded-full font-sans font-black uppercase tracking-wider">Gateway</span>
+                            </div>
+                            <span className="text-[10px] text-brand-primary/60 font-serif font-bold">Auto-Prefilled Checkout</span>
+                          </div>
+
+                          {/* Radios for mode */}
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setUseSimulator(true);
+                                setIsProcessing(false);
+                                setRzpLoading(false);
+                              }}
+                              className={`p-3 rounded-2xl border text-xs font-serif font-black transition-all text-left flex flex-col gap-1 cursor-pointer ${
+                                useSimulator
+                                  ? 'bg-brand-primary text-white border-brand-primary shadow-md shadow-brand-primary/15'
+                                  : 'bg-white border-brand-primary/10 text-brand-primary/70 hover:bg-brand-primary/[0.02]'
+                              }`}
+                            >
+                              <span>Standard Sandbox</span>
+                              <span className={`text-[9px] font-sans font-medium leading-none ${useSimulator ? 'text-white/80' : 'text-brand-primary/40'}`}>Interactive Test Simulator</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setUseSimulator(false);
+                                setIsProcessing(false);
+                                setRzpLoading(false);
+                              }}
+                              className={`p-3 rounded-2xl border text-xs font-serif font-black transition-all text-left flex flex-col gap-1 cursor-pointer ${
+                                !useSimulator
+                                  ? 'bg-brand-primary text-white border-brand-primary shadow-md shadow-brand-primary/15'
+                                  : 'bg-white border-brand-primary/10 text-brand-primary/70 hover:bg-brand-primary/[0.02]'
+                              }`}
+                            >
+                              <span>Official Script SDK</span>
+                              <span className={`text-[9px] font-sans font-medium leading-none ${!useSimulator ? 'text-white/80' : 'text-brand-primary/40'}`}>Loads checkout.js Live</span>
+                            </button>
+                          </div>
+
+                          {/* Key setting for SDK */}
+                          {!useSimulator && (
+                            <div className="space-y-1.5 pt-1">
+                              <label className="text-[10px] font-sans font-black uppercase tracking-widest text-[#5A3825]/75 flex justify-between items-center">
+                                <span>Razorpay Key ID</span>
+                                <span className={`text-[9px] font-extrabold ${razorpayKey.startsWith('rzp_') ? 'text-brand-secondary' : 'text-brand-accent animate-pulse'}`}>
+                                  {razorpayKey.startsWith('rzp_') ? '✓ Live Key Loaded' : '⚠ Enter key starting with rzp_'}
+                                </span>
+                              </label>
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  value={razorpayKey}
+                                  onChange={(e) => {
+                                    setRazorpayKey(e.target.value);
+                                    localStorage.setItem('VITE_RAZORPAY_KEY_ID', e.target.value);
+                                  }}
+                                  placeholder="Enter Razorpay test/live Key ID (rzp_test_xxxx or rzp_live_xxxx)"
+                                  className="w-full bg-white border border-brand-primary/10 focus:border-brand-primary/30 rounded-xl px-3 py-2.5 text-xs text-brand-primary focus:outline-none font-mono"
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Guide Toggler */}
+                          <div className="border-t border-brand-primary/10 pt-2 flex items-center justify-between">
+                            <button
+                              type="button"
+                              onClick={() => setShowRzpManual(!showRzpManual)}
+                              className="text-xs text-[#5A3825]/90 font-serif font-bold hover:text-brand-primary flex items-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                              <span>{showRzpManual ? '▼ Dismiss Server Code Blueprint' : '▶ Expand Server Code Blueprint'}</span>
+                            </button>
+                          </div>
+
+                          {/* Expandable guide */}
+                          {showRzpManual && (
+                            <div className="space-y-3 bg-white/70 p-4 rounded-2xl border border-brand-primary/10 text-xs text-brand-primary/90 leading-relaxed font-sans max-h-60 overflow-y-auto custom-scrollbar">
+                              <p className="font-serif font-black border-b border-brand-primary/10 pb-1 text-[#5A3825]">
+                                Live Razorpay Server Orchestration Steps (Full-Stack Flow)
+                              </p>
+                              
+                              <p className="text-[11px]">
+                                Secure client-server checkout workflows mandate processing orders on your secure server backend (to avoid exposing your <span className="font-mono text-[10px] bg-brand-accent/5 px-1 py-0.5 rounded">RAZORPAY_KEY_SECRET</span> client-side).
+                              </p>
+
+                              <p className="bg-brand-primary/10 p-2.5 rounded-lg font-mono text-[10px] text-brand-primary">
+                                # Step 1: Install official razorpay library<br/>
+                                <span className="font-bold">npm install razorpay</span>
+                              </p>
+
+                              <p className="text-[11px] font-bold mt-2">
+                                Endpoint A: Dynamically generate genuine Order IDs from your router controller:
+                              </p>
+
+                              <pre className="bg-[#1E293B] text-slate-100 p-3 rounded-lg overflow-x-auto font-mono text-[9px] border border-black/10 leading-normal">
+{`// api/razorpay-order.ts (Express example)
+import Razorpay from 'razorpay';
+
+export async function createRPOrder(req, res) {
+  const instance = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,         // rzp_test_xxxxx
+    key_secret: process.env.RAZORPAY_KEY_SECRET, // (keep hidden from client)
+  });
+
+  const options = {
+    amount: Math.round(req.body.amount * 100), // convert to paise subunit
+    currency: "INR",
+    receipt: "receipt_order_" + Date.now(),
+  };
+
+  try {
+    const order = await instance.orders.create(options);
+    res.json({ success: true, orderId: order.id });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+}`}
+                              </pre>
+
+                              <p className="text-[11px] font-bold mt-2">
+                                Endpoint B: Cryptographically verify transaction validity upon successful execution using SHA-256:
+                              </p>
+
+                              <pre className="bg-[#1E293B] text-slate-100 p-3 rounded-lg overflow-x-auto font-mono text-[9px] border border-black/10 leading-normal">
+{`// api/verify-payment.ts
+import crypto from 'crypto';
+
+export async function verifySignature(req, res) {
+  const { 
+    razorpay_order_id, 
+    razorpay_payment_id, 
+    razorpay_signature 
+  } = req.body;
+
+  const generated_signature = crypto
+    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+    .update(razorpay_order_id + "|" + razorpay_payment_id)
+    .digest('hex');
+
+  if (generated_signature === razorpay_signature) {
+    // Solid & secured transaction! Update database order state to 'paid'
+    res.json({ success: true, status: 'payment_verified' });
+  } else {
+    res.status(400).json({ success: false, error: 'Signature mismatch' });
+  }
+}`}
+                              </pre>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </motion.div>
                   )}
 
@@ -2511,7 +2796,7 @@ const CartModal = ({
                       {pointsToRedeem > 0 && (
                         <div className="flex justify-between items-center text-sm font-bold text-brand-secondary animate-pulse">
                           <span>Redeeming {pointsToRedeem} points</span>
-                          <span>- ₹{pointsToRedeem / 10}</span>
+                          <span>- Rs. {pointsToRedeem / 10}</span>
                         </div>
                       )}
                     </motion.div>
@@ -2554,7 +2839,7 @@ const CartModal = ({
                         </div>
                         <div className="flex justify-between items-center text-sm border-t border-brand-primary/10 pt-4">
                           <span className="text-brand-primary/50 uppercase tracking-widest font-bold text-[10px]">Total Paid</span>
-                          <span className="text-2xl font-display font-black text-brand-primary">₹{placedOrder.total}</span>
+                          <span className="text-2xl font-display font-black text-brand-primary">Rs. {placedOrder.total}</span>
                         </div>
                       </div>
 
@@ -2588,9 +2873,9 @@ const CartModal = ({
                     <div className="flex flex-col">
                       <span className="text-brand-primary/50 text-[10px] font-bold uppercase tracking-widest">Total Amount</span>
                       <div className="flex items-baseline gap-2">
-                        <span className={`font-display font-black text-brand-primary ${pointsToRedeem > 0 ? 'text-lg line-through opacity-45' : 'text-3xl'}`}>₹{total}</span>
+                        <span className={`font-display font-black text-brand-primary ${pointsToRedeem > 0 ? 'text-lg line-through opacity-45' : 'text-3xl'}`}>Rs. {total}</span>
                         {pointsToRedeem > 0 && (
-                          <span className="text-3xl font-display font-black text-brand-secondary">₹{finalTotal}</span>
+                          <span className="text-3xl font-display font-black text-brand-secondary">Rs. {finalTotal}</span>
                         )}
                       </div>
                     </div>
@@ -2637,6 +2922,319 @@ const CartModal = ({
                   )}
                 </div>
               )}
+          {showSimulatorModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-[#0F172A]/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4 font-sans text-slate-800"
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 15 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 15 }}
+                className="w-full max-w-[420px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col"
+              >
+                {/* Razorpay Brand Header */}
+                <div className="bg-[#0f172a] text-white p-5 relative">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
+                        <h4 className="text-[10px] font-sans font-black tracking-wider text-slate-400 uppercase">Razorpay Sandbox</h4>
+                      </div>
+                      <h3 className="text-xl font-sans font-black tracking-tight mt-1 text-white">The Tawa Box</h3>
+                      <p className="text-[11px] text-slate-400 font-sans mt-0.5">Amount to pay: <span className="font-bold text-[#3B82F6]">Rs. {finalTotal.toFixed(2)}</span></p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowSimulatorModal(false);
+                        setSimTab('methods');
+                      }}
+                      className="text-slate-400 hover:text-white transition-colors p-1.5 bg-slate-800/40 rounded-full cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="mt-4 flex items-center justify-between text-[11px] text-slate-400 bg-slate-800/30 px-3 py-1.5 rounded-lg border border-slate-800/25 font-mono">
+                    <span>Contact: {orderMobile || '9999999999'}</span>
+                    <span>Test Mode</span>
+                  </div>
+                </div>
+
+                {/* Content Panel */}
+                <div className="p-6 bg-slate-50 min-h-[300px] flex flex-col justify-between">
+                  {simTab === 'methods' && (
+                    <div className="space-y-3 flex-1">
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 font-mono">Select Payment Option</p>
+                      
+                      {/* CARD option */}
+                      <button
+                        type="button"
+                        onClick={() => setSimTab('card')}
+                        className="w-full bg-white hover:bg-slate-100/50 p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100/70 transition-colors">
+                            <CreditCard className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <div className="text-sm font-bold text-slate-800">Card</div>
+                            <div className="text-[10px] text-slate-400">Visa, Mastercard, RuPay, Maestro</div>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                      </button>
+
+                      {/* UPI option */}
+                      <button
+                        type="button"
+                        onClick={() => setSimTab('upi')}
+                        className="w-full bg-white hover:bg-slate-100/50 p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg group-hover:bg-emerald-100/70 transition-colors">
+                            <Smartphone className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <div className="text-sm font-bold text-slate-800">UPI / QR Code</div>
+                            <div className="text-[10px] text-slate-400">GooglePay, PhonePe, Paytm, BHIM</div>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                      </button>
+
+                      {/* Netbanking option */}
+                      <button
+                        type="button"
+                        onClick={() => setSimTab('processing')}
+                        className="w-full bg-white hover:bg-slate-100/50 p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="p-2.5 bg-amber-50 text-amber-600 rounded-lg group-hover:bg-amber-100/70 transition-colors">
+                            <Landmark className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <div className="text-sm font-bold text-slate-800">Netbanking</div>
+                            <div className="text-[10px] text-slate-400">All popular Indian banks supported</div>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                      </button>
+
+                      {/* Wallet option */}
+                      <button
+                        type="button"
+                        onClick={() => setSimTab('processing')}
+                        className="w-full bg-white hover:bg-slate-100/50 p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="p-2.5 bg-purple-50 text-purple-600 rounded-lg group-hover:bg-purple-100/70 transition-colors">
+                            <Wallet className="w-5 h-5" />
+                          </div>
+                          <div className="text-left">
+                            <div className="text-sm font-bold text-slate-800">Wallet</div>
+                            <div className="text-[10px] text-slate-400">Mobikwik, PhonePe, AmazonPay, Paytm</div>
+                          </div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                      </button>
+                    </div>
+                  )}
+
+                  {simTab === 'card' && (
+                    <div className="space-y-4 flex-1 flex flex-col justify-between">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 mb-1">
+                          <button type="button" onClick={() => setSimTab('methods')} className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1 cursor-pointer">
+                            ← Back
+                          </button>
+                          <span className="text-slate-300">|</span>
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest font-mono">Fill Card Particulars</span>
+                        </div>
+
+                        {/* Card Form */}
+                        <div className="space-y-2.5">
+                          <div>
+                            <label className="text-[10px] uppercase font-bold text-slate-400 font-sans tracking-wide">Card Number</label>
+                            <input
+                              type="text"
+                              value={simCardNo}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(/\D/g, '').substring(0, 16);
+                                const parts = val.match(/.{1,4}/g);
+                                setSimCardNo(parts ? parts.join(' ') : val);
+                              }}
+                              placeholder="4111 2222 3333 4444"
+                              className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-mono shadow-sm"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3.5">
+                            <div>
+                              <label className="text-[10px] uppercase font-bold text-slate-400 font-sans tracking-wide">Expiry Date</label>
+                              <input
+                                type="text"
+                                value={simExpiry}
+                                onChange={(e) => {
+                                  const val = e.target.value.replace(/\D/g, '').substring(0, 4);
+                                  if (val.length >= 2) {
+                                    setSimExpiry(val.substring(0, 2) + '/' + val.substring(2));
+                                  } else {
+                                    setSimExpiry(val);
+                                  }
+                                }}
+                                placeholder="MM/YY"
+                                className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-mono shadow-sm text-center"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase font-bold text-slate-400 font-sans tracking-wide">CVV / CVN</label>
+                              <input
+                                type="password"
+                                value={simCVV}
+                                onChange={(e) => setSimCVV(e.target.value.replace(/\D/g, '').substring(0, 3))}
+                                placeholder="•••"
+                                className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#0F172A] focus:outline-none focus:border-blue-500 font-mono shadow-sm text-center tracking-widest"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-[10px] uppercase font-bold text-slate-400 font-sans tracking-wide">Cardholder Name</label>
+                            <input
+                              type="text"
+                              value={simHolder}
+                              onChange={(e) => setSimHolder(e.target.value)}
+                              placeholder="e.g. AMAN SHARMA"
+                              className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-sans font-semibold uppercase shadow-sm"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setSimTab('processing')}
+                        className="w-full bg-blue-600 hover:bg-blue-700 font-sans text-white py-3.5 rounded-xl text-sm font-black tracking-wide shadow-lg shadow-blue-500/20 active:scale-95 transition-all text-center cursor-pointer mt-4"
+                      >
+                        Pay Rs. {finalTotal.toFixed(2)}
+                      </button>
+                    </div>
+                  )}
+
+                  {simTab === 'upi' && (
+                    <div className="space-y-4 flex-1 flex flex-col justify-between">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2">
+                          <button type="button" onClick={() => setSimTab('methods')} className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1 cursor-pointer">
+                            ← Back
+                          </button>
+                          <span className="text-slate-300">|</span>
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest font-mono">Pay via UPI</span>
+                        </div>
+
+                        <div className="flex flex-col items-center justify-center p-3.5 bg-white border border-slate-200 rounded-xl shadow-inner space-y-3">
+                          <span className="text-xs font-bold text-slate-500 font-sans">Option A: Scan Simulated QR Code</span>
+                          <div className="w-28 h-28 bg-slate-100 flex items-center justify-center rounded-lg relative border-2 border-slate-300">
+                            {/* Visual QR Simulator */}
+                            <div className="absolute inset-2 border border-slate-500 grid grid-cols-4 grid-rows-4 gap-1 p-1">
+                              {[...Array(16)].map((_, i) => (
+                                <div key={i} className={`rounded-sm ${(i % 3 === 0 || i % 5 === 2) ? 'bg-slate-800' : 'bg-transparent'}`} />
+                              ))}
+                            </div>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-semibold font-sans italic">Hold any test app up to complete</span>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] uppercase font-bold text-slate-400 font-sans tracking-wide">Option B: Enter UPI ID</label>
+                          <input
+                            type="text"
+                            value={simUPIId}
+                            onChange={(e) => setSimUPIId(e.target.value)}
+                            placeholder="username@upi"
+                            className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 shadow-sm"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setSimTab('processing')}
+                        className="w-full bg-blue-600 hover:bg-blue-700 font-sans text-white py-3.5 rounded-xl text-sm font-black tracking-wide shadow-lg shadow-blue-500/20 active:scale-95 transition-all text-center cursor-pointer mt-4"
+                      >
+                        Pay Rs. {finalTotal.toFixed(2)}
+                      </button>
+                    </div>
+                  )}
+
+                  {simTab === 'processing' && (
+                    <div className="py-6 flex flex-col items-center justify-center text-center space-y-6 flex-1">
+                      <div className="relative">
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                          className="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Check className="w-6 h-6 text-blue-600 animate-pulse" />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <h4 className="text-sm font-black text-slate-800 font-sans">Processing Your Simulation Transaction</h4>
+                        <p className="text-[11px] text-slate-400 leading-normal max-w-[280px] font-sans">Contacting your banking institution to process Rs. {finalTotal.toFixed(2)} safely. Do not hit back or close the portal.</p>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3.5 w-full pt-4 font-sans">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowSimulatorModal(false);
+                            setSimTab('methods');
+                            // Trigger full authentic confirmation state
+                            onConfirmOrder((order) => {
+                              setPlacedOrder({
+                                ...order,
+                                paymentMethod: 'online',
+                                status: 'pending',
+                                razorpayPaymentId: `pay_sandbox_mock_${Math.random().toString(36).substr(2, 9)}`,
+                                razorpayOrderId: `order_sandbox_mock_${Math.random().toString(36).substr(2, 9)}`,
+                                razorpaySignature: 'security_simulated_hmac_hash_code_256'
+                              });
+                              setStep('confirmation');
+                            });
+                          }}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-emerald-500/10 cursor-pointer animate-pulse"
+                        >
+                          ✔️ Success
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSimTab('methods');
+                            alert("❌ Simulation Callback: Transaction was rejected by the bank or cancelled by user.");
+                          }}
+                          className="bg-red-500 hover:bg-red-600 text-white py-3 px-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-red-500/10 cursor-pointer"
+                        >
+                          ❌ Fail
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Razorpay Footer Seal */}
+                <div className="bg-slate-100 px-5 py-3.5 border-t border-slate-200/60 flex justify-between items-center text-[10px] text-slate-400 font-sans font-semibold">
+                  <span className="flex items-center gap-1">🔒 SECURE CHECKOUT</span>
+                  <span>POWERED BY RAZORPAY</span>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+
             </motion.div>
           </motion.div>
         </>
@@ -2774,12 +3372,6 @@ export default function App() {
   };
 
   const confirmOrder = (onSuccess: (order: OrderDetails) => void) => {
-    if (!currentUser) {
-      alert('Please login to place an order');
-      window.location.href = '/login';
-      return;
-    }
-
     if (!orderName || !orderMobile || !orderAddress) {
       alert('Please fill in all delivery details');
       return;
@@ -2792,9 +3384,9 @@ export default function App() {
 
     const newOrder: OrderDetails = {
       id: Math.random().toString(36).substr(2, 6).toUpperCase(),
-      userId: currentUser.id,
+      userId: currentUser ? currentUser.id : 'guest',
       userName: orderName,
-      userEmail: currentUser.email,
+      userEmail: currentUser ? currentUser.email : 'guest@tawabox.com',
       mobile: orderMobile,
       address: orderAddress,
       notes: orderNotes || undefined,
@@ -2818,18 +3410,20 @@ export default function App() {
       console.error('Failed sending order confirmation email', err);
     });
     
-    // Update User Points
-    const updatedUser = {
-      ...currentUser,
-      points: currentUser.points - pointsToRedeem + pointsEarned
-    };
-    setCurrentUser(updatedUser);
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    // Update User Points if logged in
+    if (currentUser) {
+      const updatedUser = {
+        ...currentUser,
+        points: currentUser.points - pointsToRedeem + pointsEarned
+      };
+      setCurrentUser(updatedUser);
+      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
 
-    // Update global users list
-    const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    const updatedAllUsers = allUsers.map((u: any) => u.id === updatedUser.id ? { ...u, points: updatedUser.points } : u);
-    localStorage.setItem('users', JSON.stringify(updatedAllUsers));
+      // Update global users list
+      const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      const updatedAllUsers = allUsers.map((u: any) => u.id === updatedUser.id ? { ...u, points: updatedUser.points } : u);
+      localStorage.setItem('users', JSON.stringify(updatedAllUsers));
+    }
 
     setCart([]);
     setOrderName('');

@@ -35,6 +35,9 @@ export interface OrderDetails {
   notes?: string;
   loyaltyPointsEarned?: number;
   discountAmount?: number;
+  razorpayPaymentId?: string;
+  razorpayOrderId?: string;
+  razorpaySignature?: string;
 }
 
 export interface User {

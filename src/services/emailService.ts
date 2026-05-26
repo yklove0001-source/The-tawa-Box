@@ -41,7 +41,7 @@ export const generateOrderConfirmationHTML = (order: OrderDetails): string => {
         ${item.customization ? `<br/><span style="font-size: 11px; color: #7A8B6B; font-weight: normal;">Customized Thali</span>` : ''}
       </td>
       <td style="padding: 12px 0; font-family: sans-serif; font-size: 14px; text-align: center; color: #5A3825;">x${item.quantity}</td>
-      <td style="padding: 12px 0; font-family: sans-serif; font-size: 14px; text-align: right; color: #5A3825; font-weight: bold;">₹${item.price * item.quantity}</td>
+      <td style="padding: 12px 0; font-family: sans-serif; font-size: 14px; text-align: right; color: #5A3825; font-weight: bold;">Rs. ${item.price * item.quantity}</td>
     </tr>
   `).join('');
 
@@ -99,12 +99,12 @@ export const generateOrderConfirmationHTML = (order: OrderDetails): string => {
             ${order.discountAmount ? `
             <tr>
               <td colspan="2" style="padding: 10px 0 5px 0; font-family: sans-serif; font-size: 13px; color: #7A8B6B; text-align: right;">Points Redeemed Discount:</td>
-              <td style="padding: 10px 0 5px 0; font-family: sans-serif; font-size: 13px; color: #B45309; text-align: right; font-weight: bold;">-₹${order.discountAmount}</td>
+              <td style="padding: 10px 0 5px 0; font-family: sans-serif; font-size: 13px; color: #B45309; text-align: right; font-weight: bold;">-Rs. ${order.discountAmount}</td>
             </tr>
             ` : ''}
             <tr>
               <td colspan="2" style="padding: 5px 0; font-family: sans-serif; font-size: 15px; color: #5A3825; font-weight: bold; text-align: right;">Total Amount Charged:</td>
-              <td style="padding: 5px 0; font-family: Georgia, serif; font-size: 18px; color: #7A8B6B; text-align: right; font-weight: 900;">₹${order.total}</td>
+              <td style="padding: 5px 0; font-family: Georgia, serif; font-size: 18px; color: #7A8B6B; text-align: right; font-weight: 900;">Rs. ${order.total}</td>
             </tr>
           </tfoot>
         </table>
