@@ -13,7 +13,9 @@ import tawaBoxHero from './assets/images/tawa_box_hero_1779282315522.png';
 import namkeenDaliyaImg from './assets/images/namkeen_daliya_1779282338658.png';
 // @ts-ignore
 import doodhDaliyaImg from './assets/images/doodh_daliya_1779282359860.png';
-const desiLunchTrayImg = 'https://drive.google.com/uc?export=view&id=1hxLbnG844atKqc1KZU2AcelaRHGRWdfW';
+// @ts-ignore
+import desiLunchTrayLocal from './assets/images/desi_lunch_tray_1779282381475.png';
+const desiLunchTrayImg = 'https://lh3.googleusercontent.com/d/1hxLbnG844atKqc1KZU2AcelaRHGRWdfW';
 // @ts-ignore
 import lunchSideMealImg from './assets/images/lunch_side_meal_1779282404443.png';
 
@@ -503,6 +505,9 @@ const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) 
                 alt="Lunch Box" 
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.src = desiLunchTrayLocal;
+                }}
               />
               
               {/* Sharp solid brown ribbon badge reading "Rs. 199" */}
@@ -582,6 +587,9 @@ const LunchBoxCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) => void 
                   alt="5-compartment Desi meal tray" 
                   className="w-full h-full object-cover rounded-xl"
                   referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.src = desiLunchTrayLocal;
+                  }}
                 />
               </div>
             </div>
@@ -670,6 +678,11 @@ const MenuPage = ({ onAddToCart, onUpdateQuantity, cart }: {
             alt={item.name} 
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
             referrerPolicy="no-referrer" 
+            onError={(e) => {
+              if (item.id === '15' || item.id === '14') {
+                e.currentTarget.src = desiLunchTrayLocal;
+              }
+            }}
           />
           {item.category === 'thali' && (
             <div className="absolute top-2 left-2 bg-brand-primary text-white text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-widest">
