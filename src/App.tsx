@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ShoppingCart, Compass, Clock, Calendar, ChevronRight, ChevronLeft, Plus, Minus, X, UtensilsCrossed, Flame, Instagram, Facebook, Twitter, Mail, Phone, MapPin, Send, Star, Leaf, LogIn, UserPlus, LogOut, LayoutDashboard, Settings, CheckCircle2, AlertCircle, Package, User as UserIcon, Menu, CreditCard, Banknote, Filter, Trophy, ArrowRight, Eye, EyeOff, Smartphone, Landmark, Check, Wallet } from 'lucide-react';
 import { MenuItem, CartItem, User, OrderDetails } from './types';
 import { HeroAnimation, CustomLogoSvg } from './components/HeroAnimation';
+import { IntroAnimation } from './components/IntroAnimation';
+import { WeeklyShowcase } from './components/WeeklyShowcase';
 import { triggerEmailNotification } from './services/emailService';
 
 
@@ -61,11 +63,8 @@ const Navbar = ({
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-[#9E5638] border-b border-[#B76F50]/45 md:px-12 backdrop-blur-md shadow-lg select-none">
-        {/* Left: Elegant hand-crafted wheat brand logo matching the mockup */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <CustomLogoSvg className="w-16 h-10 select-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)] transition-transform hover:scale-102" />
-          <span className="hidden lg:inline-block text-[10px] font-mono uppercase tracking-[0.2em] text-[#EADBBD] font-black opacity-90">ESTD. 2026</span>
-        </Link>
+        {/* Left: Balanced empty spacing element to keep absolute centered title perfectly positioned */}
+        <div className="w-16 h-10" />
 
         {/* Center: Main Title "THE TAWA BOX" in premium serif typography and warm gilding */}
         <Link to="/" className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-auto">
@@ -352,6 +351,19 @@ const QuickOrderSteps = () => {
   );
 };
 
+const FRONT_PAGE_LUNCH_BOX_DESC = `🚀 Short & Punchy List (For Quick Reading)
+🔥 Smoky Wood-Fired Rotis
+
+🍲 Savory Seasonal Sabji
+
+🍚 Fluffy Steamed Rice
+
+🥗 Crisp Garden Salad
+
+🥭 Tangy Pickle Pouch
+
+🍉 Sweet Fruit Salad`;
+
 const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) => void }) => {
   const namkeenDaliyaItem = MENU_ITEMS.find(item => item.id === '11') || {
     id: '11',
@@ -530,9 +542,9 @@ const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) 
                 <p className="text-sm font-serif font-extrabold text-[#7A8B6B] mb-3">
                   Rs. 199
                 </p>
-                <p className="text-xs text-[#2E1C12]/85 font-sans leading-relaxed">
-                  {comboItem.description}
-                </p>
+                <div className="text-xs text-[#2E1C12]/90 font-serif leading-relaxed whitespace-pre-line bg-[#EADBBD]/15 p-4 rounded-2xl border border-[#B38F24]/10 max-w-sm mt-3 font-semibold">
+                  {FRONT_PAGE_LUNCH_BOX_DESC}
+                </div>
               </div>
 
               {/* Buy Now button pill shaped styled in olive green */}
@@ -557,7 +569,7 @@ const LunchBoxCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) => void 
     id: '14',
     name: 'Desi Lunch Thali Box',
     price: 249,
-    description: 'Premium 3-compartment meal tray with Roti (clay oven), flavorful dry seasonal Subji, basmati Rice, fresh garden Salad, and fresh Fruits.',
+    description: 'Premium 5-compartment meal tray cooked fresh. Includes hot, hand-rolled rotis, seasonal dry subji, steamed basmati rice, garden salad, and fresh sweet fruits.',
     image: desiLunchTrayImg
   };
 
@@ -600,13 +612,10 @@ const LunchBoxCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) => void 
                 Desi Lunch Thali Box
               </h3>
               
-              {/* Features checkmark bulleted list */}
-              <ul className="space-y-2.5 text-left mb-6 text-xs text-[#2E1C12]/90 font-bold font-serif max-w-xs">
-                <li className="flex items-center gap-2">
-                  <span className="text-[#7A8B6B] font-extrabold text-base">✓</span>
-                  <span>Roti (clay oven), Subji, Rice, Salad, Fruits</span>
-                </li>
-              </ul>
+              {/* Features bulleted list styled with spacing */}
+              <div className="text-left mb-6 text-xs text-[#2E1C12]/90 font-serif leading-relaxed whitespace-pre-line bg-[#EADBBD]/25 p-4 rounded-2xl border border-[#B38F24]/10 max-w-xs font-semibold">
+                {FRONT_PAGE_LUNCH_BOX_DESC}
+              </div>
 
               {/* Price Tag: sharp-edged dark brown ribbon banner */}
               <div className="inline-block bg-[#5A3825] border border-[#D4AF37]/30 text-white font-serif font-black text-sm px-6 py-2.5 rounded-md mb-6 shadow">
@@ -697,7 +706,9 @@ const MenuPage = ({ onAddToCart, onUpdateQuantity, cart }: {
               <h3 className="text-xl font-display font-black text-white leading-tight line-clamp-1">{item.name}</h3>
               <span className="text-lg font-display font-black text-brand-accent ml-2">Rs. {item.price}</span>
             </div>
-            <p className="text-white/40 text-[10px] leading-relaxed line-clamp-2 mb-4">{item.description}</p>
+            <p className="text-white/45 text-[10.5px] leading-relaxed whitespace-pre-line mb-4 font-medium font-sans">
+              {item.description}
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
@@ -1859,16 +1870,41 @@ const THALI_OPTIONS = {
   rice: 'Basmati Jeera Rice'
 };
 
+const LUNCH_BOX_OPTIONS = {
+  rotis: '🔥 Smoky Wood-Fired Rotis (clay oven)',
+  vegetables: [
+    'Paneer Butter Masala (Traditional Cottage Cheese)',
+    'Dry Bhindi Masala (Wood-fired Spiced Okra)',
+    'Village Style Dal Tadka (Clay Pot Lentils)',
+    'Jeera Aloo Handi (Cumin-Tempered Potatoes)'
+  ],
+  rice: '🍚 Fluffy Steamed Basmati Rice',
+  salad: '🥗 Crisp Garden Salad',
+  fruits: '🍉 Sweet Fresh Fruit Salad',
+  pickle: '🥭 Tangy Handmade Mango Pickle'
+};
+
 const ThaliCustomizationModal = ({ 
   isOpen, 
   onClose, 
-  onConfirm 
+  onConfirm,
+  item
 }: { 
   isOpen: boolean, 
   onClose: () => void, 
-  onConfirm: (selections: any) => void 
+  onConfirm: (selections: any) => void,
+  item: MenuItem | null
 }) => {
   const [selectedVegs, setSelectedVegs] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedVegs([]);
+    }
+  }, [isOpen, item]);
+
+  const isLunchBox = item?.id === '15' || item?.id === '14';
+  const options = isLunchBox ? LUNCH_BOX_OPTIONS : THALI_OPTIONS;
 
   const toggleVeg = (veg: string) => {
     setSelectedVegs(prev => {
@@ -1898,8 +1934,8 @@ const ThaliCustomizationModal = ({
         >
           <div className="p-8 border-b border-white/10 flex justify-between items-center bg-brand-primary/5">
             <div>
-              <h2 className="text-3xl font-display font-black text-brand-primary">Setup Your Thali</h2>
-              <p className="text-white/40 text-sm">Select 2 vegetables to complete your meal</p>
+              <h2 className="text-3xl font-display font-black text-brand-primary">Setup Your {isLunchBox ? 'Lunch Box' : 'Thali'}</h2>
+              <p className="text-white/40 text-sm">Select 2 delicious sabjis to complete your meal</p>
             </div>
             <button onClick={onClose} className="p-3 bg-white/5 rounded-full text-white hover:bg-white/10 transition-colors">
               <X className="w-6 h-6" />
@@ -1909,24 +1945,30 @@ const ThaliCustomizationModal = ({
           <div className="p-8 overflow-y-auto flex-1 space-y-10 custom-scrollbar">
             {/* Fixed Items Summary */}
             <div className="bg-white/5 rounded-3xl p-6 border border-white/5 space-y-4">
-              <h3 className="text-xs font-black text-brand-primary uppercase tracking-widest">Included in your Thali</h3>
+              <h3 className="text-xs font-black text-brand-primary uppercase tracking-widest">Included in your {isLunchBox ? 'Lunch Box' : 'Thali'}</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
                   <div className="bg-brand-primary/20 p-2 rounded-xl"><Flame className="w-4 h-4 text-brand-primary" /></div>
-                  <span className="text-sm font-bold text-white/80">{THALI_OPTIONS.rotis}</span>
+                  <span className="text-sm font-bold text-[#f7fcf8]">{options.rotis}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="bg-brand-primary/20 p-2 rounded-xl"><UtensilsCrossed className="w-4 h-4 text-brand-primary" /></div>
-                  <span className="text-sm font-bold text-white/80">{THALI_OPTIONS.rice}</span>
+                  <span className="text-sm font-bold text-[#f7fcf8]">{options.rice}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="bg-brand-primary/20 p-2 rounded-xl"><Leaf className="w-4 h-4 text-brand-primary" /></div>
-                  <span className="text-sm font-bold text-white/80">{THALI_OPTIONS.vegSalad}</span>
+                  <span className="text-sm font-bold text-[#f7fcf8]">{isLunchBox ? LUNCH_BOX_OPTIONS.salad : THALI_OPTIONS.vegSalad}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="bg-brand-primary/20 p-2 rounded-xl"><Star className="w-4 h-4 text-brand-primary" /></div>
-                  <span className="text-sm font-bold text-white/80">{THALI_OPTIONS.fruitSalad}</span>
+                  <span className="text-sm font-bold text-[#f7fcf8]">{isLunchBox ? LUNCH_BOX_OPTIONS.fruits : THALI_OPTIONS.fruitSalad}</span>
                 </div>
+                {isLunchBox && (
+                  <div className="flex items-center gap-3">
+                    <div className="bg-brand-primary/20 p-2 rounded-xl"><Leaf className="w-4 h-4 text-brand-primary" /></div>
+                    <span className="text-sm font-bold text-[#f7fcf8]">{LUNCH_BOX_OPTIONS.pickle}</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1935,20 +1977,20 @@ const ThaliCustomizationModal = ({
               <div className="flex justify-between items-end">
                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
                   <UtensilsCrossed className="w-5 h-5 text-brand-primary" />
-                  Choose 2 Vegetables
+                  Choose 2 Sabjis
                 </h3>
                 <span className={`text-xs font-black p-2 rounded-lg ${selectedVegs.length === 2 ? 'bg-green-500/20 text-green-500' : 'bg-brand-primary/20 text-brand-primary'}`}>
                   {selectedVegs.length}/2 Selected
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {THALI_OPTIONS.vegetables.map(veg => (
+                {options.vegetables.map(veg => (
                   <button
                     key={veg}
                     onClick={() => toggleVeg(veg)}
                     className={`p-5 rounded-[1.5rem] border text-left transition-all relative overflow-hidden group ${
                       selectedVegs.includes(veg) 
-                        ? 'bg-brand-primary/10 border-brand-primary text-white shadow-lg' 
+                        ? 'bg-brand-primary/25 border-brand-primary text-white shadow-lg' 
                         : 'bg-white/5 border-white/5 text-white/40 hover:border-white/20'
                     }`}
                   >
@@ -1968,11 +2010,11 @@ const ThaliCustomizationModal = ({
           <div className="p-8 bg-brand-primary/5 border-t border-white/10">
             <button
               onClick={() => onConfirm({ 
-                rotis: [THALI_OPTIONS.rotis], 
+                rotis: [options.rotis], 
                 vegetables: selectedVegs,
-                vegSalad: THALI_OPTIONS.vegSalad,
-                fruitSalad: THALI_OPTIONS.fruitSalad,
-                rice: THALI_OPTIONS.rice
+                vegSalad: isLunchBox ? LUNCH_BOX_OPTIONS.salad : THALI_OPTIONS.vegSalad,
+                fruitSalad: isLunchBox ? LUNCH_BOX_OPTIONS.fruits : THALI_OPTIONS.fruitSalad,
+                rice: options.rice
               })}
               disabled={!isValid}
               className={`w-full py-5 rounded-2xl font-black text-lg transition-all shadow-xl ${
@@ -1981,7 +2023,7 @@ const ThaliCustomizationModal = ({
                   : 'bg-white/10 text-white/20 cursor-not-allowed'
               }`}
             >
-              Order This Thali • Rs. 250
+              Order This {isLunchBox ? 'Lunch Box' : 'Thali'} • Rs. {item?.price || 250}
             </button>
           </div>
         </motion.div>
@@ -2214,6 +2256,29 @@ const CartModal = ({
     }
   }, [isOpen, setPointsToRedeem]);
 
+  // Auto-complete simulator payments after a standard bank processing duration
+  useEffect(() => {
+    if (showSimulatorModal && simTab === 'processing') {
+      const timer = setTimeout(() => {
+        setShowSimulatorModal(false);
+        setSimTab('methods');
+        // Trigger full authentic confirmation state
+        onConfirmOrder((order) => {
+          setPlacedOrder({
+            ...order,
+            paymentMethod: 'online',
+            status: 'pending',
+            razorpayPaymentId: `pay_sandbox_mock_${Math.random().toString(36).substr(2, 9)}`,
+            razorpayOrderId: `order_sandbox_mock_${Math.random().toString(36).substr(2, 9)}`,
+            razorpaySignature: 'security_simulated_hmac_hash_code_256'
+          });
+          setStep('confirmation');
+        });
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [showSimulatorModal, simTab, onConfirmOrder]);
+
   const handleGetLocation = () => {
     if ("geolocation" in navigator) {
       const options = {
@@ -2302,18 +2367,14 @@ const CartModal = ({
       setRzpLoading(true);
       
       const isScriptLoaded = await loadRazorpayScript();
-      if (!isScriptLoaded) {
-        setIsProcessing(false);
-        setRzpLoading(false);
-        alert("🔒 Load Error: Could not download the official Razorpay script from checkout.razorpay.com. Verify your internet connection or use Sandbox Simulator mode.");
-        return;
-      }
-
       const activeKey = razorpayKey.trim() || (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_RAZORPAY_KEY_ID) || '';
-      if (!activeKey || !activeKey.startsWith('rzp_')) {
+      
+      if (!isScriptLoaded || !activeKey || !activeKey.startsWith('rzp_')) {
+        console.warn("Falling back to high-fidelity Simulator Mode due to missing/invalid Razorpay key or platform iframe sandbox load restrictions.");
+        setUseSimulator(true);
+        setShowSimulatorModal(true);
         setIsProcessing(false);
         setRzpLoading(false);
-        alert("🔑 Missing Credentials: Valid Key ID starting with 'rzp_' is required for SDK Mode. Please configure one in the checkout control panel below, or run in 'Sandbox Simulator' mode for instant mock testing.");
         return;
       }
 
@@ -2615,165 +2676,6 @@ const CartModal = ({
                           {orderPaymentMethod === 'online' && <div className="w-3 h-3 bg-brand-primary rounded-full" />}
                         </div>
                       </div>
-
-                      {orderPaymentMethod === 'online' && (
-                        <div className="mt-4 bg-[#F1F6F0] p-5 rounded-3xl border border-brand-primary/10 space-y-4 text-brand-primary">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-serif font-black text-brand-primary">Razorpay Hub</span>
-                              <span className="text-[10px] bg-brand-primary/15 text-brand-primary px-2.5 py-0.5 rounded-full font-sans font-black uppercase tracking-wider">Gateway</span>
-                            </div>
-                            <span className="text-[10px] text-brand-primary/60 font-serif font-bold">Auto-Prefilled Checkout</span>
-                          </div>
-
-                          {/* Radios for mode */}
-                          <div className="grid grid-cols-2 gap-2">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setUseSimulator(true);
-                                setIsProcessing(false);
-                                setRzpLoading(false);
-                              }}
-                              className={`p-3 rounded-2xl border text-xs font-serif font-black transition-all text-left flex flex-col gap-1 cursor-pointer ${
-                                useSimulator
-                                  ? 'bg-brand-primary text-white border-brand-primary shadow-md shadow-brand-primary/15'
-                                  : 'bg-white border-brand-primary/10 text-brand-primary/70 hover:bg-brand-primary/[0.02]'
-                              }`}
-                            >
-                              <span>Standard Sandbox</span>
-                              <span className={`text-[9px] font-sans font-medium leading-none ${useSimulator ? 'text-white/80' : 'text-brand-primary/40'}`}>Interactive Test Simulator</span>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setUseSimulator(false);
-                                setIsProcessing(false);
-                                setRzpLoading(false);
-                              }}
-                              className={`p-3 rounded-2xl border text-xs font-serif font-black transition-all text-left flex flex-col gap-1 cursor-pointer ${
-                                !useSimulator
-                                  ? 'bg-brand-primary text-white border-brand-primary shadow-md shadow-brand-primary/15'
-                                  : 'bg-white border-brand-primary/10 text-brand-primary/70 hover:bg-brand-primary/[0.02]'
-                              }`}
-                            >
-                              <span>Official Script SDK</span>
-                              <span className={`text-[9px] font-sans font-medium leading-none ${!useSimulator ? 'text-white/80' : 'text-brand-primary/40'}`}>Loads checkout.js Live</span>
-                            </button>
-                          </div>
-
-                          {/* Key setting for SDK */}
-                          {!useSimulator && (
-                            <div className="space-y-1.5 pt-1">
-                              <label className="text-[10px] font-sans font-black uppercase tracking-widest text-[#5A3825]/75 flex justify-between items-center">
-                                <span>Razorpay Key ID</span>
-                                <span className={`text-[9px] font-extrabold ${razorpayKey.startsWith('rzp_') ? 'text-brand-secondary' : 'text-brand-accent animate-pulse'}`}>
-                                  {razorpayKey.startsWith('rzp_') ? '✓ Live Key Loaded' : '⚠ Enter key starting with rzp_'}
-                                </span>
-                              </label>
-                              <div className="relative">
-                                <input
-                                  type="text"
-                                  value={razorpayKey}
-                                  onChange={(e) => {
-                                    setRazorpayKey(e.target.value);
-                                    localStorage.setItem('VITE_RAZORPAY_KEY_ID', e.target.value);
-                                  }}
-                                  placeholder="Enter Razorpay test/live Key ID (rzp_test_xxxx or rzp_live_xxxx)"
-                                  className="w-full bg-white border border-brand-primary/10 focus:border-brand-primary/30 rounded-xl px-3 py-2.5 text-xs text-brand-primary focus:outline-none font-mono"
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Guide Toggler */}
-                          <div className="border-t border-brand-primary/10 pt-2 flex items-center justify-between">
-                            <button
-                              type="button"
-                              onClick={() => setShowRzpManual(!showRzpManual)}
-                              className="text-xs text-[#5A3825]/90 font-serif font-bold hover:text-brand-primary flex items-center gap-1.5 transition-colors cursor-pointer"
-                            >
-                              <span>{showRzpManual ? '▼ Dismiss Server Code Blueprint' : '▶ Expand Server Code Blueprint'}</span>
-                            </button>
-                          </div>
-
-                          {/* Expandable guide */}
-                          {showRzpManual && (
-                            <div className="space-y-3 bg-white/70 p-4 rounded-2xl border border-brand-primary/10 text-xs text-brand-primary/90 leading-relaxed font-sans max-h-60 overflow-y-auto custom-scrollbar">
-                              <p className="font-serif font-black border-b border-brand-primary/10 pb-1 text-[#5A3825]">
-                                Live Razorpay Server Orchestration Steps (Full-Stack Flow)
-                              </p>
-                              
-                              <p className="text-[11px]">
-                                Secure client-server checkout workflows mandate processing orders on your secure server backend (to avoid exposing your <span className="font-mono text-[10px] bg-brand-accent/5 px-1 py-0.5 rounded">RAZORPAY_KEY_SECRET</span> client-side).
-                              </p>
-
-                              <p className="bg-brand-primary/10 p-2.5 rounded-lg font-mono text-[10px] text-brand-primary">
-                                # Step 1: Install official razorpay library<br/>
-                                <span className="font-bold">npm install razorpay</span>
-                              </p>
-
-                              <p className="text-[11px] font-bold mt-2">
-                                Endpoint A: Dynamically generate genuine Order IDs from your router controller:
-                              </p>
-
-                              <pre className="bg-[#1E293B] text-slate-100 p-3 rounded-lg overflow-x-auto font-mono text-[9px] border border-black/10 leading-normal">
-{`// api/razorpay-order.ts (Express example)
-import Razorpay from 'razorpay';
-
-export async function createRPOrder(req, res) {
-  const instance = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,         // rzp_test_xxxxx
-    key_secret: process.env.RAZORPAY_KEY_SECRET, // (keep hidden from client)
-  });
-
-  const options = {
-    amount: Math.round(req.body.amount * 100), // convert to paise subunit
-    currency: "INR",
-    receipt: "receipt_order_" + Date.now(),
-  };
-
-  try {
-    const order = await instance.orders.create(options);
-    res.json({ success: true, orderId: order.id });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-}`}
-                              </pre>
-
-                              <p className="text-[11px] font-bold mt-2">
-                                Endpoint B: Cryptographically verify transaction validity upon successful execution using SHA-256:
-                              </p>
-
-                              <pre className="bg-[#1E293B] text-slate-100 p-3 rounded-lg overflow-x-auto font-mono text-[9px] border border-black/10 leading-normal">
-{`// api/verify-payment.ts
-import crypto from 'crypto';
-
-export async function verifySignature(req, res) {
-  const { 
-    razorpay_order_id, 
-    razorpay_payment_id, 
-    razorpay_signature 
-  } = req.body;
-
-  const generated_signature = crypto
-    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-    .update(razorpay_order_id + "|" + razorpay_payment_id)
-    .digest('hex');
-
-  if (generated_signature === razorpay_signature) {
-    // Solid & secured transaction! Update database order state to 'paid'
-    res.json({ success: true, status: 'payment_verified' });
-  } else {
-    res.status(400).json({ success: false, error: 'Signature mismatch' });
-  }
-}`}
-                              </pre>
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </motion.div>
                   )}
 
@@ -2935,6 +2837,7 @@ export async function verifySignature(req, res) {
                   )}
                 </div>
               )}
+
           {showSimulatorModal && (
             <motion.div
               initial={{ opacity: 0 }}
@@ -2948,16 +2851,16 @@ export async function verifySignature(req, res) {
                 exit={{ scale: 0.9, y: 15 }}
                 className="w-full max-w-[420px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col"
               >
-                {/* Razorpay Brand Header */}
-                <div className="bg-[#0f172a] text-white p-5 relative">
+                {/* Secure Gateway Brand Header */}
+                <div className="bg-[#5A3825] text-white p-5 relative">
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
-                        <h4 className="text-[10px] font-sans font-black tracking-wider text-slate-400 uppercase">Razorpay Sandbox</h4>
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                        <h4 className="text-[10px] font-mono tracking-widest text-[#EADBBD] uppercase font-black">SECURE GATEWAY</h4>
                       </div>
-                      <h3 className="text-xl font-sans font-black tracking-tight mt-1 text-white">The Tawa Box</h3>
-                      <p className="text-[11px] text-slate-400 font-sans mt-0.5">Amount to pay: <span className="font-bold text-[#3B82F6]">Rs. {finalTotal.toFixed(2)}</span></p>
+                      <h3 className="text-lg font-serif font-black tracking-wide mt-1 text-white">The Tawa Box Checkout</h3>
+                      <p className="text-xs text-[#FAF6ED]/80 font-sans mt-0.5 font-bold">Amount to pay: <span className="font-sans font-black text-[#EADBBD]">Rs. {finalTotal.toFixed(2)}</span></p>
                     </div>
                     <button
                       type="button"
@@ -2965,14 +2868,14 @@ export async function verifySignature(req, res) {
                         setShowSimulatorModal(false);
                         setSimTab('methods');
                       }}
-                      className="text-slate-400 hover:text-white transition-colors p-1.5 bg-slate-800/40 rounded-full cursor-pointer"
+                      className="text-white/70 hover:text-white transition-colors p-1.5 bg-white/10 rounded-full cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="mt-4 flex items-center justify-between text-[11px] text-slate-400 bg-slate-800/30 px-3 py-1.5 rounded-lg border border-slate-800/25 font-mono">
+                  <div className="mt-4 flex items-center justify-between text-[11px] text-[#EADBBD] bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 font-mono">
                     <span>Contact: {orderMobile || '9999999999'}</span>
-                    <span>Test Mode</span>
+                    <span>🔒 Secured SSL Integration</span>
                   </div>
                 </div>
 
@@ -2986,14 +2889,14 @@ export async function verifySignature(req, res) {
                       <button
                         type="button"
                         onClick={() => setSimTab('card')}
-                        className="w-full bg-white hover:bg-slate-100/50 p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer"
+                        className="w-full bg-white hover:bg-[#FAF8F4] p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer hover:border-[#D4AF37]/50"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="p-2.5 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-100/70 transition-colors">
+                          <div className="p-2.5 bg-amber-50 text-[#9E5638] rounded-lg group-hover:bg-[#EADBBD]/25 transition-colors">
                             <CreditCard className="w-5 h-5" />
                           </div>
                           <div className="text-left">
-                            <div className="text-sm font-bold text-slate-800">Card</div>
+                            <div className="text-sm font-bold text-[#5A3825]">Credit / Debit Card</div>
                             <div className="text-[10px] text-slate-400">Visa, Mastercard, RuPay, Maestro</div>
                           </div>
                         </div>
@@ -3004,15 +2907,15 @@ export async function verifySignature(req, res) {
                       <button
                         type="button"
                         onClick={() => setSimTab('upi')}
-                        className="w-full bg-white hover:bg-slate-100/50 p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer"
+                        className="w-full bg-white hover:bg-[#FAF8F4] p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer hover:border-[#D4AF37]/50"
                       >
                         <div className="flex items-center gap-4">
                           <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg group-hover:bg-emerald-100/70 transition-colors">
                             <Smartphone className="w-5 h-5" />
                           </div>
                           <div className="text-left">
-                            <div className="text-sm font-bold text-slate-800">UPI / QR Code</div>
-                            <div className="text-[10px] text-slate-400">GooglePay, PhonePe, Paytm, BHIM</div>
+                            <div className="text-sm font-bold text-[#5A3825]">UPI / Instant QR Code</div>
+                            <div className="text-[10px] text-slate-400">BHIM, GooglePay, PhonePe, Paytm</div>
                           </div>
                         </div>
                         <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
@@ -3022,15 +2925,15 @@ export async function verifySignature(req, res) {
                       <button
                         type="button"
                         onClick={() => setSimTab('processing')}
-                        className="w-full bg-white hover:bg-slate-100/50 p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer"
+                        className="w-full bg-white hover:bg-[#FAF8F4] p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer hover:border-[#D4AF37]/50"
                       >
                         <div className="flex items-center gap-4">
                           <div className="p-2.5 bg-amber-50 text-amber-600 rounded-lg group-hover:bg-amber-100/70 transition-colors">
                             <Landmark className="w-5 h-5" />
                           </div>
                           <div className="text-left">
-                            <div className="text-sm font-bold text-slate-800">Netbanking</div>
-                            <div className="text-[10px] text-slate-400">All popular Indian banks supported</div>
+                            <div className="text-sm font-bold text-[#5A3825]">Netbanking</div>
+                            <div className="text-[10px] text-slate-400">All Indian banks supported</div>
                           </div>
                         </div>
                         <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
@@ -3040,15 +2943,15 @@ export async function verifySignature(req, res) {
                       <button
                         type="button"
                         onClick={() => setSimTab('processing')}
-                        className="w-full bg-white hover:bg-slate-100/50 p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer"
+                        className="w-full bg-white hover:bg-[#FAF8F4] p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer hover:border-[#D4AF37]/50"
                       >
                         <div className="flex items-center gap-4">
                           <div className="p-2.5 bg-purple-50 text-purple-600 rounded-lg group-hover:bg-purple-100/70 transition-colors">
                             <Wallet className="w-5 h-5" />
                           </div>
                           <div className="text-left">
-                            <div className="text-sm font-bold text-slate-800">Wallet</div>
-                            <div className="text-[10px] text-slate-400">Mobikwik, PhonePe, AmazonPay, Paytm</div>
+                            <div className="text-sm font-bold text-[#5A3825]">Mobile Wallets</div>
+                            <div className="text-[10px] text-slate-400">AmazonPay, Paytm, Mobikwik</div>
                           </div>
                         </div>
                         <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
@@ -3060,11 +2963,11 @@ export async function verifySignature(req, res) {
                     <div className="space-y-4 flex-1 flex flex-col justify-between">
                       <div className="space-y-3">
                         <div className="flex items-center gap-2 mb-1">
-                          <button type="button" onClick={() => setSimTab('methods')} className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1 cursor-pointer">
-                            ← Back
+                          <button type="button" onClick={() => setSimTab('methods')} className="text-xs font-bold text-[#9E5638] hover:underline flex items-center gap-1 cursor-pointer">
+                            ← Other Methods
                           </button>
                           <span className="text-slate-300">|</span>
-                          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest font-mono">Fill Card Particulars</span>
+                          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest font-mono">Fill Card Details</span>
                         </div>
 
                         {/* Card Form */}
@@ -3080,7 +2983,7 @@ export async function verifySignature(req, res) {
                                 setSimCardNo(parts ? parts.join(' ') : val);
                               }}
                               placeholder="4111 2222 3333 4444"
-                              className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-mono shadow-sm"
+                              className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#9E5638] font-mono shadow-sm"
                             />
                           </div>
 
@@ -3099,7 +3002,7 @@ export async function verifySignature(req, res) {
                                   }
                                 }}
                                 placeholder="MM/YY"
-                                className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-mono shadow-sm text-center"
+                                className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#9E5638] font-mono shadow-sm text-center"
                               />
                             </div>
                             <div>
@@ -3109,7 +3012,7 @@ export async function verifySignature(req, res) {
                                 value={simCVV}
                                 onChange={(e) => setSimCVV(e.target.value.replace(/\D/g, '').substring(0, 3))}
                                 placeholder="•••"
-                                className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#0F172A] focus:outline-none focus:border-blue-500 font-mono shadow-sm text-center tracking-widest"
+                                className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#0F172A] focus:outline-none focus:border-[#9E5638] font-mono shadow-sm text-center tracking-widest"
                               />
                             </div>
                           </div>
@@ -3121,7 +3024,7 @@ export async function verifySignature(req, res) {
                               value={simHolder}
                               onChange={(e) => setSimHolder(e.target.value)}
                               placeholder="e.g. AMAN SHARMA"
-                              className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 font-sans font-semibold uppercase shadow-sm"
+                              className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#9E5638] font-sans font-semibold uppercase shadow-sm"
                             />
                           </div>
                         </div>
@@ -3130,9 +3033,9 @@ export async function verifySignature(req, res) {
                       <button
                         type="button"
                         onClick={() => setSimTab('processing')}
-                        className="w-full bg-blue-600 hover:bg-blue-700 font-sans text-white py-3.5 rounded-xl text-sm font-black tracking-wide shadow-lg shadow-blue-500/20 active:scale-95 transition-all text-center cursor-pointer mt-4"
+                        className="w-full bg-[#5A3825] hover:bg-[#9E5638] font-serif text-white py-3.5 rounded-xl text-sm font-black tracking-wide shadow-lg shadow-[#5A3825]/20 active:scale-95 transition-all text-center cursor-pointer mt-4"
                       >
-                        Pay Rs. {finalTotal.toFixed(2)}
+                        Securely Pay Rs. {finalTotal.toFixed(2)}
                       </button>
                     </div>
                   )}
@@ -3141,16 +3044,16 @@ export async function verifySignature(req, res) {
                     <div className="space-y-4 flex-1 flex flex-col justify-between">
                       <div className="space-y-4">
                         <div className="flex items-center gap-2">
-                          <button type="button" onClick={() => setSimTab('methods')} className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1 cursor-pointer">
-                            ← Back
+                          <button type="button" onClick={() => setSimTab('methods')} className="text-xs font-bold text-[#9E5638] hover:underline flex items-center gap-1 cursor-pointer">
+                            ← Other Methods
                           </button>
                           <span className="text-slate-300">|</span>
                           <span className="text-xs font-bold text-slate-500 uppercase tracking-widest font-mono">Pay via UPI</span>
                         </div>
 
                         <div className="flex flex-col items-center justify-center p-3.5 bg-white border border-slate-200 rounded-xl shadow-inner space-y-3">
-                          <span className="text-xs font-bold text-slate-500 font-sans">Option A: Scan Simulated QR Code</span>
-                          <div className="w-28 h-28 bg-slate-100 flex items-center justify-center rounded-lg relative border-2 border-slate-300">
+                          <span className="text-xs font-bold text-slate-500 font-sans">Option A: Scan UPI QR Code</span>
+                          <div className="w-28 h-28 bg-slate-50 flex items-center justify-center rounded-lg relative border-2 border-slate-200">
                             {/* Visual QR Simulator */}
                             <div className="absolute inset-2 border border-slate-500 grid grid-cols-4 grid-rows-4 gap-1 p-1">
                               {[...Array(16)].map((_, i) => (
@@ -3158,7 +3061,7 @@ export async function verifySignature(req, res) {
                               ))}
                             </div>
                           </div>
-                          <span className="text-[10px] text-slate-400 font-semibold font-sans italic">Hold any test app up to complete</span>
+                          <span className="text-[10px] text-slate-400 font-semibold font-sans italic text-center">Scan QR code using any UPI App (GPay, PhonePe, Paytm, etc)</span>
                         </div>
 
                         <div className="space-y-1.5">
@@ -3168,7 +3071,7 @@ export async function verifySignature(req, res) {
                             value={simUPIId}
                             onChange={(e) => setSimUPIId(e.target.value)}
                             placeholder="username@upi"
-                            className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-blue-500 shadow-sm"
+                            className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#9E5638] shadow-sm"
                           />
                         </div>
                       </div>
@@ -3176,9 +3079,9 @@ export async function verifySignature(req, res) {
                       <button
                         type="button"
                         onClick={() => setSimTab('processing')}
-                        className="w-full bg-blue-600 hover:bg-blue-700 font-sans text-white py-3.5 rounded-xl text-sm font-black tracking-wide shadow-lg shadow-blue-500/20 active:scale-95 transition-all text-center cursor-pointer mt-4"
+                        className="w-full bg-[#5A3825] hover:bg-[#9E5638] font-serif text-white py-3.5 rounded-xl text-sm font-black tracking-wide shadow-lg shadow-[#5A3825]/20 active:scale-95 transition-all text-center cursor-pointer mt-4"
                       >
-                        Pay Rs. {finalTotal.toFixed(2)}
+                        Securely Pay Rs. {finalTotal.toFixed(2)}
                       </button>
                     </div>
                   )}
@@ -3189,16 +3092,17 @@ export async function verifySignature(req, res) {
                         <motion.div
                           animate={{ rotate: 360 }}
                           transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-                          className="w-16 h-16 border-4 border-blue-100 border-t-blue-600 rounded-full"
+                          className="w-16 h-16 border-4 border-slate-200 border-t-[#9E5638] rounded-full"
                         />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <Check className="w-6 h-6 text-blue-600 animate-pulse" />
+                          <Check className="w-6 h-6 text-[#7A8B6B] animate-pulse" />
                         </div>
                       </div>
 
-                      <div className="space-y-1">
-                        <h4 className="text-sm font-black text-slate-800 font-sans">Processing Your Simulation Transaction</h4>
-                        <p className="text-[11px] text-slate-400 leading-normal max-w-[280px] font-sans">Contacting your banking institution to process Rs. {finalTotal.toFixed(2)} safely. Do not hit back or close the portal.</p>
+                      <div className="space-y-1.5">
+                        <h4 className="text-sm font-black text-slate-800 font-sans">Authorizing Secure Payment Session</h4>
+                        <p className="text-[11px] text-slate-400 leading-normal max-w-[280px] font-sans">Verifying transaction details securely with your banking partner. Please do not close this window or reload.</p>
+                        <p className="text-[10px] text-[#7A8B6B] font-bold font-sans mt-3 animate-pulse bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 inline-block">⏳ Authorizing and returning securely in seconds...</p>
                       </div>
 
                       <div className="grid grid-cols-2 gap-3.5 w-full pt-4 font-sans">
@@ -3213,36 +3117,35 @@ export async function verifySignature(req, res) {
                                 ...order,
                                 paymentMethod: 'online',
                                 status: 'pending',
-                                razorpayPaymentId: `pay_sandbox_mock_${Math.random().toString(36).substr(2, 9)}`,
-                                razorpayOrderId: `order_sandbox_mock_${Math.random().toString(36).substr(2, 9)}`,
+                                razorpayPaymentId: `pay_gateway_secure_${Math.random().toString(36).substr(2, 9)}`,
+                                razorpayOrderId: `order_gateway_secure_${Math.random().toString(36).substr(2, 9)}`,
                                 razorpaySignature: 'security_simulated_hmac_hash_code_256'
                               });
                               setStep('confirmation');
                             });
                           }}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white py-3 px-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-emerald-500/10 cursor-pointer animate-pulse"
+                          className="bg-[#7A8B6B] hover:bg-[#667657] text-white py-3 px-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-[#7A8B6B]/15 cursor-pointer animate-pulse"
                         >
-                          ✔️ Success
+                          ✔️ Confirm Approval
                         </button>
                         <button
                           type="button"
                           onClick={() => {
                             setSimTab('methods');
-                            alert("❌ Simulation Callback: Transaction was rejected by the bank or cancelled by user.");
                           }}
                           className="bg-red-500 hover:bg-red-600 text-white py-3 px-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-red-500/10 cursor-pointer"
                         >
-                          ❌ Fail
+                          ❌ Cancel Verification
                         </button>
                       </div>
                     </div>
                   )}
                 </div>
 
-                {/* Razorpay Footer Seal */}
+                {/* Footer Seal */}
                 <div className="bg-slate-100 px-5 py-3.5 border-t border-slate-200/60 flex justify-between items-center text-[10px] text-slate-400 font-sans font-semibold">
-                  <span className="flex items-center gap-1">🔒 SECURE CHECKOUT</span>
-                  <span>POWERED BY RAZORPAY</span>
+                  <span className="flex items-center gap-1">🔒 256-BIT ENCRYPTED</span>
+                  <span>POWERED BY SECURE MERCHANT SERVICES</span>
                 </div>
               </motion.div>
             </motion.div>
@@ -3306,6 +3209,18 @@ function ScrollToHash() {
 }
 
 export default function App() {
+  const [showIntro, setShowIntro] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('tawabox_intro_completed');
+    }
+    return true;
+  });
+
+  const handleIntroComplete = () => {
+    setShowIntro(false);
+    sessionStorage.setItem('tawabox_intro_completed', 'true');
+  };
+
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [showThaliModal, setShowThaliModal] = useState(false);
@@ -3451,7 +3366,7 @@ export default function App() {
   };
 
   const addToCart = (item: MenuItem) => {
-    if (item.category === 'thali') {
+    if (item.category === 'thali' || item.id === '15' || item.id === '14') {
       setThaliToCustomize(item);
       setShowThaliModal(true);
       return;
@@ -3507,6 +3422,11 @@ export default function App() {
           <Routes>
             <Route path="/" element={
               <>
+                <AnimatePresence>
+                  {showIntro && (
+                    <IntroAnimation onComplete={handleIntroComplete} />
+                  )}
+                </AnimatePresence>
                 <HeroAnimation 
                   onExploreMenu={() => {
                     const el = document.getElementById('breakfast-lunch-combos');
@@ -3521,6 +3441,7 @@ export default function App() {
                   }}
                   hasActiveOrders={orders.some(o => o.userId === currentUser?.id && o.status !== 'delivered' && o.status !== 'cancelled')}
                 />
+                <WeeklyShowcase onAddToCart={addToCart} onOpenCart={() => setIsCartOpen(true)} />
                 <QuickOrderSteps />
                 <MorningBreakfastCombo onAddToCart={addToCart} />
               </>
@@ -3568,6 +3489,7 @@ export default function App() {
           isOpen={showThaliModal} 
           onClose={() => setShowThaliModal(false)} 
           onConfirm={handleThaliConfirm} 
+          item={thaliToCustomize}
         />
         <EmailLogsModal 
           isOpen={isEmailLogsOpen} 

@@ -4,7 +4,7 @@ export interface MenuItem {
   description: string;
   price: number;
   image: string;
-  category: 'roti' | 'paratha' | 'combo' | 'sabji' | 'side' | 'thali' | 'healthy';
+  category: 'roti' | 'paratha' | 'combo' | 'sabji' | 'side' | 'thali' | 'healthy' | 'subscription';
 }
 
 export interface CartItem extends MenuItem {
