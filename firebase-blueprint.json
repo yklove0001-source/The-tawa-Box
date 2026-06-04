@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Represents a user's delivery profile, subscription, and custom preferences.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The unique user ID matching Firebase Auth." },
+        "email": { "type": "string", "description": "The user's registered email address." },
+        "name": { "type": "string", "description": "The user's full name." },
+        "deliveryAddresses": {
+          "type": "array",
+          "description": "List of saved delivery addresses for checkout.",
+          "items": { "type": "string" }
+        },
+        "subscription": {
+          "type": "object",
+          "description": "Active Tawa Box meal subscription detail.",
+          "properties": {
+            "status": { "type": "string", "enum": ["none", "active", "cancelled"] },
+            "plan": { "type": "string", "enum": ["free", "weekly_basic", "monthly_pro", "none"] },
+            "expiresAt": { "type": "string", "format": "date-time" }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "name"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Represents an individual food delivery order placed by a customer.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "The unique order ID." },
+        "userId": { "type": "string", "description": "The customer's unique user ID." },
+        "userEmail": { "type": "string", "description": "The customer's email address." },
+        "userName": { "type": "string", "description": "The name of the customer." },
+        "items": {
+          "type": "array",
+          "description": "List of ordered menu items and quantities.",
+          "items": { "type": "object" }
+        },
+        "totalAmount": { "type": "number", "description": "Total checkout price in Indian Rupees." },
+        "status": { "type": "string", "enum": ["pending", "preparing", "out-for-delivery", "delivered", "cancelled"] },
+        "deliveryAddress": { "type": "string", "description": "The delivery address chosen for this specific order." },
+        "phone": { "type": "string", "description": "Contact number." },
+        "notes": { "type": "string", "description": "Special chef cooking instructions." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "userEmail", "userName", "items", "totalAmount", "status", "deliveryAddress", "phone", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Storage collection for user delivery profiles and subscriptions."
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Storage collection for public/admin restaurant orders."
+    }
+  }
+}

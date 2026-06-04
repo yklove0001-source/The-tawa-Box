@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Catch-all Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Global Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (request.auth.token.email == 'yklove0001@gmail.com' && request.auth.token.email_verified == true);
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // 3. Validation Helpers
+    function isValidUserProfile(data) {
+      return data.uid is string && data.uid == request.auth.uid &&
+             data.email is string && data.email.size() <= 256 &&
+             data.name is string && data.name.size() <= 200;
+    }
+
+    function isValidOrder(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.userEmail is string && data.userEmail.size() <= 256 &&
+             data.userName is string && data.userName.size() <= 200 &&
+             data.items is list && data.items.size() > 0 &&
+             data.totalAmount is number && data.totalAmount >= 0 &&
+             data.status is string && (data.status == 'pending' || data.status == 'preparing' || data.status == 'out-for-delivery' || data.status == 'delivered' || data.status == 'cancelled') &&
+             data.deliveryAddress is string && data.deliveryAddress.size() <= 1000 &&
+             data.phone is string && data.phone.size() <= 30;
+    }
+
+    // 4. Collection Matches
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUserProfile(request.resource.data);
+      allow update: if isOwner(userId) && isValidUserProfile(request.resource.data) &&
+                    (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'deliveryAddresses', 'subscription', 'updatedAt']));
+      allow delete: if false; // Profiles cannot be deleted
+    }
+
+    match /orders/{orderId} {
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && isValidOrder(request.resource.data);
+      allow update: if isSignedIn() && (
+        isAdmin() || 
+        (resource.data.userId == request.auth.uid && 
+         request.resource.data.status == 'cancelled' && 
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+      );
+      allow delete: if isAdmin();
+    }
+  }
+}

@@ -106,6 +106,14 @@ export const WeeklyShowcase = ({ onAddToCart, onOpenCart }: WeeklyShowcaseProps)
     }, 4000);
   };
 
+  const scrollCarousel = (direction: 'left' | 'right') => {
+    const container = document.getElementById('day-carousel-container');
+    if (container) {
+      const scrollAmount = direction === 'left' ? -180 : 180;
+      container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
   const handleAddTrial = () => {
     onAddToCart({
       id: `trial-${activeDay.id}`,
@@ -181,7 +189,7 @@ export const WeeklyShowcase = ({ onAddToCart, onOpenCart }: WeeklyShowcaseProps)
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.94, y: -15 }}
                   transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-full relative aspect-[4/3] rounded-2.5xl overflow-hidden border-4 border-[#F4F1EA] shadow-xl group cursor-pointer"
+                  className="w-full relative aspect-[4/3] rounded-[18px] overflow-hidden border-4 border-[#F4F1EA] shadow-xl group cursor-pointer"
                 >
                   <img 
                     src={activeDay.image} 
@@ -231,40 +239,65 @@ export const WeeklyShowcase = ({ onAddToCart, onOpenCart }: WeeklyShowcaseProps)
               {/* --- INTEGRATED DAY ICON MENU DIRECTLY BELOW MAIN IMAGE --- */}
               <div className="mt-4 w-full">
                 <p className="text-center font-mono text-[9px] tracking-[0.2em] uppercase text-[#5A3825]/45 font-black mb-3">
-                  👈 Tap a Day to change the live fire thali with animation 👉
+                  👈 Slide or tap to browse the daily thali cycle 👉
                 </p>
-                <div className="flex justify-center items-center gap-2 overflow-x-auto no-scrollbar pb-1 px-1">
-                  <div className="flex gap-2 min-w-max">
-                    {WEEK_PLAN.map((dayItem, index) => {
-                      const isActive = index === activeIdx;
-                      return (
-                        <button
-                          key={dayItem.id}
-                          onClick={() => setActiveIdx(index)}
-                          className={`flex flex-col items-center p-2 rounded-xl border transition-all duration-300 relative cursor-pointer outline-none ${
-                            isActive 
-                              ? 'bg-[#9E5638] border-[#9E5638] shadow-sm scale-102' 
-                              : 'bg-white hover:bg-[#FAF8F4] border-[#5A3825]/10 hover:border-[#D4AF37]/20 shadow-xs'
-                          }`}
-                        >
-                          {isActive && (
-                            <span className="absolute -inset-0.5 rounded-xl border border-[#D4AF37] opacity-60 animate-ping pointer-events-none" />
-                          )}
-                          <div className="w-10 h-10 rounded-full overflow-hidden border border-white/90 shadow-inner mb-1 flex-shrink-0">
-                            <img 
-                              src={dayItem.image} 
-                              alt={dayItem.day} 
-                              className="w-full h-full object-cover"
-                              referrerPolicy="no-referrer"
-                            />
-                          </div>
-                          <span className={`font-mono text-[8px] font-black tracking-widest ${isActive ? 'text-white' : 'text-[#5A3825]/55'}`}>
-                            {dayItem.label}
-                          </span>
-                        </button>
-                      );
-                    })}
+                <div className="relative flex items-center px-6">
+                  {/* Left Scroll Button */}
+                  <button
+                    onClick={() => scrollCarousel('left')}
+                    className="absolute left-0 z-20 bg-white hover:bg-[#FAF8F4] text-[#9E5638] border border-[#5A3825]/15 p-1.5 rounded-full shadow-md transition-all hover:scale-115 active:scale-95 cursor-pointer flex items-center justify-center font-bold"
+                  >
+                    <ChevronLeft className="w-4 h-4" strokeWidth={3} />
+                  </button>
+
+                  {/* Carousel Container */}
+                  <div 
+                    id="day-carousel-container"
+                    className="flex-1 overflow-x-auto no-scrollbar scroll-smooth pb-2 px-1"
+                  >
+                    <div className="flex gap-3 min-w-max">
+                      {WEEK_PLAN.map((dayItem, index) => {
+                        const isActive = index === activeIdx;
+                        return (
+                          <button
+                            key={dayItem.id}
+                            onClick={() => setActiveIdx(index)}
+                            className={`flex flex-col items-center p-2 rounded-2xl border transition-all duration-300 relative cursor-pointer outline-none select-none w-28 ${
+                              isActive 
+                                ? 'bg-[#9E5638] border-[#9E5638] text-white shadow-md scale-102 font-bold' 
+                                : 'bg-white hover:bg-[#FAF8F4] border-[#5A3825]/10 hover:border-[#D4AF37]/20 text-[#5A3825] shadow-xs'
+                            }`}
+                          >
+                            {isActive && (
+                              <span className="absolute -inset-0.5 rounded-2xl border border-[#D4AF37] opacity-60 animate-ping pointer-events-none" />
+                            )}
+                            <div className="w-24 h-18 rounded-xl overflow-hidden border border-[#5A3825]/10 shadow-inner mb-1.5 flex-shrink-0 bg-white">
+                              <img 
+                                src={dayItem.image} 
+                                alt={dayItem.day} 
+                                className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                                referrerPolicy="no-referrer"
+                              />
+                            </div>
+                            <span className={`font-mono text-[9px] font-black tracking-widest ${isActive ? 'text-white' : 'text-[#9E5638]'}`}>
+                              {dayItem.label}
+                            </span>
+                            <span className={`font-serif text-[10px] font-black tracking-wide ${isActive ? 'text-[#FAF6ED]' : 'text-[#5A3825]/60'}`}>
+                              {dayItem.day}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
+
+                  {/* Right Scroll Button */}
+                  <button
+                    onClick={() => scrollCarousel('right')}
+                    className="absolute right-0 z-20 bg-white hover:bg-[#FAF8F4] text-[#9E5638] border border-[#5A3825]/15 p-1.5 rounded-full shadow-md transition-all hover:scale-115 active:scale-95 cursor-pointer flex items-center justify-center font-bold"
+                  >
+                    <ChevronRight className="w-4 h-4" strokeWidth={3} />
+                  </button>
                 </div>
               </div>
             </div>
@@ -282,17 +315,9 @@ export const WeeklyShowcase = ({ onAddToCart, onOpenCart }: WeeklyShowcaseProps)
                   <span className="text-[#9E5638] tracking-[0.25em] font-mono text-[10px] uppercase font-extrabold block mb-1">
                     Authentic Chulha Cycle
                   </span>
-                  <h3 className="font-serif font-black text-2xl sm:text-3xl text-[#5A3825] uppercase tracking-wide">
+                  <h3 className="font-serif font-black text-2xl sm:text-3xl text-[#5A3825] uppercase tracking-wide mb-6">
                     {activeDay.title}
                   </h3>
-                  <p className="text-xs sm:text-sm text-[#7A8B6B] italic font-serif font-semibold mt-1 mb-4 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#7A8B6B]" />
-                    {activeDay.tagline}
-                  </p>
-                  
-                  <p className="text-xs sm:text-sm text-[#5A3825]/85 leading-relaxed font-serif font-medium mb-6 bg-[#FAF8F4] p-4 rounded-2xl border border-[#5A3825]/5 shadow-inner">
-                    {activeDay.description}
-                  </p>
 
                   {/* Grid items breakdown inside Thali */}
                   <h4 className="text-[10px] tracking-[0.2em] font-mono text-[#5A3825]/50 uppercase font-black mb-3">

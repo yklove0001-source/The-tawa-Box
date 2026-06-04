@@ -46,5 +46,11 @@ export interface User {
   email: string;
   role: 'user' | 'admin';
   points: number;
+  deliveryAddresses?: string[];
+  subscription?: {
+    plan: 'free' | 'weekly_basic' | 'monthly_pro' | 'none';
+    status: 'none' | 'active' | 'cancelled';
+    expiresAt: string;
+  };
   createdAt: string;
 }

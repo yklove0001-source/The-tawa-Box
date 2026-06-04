@@ -7,6 +7,26 @@ import { HeroAnimation, CustomLogoSvg } from './components/HeroAnimation';
 import { IntroAnimation } from './components/IntroAnimation';
 import { WeeklyShowcase } from './components/WeeklyShowcase';
 import { triggerEmailNotification } from './services/emailService';
+import { db, auth, handleFirestoreError, OperationType } from './lib/firebase';
+import { 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  signOut, 
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword
+} from 'firebase/auth';
+import { 
+  doc, 
+  setDoc, 
+  getDoc, 
+  updateDoc, 
+  collection, 
+  query, 
+  where, 
+  onSnapshot,
+  getDocFromServer
+} from 'firebase/firestore';
 
 
 // @ts-ignore
@@ -23,14 +43,17 @@ import lunchSideMealImg from './assets/images/lunch_side_meal_1779282404443.png'
 
 // --- Mock Data ---
 const MENU_ITEMS: MenuItem[] = [
-  { id: '11', name: 'Chhach Daliya', description: 'Crushed wheat (daliya) served with refreshing salted buttermilk (chhach), mixed sprouts, and seasonal fruit salad.', price: 120, category: 'healthy', image: namkeenDaliyaImg },
-  { id: '12', name: 'Doodh Daliya', description: 'Sweet milk-based crushed wheat (daliya) paired with a glass of milk, served with sprouted moong and seasonal fruit salad.', price: 130, category: 'healthy', image: doodhDaliyaImg },
   { id: '15', name: 'Lunch Box', description: 'Gourmet lunch box tray cooked over slow firewood. Includes hot, fresh rotis baked on clay oven, delicious seasonal dry subji, basmati rice, garden salad, and sweet fruits.', price: 199, category: 'combo', image: desiLunchTrayImg },
+  { id: '16', name: 'Salty Veggie Daliya', description: 'A wholesome, high-fiber broken wheat bowl cooked with fresh veggies, green peas, aromatic ginger, tempered with dynamic mustard seeds and curry leaves.', price: 199, category: 'healthy', image: namkeenDaliyaImg },
+  { id: '17', name: 'Cardamom Doodh Daliya', description: 'Wholesome broken wheat simmered in pure milk, sweetened with organic jaggery, infused with cardamom, and served with almonds & raisins.', price: 199, category: 'healthy', image: doodhDaliyaImg },
+  { id: 'daliya-1-day', name: 'Daliya Diet (1 Day Trial Plan)', description: 'Wholesome Morning Daliya and Fresh Daily Salad prepared exactly down to your health preferences.', price: 199, category: 'healthy', image: namkeenDaliyaImg },
+  { id: 'daliya-weekly', name: 'Daliya Diet (Weekly Subscription - 6 Days)', description: 'Freshly prepared Daily Daliya + Special Salad rotation delivered straight to your door from Monday to Saturday.', price: 1099, category: 'healthy', image: tawaBoxHero },
+  { id: 'daliya-monthly', name: 'Daliya Diet (Monthly Subscription - 24 Days)', description: 'The absolute health-tracker pack: 24 active week-days of clean, delicious Daliya & diverse loaded salad rotations.', price: 3999, category: 'healthy', image: lunchSideMealImg },
 ];
 
 const TESTIMONIALS = [
   { id: 1, name: 'Amit Sharma', comment: 'The smoky flavor of the chulha roti took me back to my childhood village. Absolutely authentic!', rating: 5, location: 'Gurgaon' },
-  { id: 2, name: 'Priya Verma', comment: 'Best healthy breakfast I have had in years. The Daliya Boxes are a must-try.', rating: 5, location: 'Delhi' },
+  { id: 2, name: 'Priya Verma', comment: 'Best wholesome food I have had in years. The Lunch Box is a must-try.', rating: 5, location: 'Delhi' },
   { id: 3, name: 'Rahul Gupta', comment: 'Prompt delivery and the rotis were still hot and soft. The Tawa Box is my new favorite.', rating: 4, location: 'Noida' },
 ];
 
@@ -63,12 +86,9 @@ const Navbar = ({
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between bg-[#9E5638] border-b border-[#B76F50]/45 md:px-12 backdrop-blur-md shadow-lg select-none">
-        {/* Left: Balanced empty spacing element to keep absolute centered title perfectly positioned */}
-        <div className="w-16 h-10" />
-
-        {/* Center: Main Title "THE TAWA BOX" in premium serif typography and warm gilding */}
-        <Link to="/" className="absolute left-1/2 -translate-x-1/2 text-center pointer-events-auto">
-          <span className="text-xl md:text-3xl font-serif font-black uppercase tracking-[0.16em] text-[#EADBBD] hover:text-[#FAF6ED] transition-colors block drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+        {/* Left: Main Title "THE TAWA BOX" positioned on the left side */}
+        <Link to="/" className="text-left pointer-events-auto">
+          <span className="text-xl md:text-2xl font-serif font-black uppercase tracking-[0.16em] text-[#EADBBD] hover:text-[#FAF6ED] transition-colors block drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
             THE TAWA BOX
           </span>
         </Link>
@@ -365,22 +385,6 @@ const FRONT_PAGE_LUNCH_BOX_DESC = `🚀 Short & Punchy List (For Quick Reading)
 🍉 Sweet Fruit Salad`;
 
 const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) => void }) => {
-  const namkeenDaliyaItem = MENU_ITEMS.find(item => item.id === '11') || {
-    id: '11',
-    name: 'Chhach Daliya',
-    price: 120,
-    description: 'Crushed wheat (daliya) served with refreshing salted buttermilk (chhach), mixed sprouts, and seasonal fruit salad.',
-    image: namkeenDaliyaImg
-  };
-
-  const doodhDaliyaItem = MENU_ITEMS.find(item => item.id === '12') || {
-    id: '12',
-    name: 'Doodh Daliya',
-    price: 130,
-    description: 'Sweet milk-based crushed wheat (daliya) paired with a glass of milk, served with sprouted moong and seasonal fruit salad.',
-    image: doodhDaliyaImg
-  };
-
   const comboItem = MENU_ITEMS.find(item => item.id === '15') || {
     id: '15',
     name: 'Lunch Box',
@@ -393,122 +397,20 @@ const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) 
     <section id="breakfast-lunch-combos" className="bg-[#E8EFE5] pt-8 pb-10 border-b border-[#5A3825]/5">
       <div className="max-w-7xl mx-auto px-4 md:px-6">
         
-        {/* Header Ribbon exactly as shown in the mockup */}
-        <div className="bg-[#7A8B6B] rounded-xl py-3.5 px-6 flex items-center justify-between shadow-sm border border-[#7A8B6B]/20 mb-8">
-          <h2 className="text-xs md:text-sm font-serif font-black tracking-[0.2em] text-[#FAF8F4] uppercase">
-            MORNING BREAKFAST
+        {/* Header Ribbon for Lunch Box */}
+        <div className="bg-[#7A8B6B] rounded-xl py-3.5 px-6 flex items-center justify-center shadow-sm border border-[#7A8B6B]/20 mb-8 max-w-4xl mx-auto">
+          <h2 className="text-xs md:text-sm font-serif font-black tracking-[0.2em] text-[#FAF8F4] uppercase text-center">
+            GOURMET LUNCH BOX
           </h2>
-          <span className="text-[10px] md:text-xs font-serif font-bold tracking-widest text-[#FAF8F4]/90 uppercase">
-            Time: 7 AM - 11 AM
-          </span>
         </div>
 
-        {/* 50% Width Side-by-Side Daliya Cards with Large Card Below */}
-        <div className="max-w-4xl mx-auto space-y-6">
-          
-          {/* Row 1: Chhach Daliya & Doodh Daliya side-by-side (50% each) */}
-          <div className="grid grid-cols-2 gap-4 md:gap-6">
-            
-            {/* Card 1: Chhach Daliya (50% width) */}
-            <motion.div 
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              onClick={() => onAddToCart(namkeenDaliyaItem as MenuItem)}
-              className="flex flex-col bg-[#FDFBF7] rounded-3xl border-4 border-[#C5A028] p-3 shadow-md hover:shadow-lg transition-all cursor-pointer group"
-            >
-              {/* Image container inside border with gold borders */}
-              <div className="aspect-square w-full relative overflow-hidden rounded-2xl border border-[#D4AF37]/20 flex items-center justify-center bg-white">
-                <img 
-                  src={namkeenDaliyaItem.image} 
-                  alt="Chhach Daliya" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-              {/* Down-centered elegant Title banner exactly matching mockup label */}
-              <div className="mt-3 bg-[#FAF6ED] border border-[#5A3825]/15 rounded-xl py-2 px-3 text-center shadow-sm group-hover:bg-[#F3EAD5] transition-colors flex-grow flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xs sm:text-sm font-serif font-black text-[#5A3825] tracking-wide">
-                    {namkeenDaliyaItem.name}
-                  </h3>
-                  <p className="text-sm sm:text-base md:text-lg font-serif font-black text-[#7A8B6B] mt-1">
-                    Rs. {namkeenDaliyaItem.price}
-                  </p>
-                </div>
-                
-                {/* Buy Button to provide explicit purchase option */}
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddToCart(namkeenDaliyaItem as MenuItem);
-                  }}
-                  className="mt-2 w-full py-1.5 bg-[#7A8B6B] hover:bg-[#617054] text-white rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-sm"
-                >
-                  Buy Now
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Card 2: Doodh Daliya (50% width) */}
-            <motion.div 
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              onClick={() => onAddToCart(doodhDaliyaItem as MenuItem)}
-              className="flex flex-col bg-[#FDFBF7] rounded-3xl border-4 border-[#C5A028] p-3 shadow-md hover:shadow-lg transition-all cursor-pointer group"
-            >
-              {/* Image container with gold border */}
-              <div className="aspect-square w-full relative overflow-hidden rounded-2xl border border-[#D4AF37]/20 flex items-center justify-center bg-white">
-                <img 
-                  src={doodhDaliyaItem.image} 
-                  alt="Doodh Daliya" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-              {/* Down-centered elegant Title banner exactly matching mockup label */}
-              <div className="mt-3 bg-[#FAF6ED] border border-[#5A3825]/15 rounded-xl py-2 px-3 text-center shadow-sm group-hover:bg-[#F3EAD5] transition-colors flex-grow flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xs sm:text-sm font-serif font-black text-[#5A3825] tracking-wide">
-                    {doodhDaliyaItem.name}
-                  </h3>
-                  <p className="text-sm sm:text-base md:text-lg font-serif font-black text-[#7A8B6B] mt-1">
-                    Rs. {doodhDaliyaItem.price}
-                  </p>
-                </div>
-                
-                {/* Buy Button to provide explicit purchase option */}
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddToCart(doodhDaliyaItem as MenuItem);
-                  }}
-                  className="mt-2 w-full py-1.5 bg-[#7A8B6B] hover:bg-[#617054] text-white rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all active:scale-95 shadow-sm"
-                >
-                  Buy Now
-                </button>
-              </div>
-            </motion.div>
-
-          </div>
-
-          {/* Heading Lunch Box styled exactly like Morning Breakfast banner */}
-          <div className="bg-[#7A8B6B] rounded-xl py-3.5 px-6 flex items-center justify-between shadow-sm border border-[#7A8B6B]/20 mb-4 mt-8">
-            <h2 className="text-xs md:text-sm font-serif font-black tracking-[0.2em] text-[#FAF8F4] uppercase">
-              LUNCH BOX
-            </h2>
-            <span className="text-[10px] md:text-xs font-serif font-bold tracking-widest text-[#FAF8F4]/90 uppercase">
-              Time: 12 PM - 3 PM
-            </span>
-          </div>
-
-          {/* Row 2: Lunch Box - Full width matching Row 1 with edge-to-edge full column image */}
+        <div className="max-w-4xl mx-auto">
+          {/* Lunch Box - Full width containing wood-fired meal detail */}
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="flex flex-col md:flex-row bg-[#FDFBF7] rounded-3xl border-4 border-[#C5A028] shadow-md hover:shadow-lg transition-all overflow-hidden h-auto md:h-72"
+            className="flex flex-col md:flex-row bg-[#FDFBF7] rounded-[22px] border-4 border-[#C5A028] shadow-md hover:shadow-lg transition-all overflow-hidden h-auto md:h-72"
           >
             {/* Left Column: Image with overlays covering the full section half */}
             <div className="relative w-full md:w-1/2 h-64 md:h-full flex-shrink-0 bg-white">
@@ -522,10 +424,6 @@ const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) 
                 }}
               />
               
-              {/* Sharp solid brown ribbon badge reading "Rs. 199" */}
-              <div className="absolute bottom-4 left-4 bg-[#5A3825] border border-[#D4AF37]/30 text-white font-serif font-extrabold text-sm px-4 py-2 rounded-md shadow-md">
-                Rs. 199
-              </div>
               {/* Gold seal stamp relative */}
               <div className="absolute bottom-4 right-4 animate-spin-slow">
                 <GoldSealCoin size={26} />
@@ -533,32 +431,484 @@ const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) 
             </div>
 
             {/* Right Column: delicious copy of Lunch Box item */}
-            <div className="flex flex-col justify-between flex-1 p-6 md:p-8">
+            <div className="flex flex-col justify-center flex-1 p-6 md:p-8">
               <div>
                 <span className="text-[#7A8B6B] text-[10px] font-serif uppercase tracking-[0.25em] font-extrabold mb-1 block">Wood-Fired Gourmet Selection</span>
                 <h3 className="text-xl md:text-2xl font-serif font-black text-[#5A3825] mb-2 leading-tight">
                   Lunch Box
                 </h3>
-                <p className="text-sm font-serif font-extrabold text-[#7A8B6B] mb-3">
-                  Rs. 199
-                </p>
                 <div className="text-xs text-[#2E1C12]/90 font-serif leading-relaxed whitespace-pre-line bg-[#EADBBD]/15 p-4 rounded-2xl border border-[#B38F24]/10 max-w-sm mt-3 font-semibold">
                   {FRONT_PAGE_LUNCH_BOX_DESC}
                 </div>
               </div>
-
-              {/* Buy Now button pill shaped styled in olive green */}
-              <div className="mt-4 flex justify-end">
-                <button 
-                  onClick={() => onAddToCart(comboItem as MenuItem)}
-                  className="px-6 py-2.5 bg-[#7A8B6B] hover:bg-[#617054] text-white rounded-full text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95 shadow-sm"
-                >
-                  Buy Now
-                </button>
-              </div>
             </div>
           </motion.div>
         </div>
+      </div>
+    </section>
+  );
+};
+
+const MorningDaliyaSection = ({ onAddToCart }: { onAddToCart: (item: MenuItem) => void }) => {
+  const daliyaDays = [
+    {
+      day: 'Monday',
+      name: 'Veggie Masala Daliya with Mixed Garden Salad',
+      description: 'A robust, high-fiber broken wheat bowl slow-cooked with organic carrots, tender green peas, aromatic ginger, and freshly ground country spices, tempered with dynamic mustard seeds and warm curry leaves.',
+      image: namkeenDaliyaImg,
+      calories: '280 kcal',
+      protein: '9g',
+      salad: 'Moong Sprouts & Cucumber Salad',
+      benefitTag: 'High Fiber • Pure Energy'
+    },
+    {
+      day: 'Tuesday',
+      name: 'Cardamom Doodh Daliya with Sliced Fruits',
+      description: 'Golden broken wheat tenderly simmered in hot milk, sweetened with organic village jaggery, infused with green cardamom pods, and topped with roasted crunch almonds, black raisins, and fresh banana slices.',
+      image: doodhDaliyaImg,
+      calories: '320 kcal',
+      protein: '11g',
+      salad: 'Fresh Minty Apple & Beet Salad',
+      benefitTag: 'Rich Calcium • Fitness Fuel'
+    },
+    {
+      day: 'Wednesday',
+      name: 'High-Protein Paneer Daliya Khichdi & Salad',
+      description: 'Comforting, creamy country daliya khichdi loaded with low-fat organic paneer cubes, whole yellow lentils, fresh dill leaves, and a pure cow ghee tempering of roasted cumin.',
+      image: lunchSideMealImg,
+      calories: '310 kcal',
+      protein: '14g',
+      salad: 'Crunchy Spiced Chickpea Salad',
+      benefitTag: 'Muscle Recovery • Peak Protein'
+    },
+    {
+      day: 'Thursday',
+      name: 'Rustic Wood-Fired Daliya Pulao & Raita',
+      description: 'Infused with smoky clay stove heat, this dry vegetable daliya features french beans, cauliflower heads, and spring onions, lightly sautéed with black pepper. Served with tomato-cucumber cool raita.',
+      image: tawaBoxHero,
+      calories: '260 kcal',
+      protein: '8g',
+      salad: 'Spiced Tomato & Cucumber Garden Toss',
+      benefitTag: 'Weight Management • Good Carbs'
+    },
+    {
+      day: 'Friday',
+      name: 'Garlic-Herb Buttered Daliya with Corn',
+      description: 'Fragrant roasted broken wheat tossed in a tiny hint of yellow farm butter, real garlic cloves, sweet corn niblets, fresh dynamic garden mint, and custom lemon juice. Supremely easy on digestion.',
+      image: desiLunchTrayLocal,
+      calories: '290 kcal',
+      protein: '9g',
+      salad: 'Garden-Fresh Mixed Greens & Corn Salad',
+      benefitTag: 'Active Metabolism • Gut Health'
+    },
+    {
+      day: 'Saturday',
+      name: 'Saffron Badam Doodh Daliya Infusion',
+      description: 'A weekend special! Whole broken daliya slow-cooked in thick almond milk, steeped with premium Kashmiri saffron strands, sweetened with organic dates, and loaded with roasted walnuts and cashews.',
+      image: doodhDaliyaImg,
+      calories: '340 kcal',
+      protein: '12g',
+      salad: 'Sweet Sliced Pear & Golden Raisin Toss',
+      benefitTag: 'Premium Nutrition • Heart Loving'
+    }
+  ];
+
+  const [activeDayIdx, setActiveDayIdx] = useState(0);
+  const activeDay = daliyaDays[activeDayIdx];
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  const scrollLeft = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: -240, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: 240, behavior: 'smooth' });
+    }
+  };
+
+  // Helper to add appropriate plan to cart
+  const handleAddPlanToCart = (planId: string) => {
+    const item = MENU_ITEMS.find(i => i.id === planId);
+    if (item) {
+      onAddToCart(item);
+    }
+  };
+
+  return (
+    <section id="morning-daliya" className="bg-[#FAF8F4] pt-8 pb-16 border-b border-[#5A3825]/5 select-none">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
+        
+        {/* Header Ribbon for Daliya Diet System */}
+        <div className="bg-[#9E5638] rounded-xl py-4 px-6 flex flex-col md:flex-row items-center justify-between shadow-md border border-[#B76F50]/20 mb-10 max-w-5xl mx-auto gap-3">
+          <div>
+            <span className="bg-white/15 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-md tracking-widest inline-block mb-1">Diet Program</span>
+            <h2 className="text-sm md:text-base font-serif font-black tracking-[0.22em] text-[#FAF8F4] uppercase">
+              6-DAY MORNING DALIYA & SALAD DIET
+            </h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] md:text-xs font-serif font-bold tracking-widest text-[#FAF8F4]/90 uppercase bg-black/10 py-1.5 px-3.5 rounded-lg border border-white/5">
+              Service: Mon - Sat • 7 AM - 11 AM
+            </span>
+            <span className="bg-[#7A8B6B] text-white text-[10px] mobile:text-[11px] px-3 py-1 rounded-full uppercase tracking-wider font-bold shadow-sm animate-pulse">
+              Healthy & Fresh
+            </span>
+          </div>
+        </div>
+
+        {/* Dynamic 6-Day Showcase Component */}
+        <div className="max-w-5xl mx-auto mb-16 bg-[#FDFBF7] rounded-[2rem] border border-[#5A3825]/10 p-6 md:p-8 shadow-sm">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-serif font-black text-[#5A3825]">Wholesome Day-by-Day Menu</h3>
+            <p className="text-xs text-[#7A8B6B] mt-1 font-medium bg-[#7A8B6B]/5 px-4 py-1.5 rounded-full inline-block">
+              We rotate our recipes daily to ensure balanced nutrition and delicious variety!
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            {/* LARGE OPENED IMAGE DISPLAY COLUMN (Grid Span 7) */}
+            <motion.div 
+              key={activeDayIdx}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="lg:col-span-7 flex flex-col gap-5"
+            >
+              <div className="relative h-64 sm:h-80 w-full overflow-hidden rounded-2xl shadow-md border border-[#5A3825]/5 bg-white">
+                <img 
+                  src={activeDay.image} 
+                  alt={activeDay.name} 
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+                
+                {/* Active Day Ribbon overlay on top-left of the running image */}
+                <span className="absolute top-4 left-4 bg-[#9E5638] text-white font-serif font-black text-xs uppercase px-4 py-2 rounded-full tracking-widest shadow-md">
+                  {activeDay.day} Diet
+                </span>
+
+                {/* Energy Stamp Badge */}
+                <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm border border-[#5A3825]/10 rounded-xl px-4 py-2 flex items-center gap-2 shadow-sm">
+                  <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
+                  <div>
+                    <p className="text-[10px] text-[#5A3825]/50 leading-none font-bold uppercase">ENERGY</p>
+                    <p className="text-xs font-serif font-black text-[#5A3825]">{activeDay.calories}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic menu content card */}
+              <div className="bg-[#FAF8F4]/80 p-6 rounded-2xl border border-[#5A3825]/5">
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <span className="bg-[#7A8B6B]/10 text-[#7A8B6B] text-[9.5px] font-black uppercase px-2.5 py-1 rounded-md tracking-wide">
+                    {activeDay.benefitTag}
+                  </span>
+                  <span className="bg-[#9E5638]/10 text-[#9E5638] text-[9.5px] font-black uppercase px-2.5 py-1 rounded-md tracking-wide">
+                    Protein: {activeDay.protein}
+                  </span>
+                </div>
+
+                <h4 className="text-xl md:text-2xl font-serif font-black text-[#5A3825] leading-tight mb-2">
+                  {activeDay.name}
+                </h4>
+                
+                <p className="text-xs text-[#2E1C12]/85 font-serif leading-relaxed mb-4">
+                  {activeDay.description}
+                </p>
+
+                {/* Salad Pairing display box */}
+                <div className="p-3 bg-[#7A8B6B]/10 rounded-xl border border-[#7A8B6B]/20 flex items-center gap-3">
+                  <div className="bg-[#7A8B6B] text-white p-1.5 rounded-lg">
+                    <Leaf className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h5 className="text-[10px] font-black text-[#7A8B6B] uppercase tracking-wider leading-none">Fresh Salad Pairing</h5>
+                    <p className="text-xs font-semibold text-[#5A3825] mt-0.5">{activeDay.salad}</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* REST OF 5 SMALL IMAGES / PREVIEW LIST COLUMN (Grid Span 5) */}
+            <div className="lg:col-span-5 flex flex-col gap-4 self-stretch bg-[#FAF8F4] p-5 rounded-3xl border border-[#5A3825]/5 justify-between min-h-[480px]">
+              <div>
+                <div className="flex items-center justify-between pl-1 mb-3">
+                  <h4 className="text-xs font-black text-[#5A3825]/60 uppercase tracking-widest">
+                    Diet Track Carousel
+                  </h4>
+                  {/* Carousel Controls */}
+                  <div className="flex gap-1.5">
+                    <button 
+                      onClick={scrollLeft}
+                      className="p-1.5 rounded-full bg-white hover:bg-[#FAF6ED] border border-[#5A3825]/10 text-[#5A3825]/75 hover:text-[#5A3825] active:scale-95 transition-all shadow-sm cursor-pointer"
+                      title="Previous Slide"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+                    <button 
+                      onClick={scrollRight}
+                      className="p-1.5 rounded-full bg-white hover:bg-[#FAF6ED] border border-[#5A3825]/10 text-[#5A3825]/75 hover:text-[#5A3825] active:scale-95 transition-all shadow-sm cursor-pointer"
+                      title="Next Slide"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Subtitle tag */}
+                <p className="text-[11px] text-[#2E1C12]/60 font-serif mb-4 pl-1">
+                  Scroll and click any day below to discover details of that day's nourishing daliya and fresh salad.
+                </p>
+
+                {/* Carousel Track - Horizontal Scrollable Row for ALL viewports */}
+                <div 
+                  ref={carouselRef}
+                  className="flex gap-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overflow-x-auto pb-4 snap-x scroll-smooth w-full select-none"
+                >
+                  {daliyaDays.map((item, index) => {
+                    const isActive = index === activeDayIdx;
+                    if (isActive) return null; // We display the other 5 days as requested
+
+                    return (
+                      <motion.button
+                        key={item.day}
+                        whileHover={{ y: -3 }}
+                        onClick={() => setActiveDayIdx(index)}
+                        className="flex-shrink-0 w-[210px] flex flex-col p-3 bg-white border border-[#5A3825]/8 rounded-2xl transition-all cursor-pointer text-left shadow-sm hover:shadow-md snap-start h-[190px] justify-between"
+                      >
+                        {/* Thumbnail image with tag */}
+                        <div className="relative w-full h-24 rounded-lg overflow-hidden bg-white border border-black/5 flex-shrink-0">
+                          <img 
+                            src={item.image} 
+                            alt={item.day} 
+                            className="w-full h-full object-cover" 
+                            referrerPolicy="no-referrer"
+                          />
+                          <span className="absolute top-1.5 left-1.5 bg-[#9E5638] text-white text-[8px] font-bold uppercase px-1.5 py-0.5 rounded tracking-wide shadow-sm">
+                            {item.day}
+                          </span>
+                        </div>
+                        
+                        {/* Title and salad description */}
+                        <div className="mt-2 text-ellipsis overflow-hidden flex-1 flex flex-col justify-between">
+                          <div>
+                            <p className="text-xs font-black text-[#5A3825] line-clamp-1 leading-tight">
+                              {item.name.split(' with ')[0]}
+                            </p>
+                            <p className="text-[9.5px] text-[#2E1C12]/60 font-serif line-clamp-1 italic mt-1 flex items-center gap-1">
+                              <Leaf className="w-3 h-3 text-[#7A8B6B] flex-shrink-0" />
+                              <span>{item.salad}</span>
+                            </p>
+                          </div>
+                          
+                          <div className="flex items-center justify-between border-t border-[#5A3825]/5 pt-2 mt-1">
+                            <span className="text-[8px] font-black uppercase text-[#7A8B6B] tracking-wider">
+                              {item.calories}
+                            </span>
+                            <span className="text-[9px] font-black text-[#9E5638] flex items-center gap-0.5">
+                              View <ArrowRight className="w-2.5 h-2.5" />
+                            </span>
+                          </div>
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Bottom Call to Action showing details of current active plan */}
+              <div className="mt-4 pt-4 border-t border-[#5A3825]/10 bg-[#FAF8F4] rounded-2xl">
+                <div className="bg-[#7A8B6B]/15 rounded-xl p-3 flex items-center justify-between">
+                  <div>
+                    <span className="text-[9px] font-black text-[#7A8B6B] uppercase block">ACTIVE ITEM</span>
+                    <span className="text-xs font-black text-[#5A3825] line-clamp-1">{activeDay.day}: {activeDay.name.split(' with ')[0]}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[9px] font-bold text-[#5A3825]/40 block uppercase">NUTRITION</span>
+                    <span className="text-xs font-black text-[#5A3825]">{activeDay.calories} • {activeDay.protein}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* 3 SUBSCRIPTION / TRIAL PLANS AREA */}
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <h3 className="text-xl md:text-2xl font-serif font-black text-[#5A3825]">
+              Select Your Healthy Daliya Diet Plan
+            </h3>
+            <p className="text-xs md:text-sm text-[#7A8B6B] mt-1 font-serif max-w-lg mx-auto">
+              Choose from our daily trials, flexible weekly packages, or best-value continuous monthly subscriptions. Delivered hot and fresh!
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            {/* PLAN 1: 1 Day Trial Plan */}
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="bg-[#FAF8F4] rounded-3xl border-2 border-[#5A3825]/10 shadow-sm flex flex-col justify-between overflow-hidden group hover:border-[#7A8B6B]/40 transition-colors"
+            >
+              <div className="p-6 md:p-8 flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[10px] font-black uppercase text-[#5A3825]/50 tracking-widest bg-white py-1 px-3 rounded-full border border-black/5">
+                    1 Day Test
+                  </span>
+                  <UtensilsCrossed className="w-5 h-5 text-[#7A8B6B]" />
+                </div>
+                <h4 className="text-lg font-serif font-black text-[#5A3825]">Daily Trial Diet Plan</h4>
+                <p className="text-[11px] text-[#2E1C12]/70 font-serif mt-2 min-h-[3rem]">
+                  Perfect for sampling on a single morning. Get today’s specialty daliya + organic salad pairing.
+                </p>
+                <div className="my-6 pt-4 border-t border-[#5A3825]/5">
+                  <span className="text-xs text-[#5A3825]/40 block uppercase tracking-wider font-bold">COST</span>
+                  <span className="text-3xl font-serif font-black text-[#5A3825]">Rs. 199</span>
+                  <span className="text-xs text-[#5A3825]/50"> / one-day delivery</span>
+                </div>
+                <ul className="space-y-2.5 text-xs text-[#2E1C12]/80 font-serif">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                    <span>Selected Day Daliya Bowl</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                    <span>Crunchy Fresh Daily Salad</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                    <span>Eco Thermal Packed Hot</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="p-6 md:px-8 md:pb-8 bg-[#FAF8F4] border-t border-[#5A3825]/5">
+                <button 
+                  onClick={() => handleAddPlanToCart('daliya-1-day')}
+                  className="w-full py-3 bg-[#9E5638] hover:bg-[#B76F50] text-[#FAF6ED] rounded-full text-xs font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm cursor-pointer text-center block"
+                >
+                  Order Trial • Rs. 199
+                </button>
+              </div>
+            </motion.div>
+
+            {/* PLAN 2: Weekly Subscription Plan */}
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="bg-[#EADBBD]/20 rounded-3xl border-2 border-[#7A8B6B] shadow-sm flex flex-col justify-between overflow-hidden relative group"
+            >
+              <div className="absolute top-0 right-0 bg-[#7A8B6B] text-white text-[8px] font-black uppercase px-4 py-1.5 rounded-bl-xl tracking-wider">
+                POPULAR CHOICE
+              </div>
+              
+              <div className="p-6 md:p-8 flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[10px] font-black uppercase text-[#7A8B6B] tracking-widest bg-white py-1 px-3 rounded-full border border-[#7A8B6B]/25 font-semibold">
+                    6 Active Days
+                  </span>
+                  <Calendar className="w-5 h-5 text-[#7A8B6B]" />
+                </div>
+                <h4 className="text-lg font-serif font-black text-[#5A3825]">Weekly Health Rotation</h4>
+                <p className="text-[11px] text-[#2E1C12]/70 font-serif mt-2 min-h-[3rem]">
+                  Monday to Saturday healthy morning daliya + salad schedule. Ensures continuous dietary control.
+                </p>
+                <div className="my-6 pt-4 border-t border-[#7A8B6B]/15">
+                  <span className="text-xs text-[#7A8B6B] block uppercase tracking-wider font-extrabold">COST</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-serif font-black text-[#5A3825]">Rs. 1099</span>
+                    <span className="text-xs text-[#7A8B6B]/80 font-bold line-through">Rs. 1194</span>
+                  </div>
+                  <span className="text-xs text-[#5A3825]/50"> / Mon to Sat subscription</span>
+                </div>
+                <ul className="space-y-2.5 text-xs text-[#2E1C12]/80 font-serif">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                    <span>6 Balanced Daliya Recipies</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                    <span>6 Different Salad Pairings</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                    <span>Free Regular Delivery Hours</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                    <span>Cancel or Pause Any Day</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="p-6 md:px-8 md:pb-8 bg-[#EADBBD]/10 border-t border-[#7A8B6B]/10">
+                <button 
+                  onClick={() => handleAddPlanToCart('daliya-weekly')}
+                  className="w-full py-3 bg-[#7A8B6B] hover:bg-[#617054] text-white rounded-full text-xs font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm cursor-pointer text-center block"
+                >
+                  Activate Weekly • Rs. 1099
+                </button>
+              </div>
+            </motion.div>
+
+            {/* PLAN 3: Monthly Subscription Plan */}
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="bg-[#FAF8F4] rounded-3xl border-2 border-[#5A3825]/10 shadow-sm flex flex-col justify-between overflow-hidden group hover:border-[#9E5638]/40 transition-colors"
+            >
+              <div className="p-6 md:p-8 flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[10px] font-black uppercase text-[#9E5638] tracking-widest bg-[#9E5638]/5 py-1 px-3 rounded-full border border-[#9E5638]/20 font-semibold">
+                    24 Active Days
+                  </span>
+                  <Trophy className="w-5 h-5 text-[#9E5638]" />
+                </div>
+                <h4 className="text-lg font-serif font-black text-[#5A3825]">Monthly Master Plan</h4>
+                <p className="text-[11px] text-[#2E1C12]/70 font-serif mt-2 min-h-[3rem]">
+                  Super-saver package covering 4 consecutive Mon-Sat weeks. Ultimate weight management & vital digestion.
+                </p>
+                <div className="my-6 pt-4 border-t border-[#5A3825]/5">
+                  <span className="text-xs text-[#9E5638] block uppercase tracking-wider font-extrabold">COST</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-serif font-black text-[#5A3825]">Rs. 3999</span>
+                    <span className="text-xs text-[#5A3825]/40 line-through">Rs. 4776</span>
+                  </div>
+                  <span className="text-xs text-[#5A3825]/50"> / 24-day master package</span>
+                </div>
+                <ul className="space-y-2.5 text-xs text-[#2E1C12]/80 font-serif">
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#9E5638] flex-shrink-0" />
+                    <span className="font-semibold text-[#5A3825]">Save Rs. 777 Instantly</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                    <span>Complete 4-Week Custom Rotation</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                    <span>VIP Fast Morning Priority Slot</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                    <span>Free Diet Consult Call Coupon</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="p-6 md:px-8 md:pb-8 bg-[#FAF8F4] border-t border-[#5A3825]/5">
+                <button 
+                  onClick={() => handleAddPlanToCart('daliya-monthly')}
+                  className="w-full py-3 bg-[#9E5638] hover:bg-[#B76F50] text-[#FAF6ED] rounded-full text-xs font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm cursor-pointer text-center block"
+                >
+                  Activate Monthly • Rs. 3999
+                </button>
+              </div>
+            </motion.div>
+
+          </div>
+        </div>
+
       </div>
     </section>
   );
@@ -588,16 +938,16 @@ const LunchBoxCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) => void 
         </div>
 
         {/* Dynamic 3-Compartment Thali representation */}
-        <div className="bg-[#FAF8F4] rounded-3xl border-4 border-[#C5A028] shadow-md overflow-hidden p-6 md:p-8">
+        <div className="bg-[#FAF8F4] rounded-[22px] border-4 border-[#C5A028] shadow-md overflow-hidden p-6 md:p-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             
             {/* Left Column (lg:col-span-4): Top down compartment lunch box tray image */}
             <div className="lg:col-span-4 flex justify-center">
-              <div className="aspect-[3/4] max-h-80 lg:max-h-[340px] w-full rounded-2xl overflow-hidden relative border border-[#5A3825]/10 bg-white shadow-md p-2">
+              <div className="aspect-[3/4] max-h-80 lg:max-h-[340px] w-full rounded-[14px] overflow-hidden relative border border-[#5A3825]/10 bg-white shadow-md p-2">
                 <img 
                   src={lunchItem.image} 
                   alt="5-compartment Desi meal tray" 
-                  className="w-full h-full object-cover rounded-xl"
+                  className="w-full h-full object-cover rounded-[11px]"
                   referrerPolicy="no-referrer"
                   onError={(e) => {
                     e.currentTarget.src = desiLunchTrayLocal;
@@ -633,11 +983,11 @@ const LunchBoxCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) => void 
 
             {/* Right Column (lg:col-span-4): Side Sprouts and Lassi image */}
             <div className="lg:col-span-4 flex justify-center">
-              <div className="aspect-square w-full max-h-[300px] rounded-2xl overflow-hidden relative border border-[#D4AF37]/25 bg-white shadow-md p-2">
+              <div className="aspect-square w-full max-h-[300px] rounded-[14px] overflow-hidden relative border border-[#D4AF37]/25 bg-white shadow-md p-2">
                 <img 
                   src={lunchSideMealImg} 
                   alt="Glass of fresh buttermilk and sprouts side" 
-                  className="w-full h-full object-cover rounded-xl"
+                  className="w-full h-full object-cover rounded-[11px]"
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -679,9 +1029,9 @@ const MenuPage = ({ onAddToCart, onUpdateQuantity, cart }: {
         whileHover={{ y: -5, scale: 1.01 }}
         viewport={{ once: true }}
         transition={{ delay: idx * 0.05, duration: 0.4 }}
-        className="group glass-card rounded-[2rem] p-4 sm:p-6 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] transition-all duration-300 border-white/5 flex flex-col gap-4 relative overflow-hidden"
+        className="group glass-card rounded-[1.8rem] p-4 sm:p-6 hover:shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] transition-all duration-300 border-white/5 flex flex-col gap-4 relative overflow-hidden"
       >
-        <div className="aspect-video w-full bg-white/5 rounded-xl overflow-hidden relative">
+        <div className="aspect-video w-full bg-white/5 rounded-[11px] overflow-hidden relative">
           <img 
             src={item.image} 
             alt={item.name} 
@@ -994,7 +1344,7 @@ const AboutPage = () => (
         </div>
       </div>
       <div className="relative">
-        <div className="aspect-square rounded-[3rem] overflow-hidden shadow-2xl">
+        <div className="aspect-square rounded-[2.7rem] overflow-hidden shadow-2xl">
           <img 
             src="https://picsum.photos/seed/chulha_fire/800/800" 
             alt="Traditional Chulha" 
@@ -1002,7 +1352,7 @@ const AboutPage = () => (
             referrerPolicy="no-referrer"
           />
         </div>
-        <div className="absolute -bottom-10 -left-10 glass-card p-8 rounded-3xl hidden md:block">
+        <div className="absolute -bottom-10 -left-10 glass-card p-8 rounded-[22px] hidden md:block">
           <div className="text-4xl font-display font-black text-brand-primary mb-1">100%</div>
           <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Traditional Method</div>
         </div>
@@ -1016,24 +1366,107 @@ const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find((u: any) => u.email === email && u.password === password);
-    
-    if (user) {
-      const { password: _, ...userWithoutPassword } = user;
-      // Migration: ensure points exist
-      const sanitizedUser = {
-        ...userWithoutPassword,
-        points: userWithoutPassword.points || 0
-      };
-      onLogin(sanitizedUser as User);
-      navigate(userWithoutPassword.role === 'admin' ? '/admin' : '/dashboard');
-    } else {
-      setError('Invalid email or password');
+    setLoading(true);
+    setError('');
+    try {
+      const userCred = await signInWithEmailAndPassword(auth, email, password);
+      const uid = userCred.user.uid;
+
+      const userDocRef = doc(db, 'users', uid);
+      const userSnap = await getDoc(userDocRef);
+      if (userSnap.exists()) {
+        const d = userSnap.data();
+        const profileData: User = {
+          id: uid,
+          name: d.name || 'Tawa Lover',
+          email: d.email || email,
+          role: d.role || ((email === 'yklove0001@gmail.com') ? 'admin' : 'user'),
+          points: d.points || 0,
+          deliveryAddresses: d.deliveryAddresses || [],
+          subscription: d.subscription || { plan: 'none', status: 'none', expiresAt: '' },
+          createdAt: d.createdAt || new Date().toISOString()
+        };
+        onLogin(profileData);
+        navigate(profileData.role === 'admin' ? '/admin' : '/dashboard');
+      } else {
+        // Fallback profile if Firestore is out of sync
+        const profileData: User = {
+          id: uid,
+          name: userCred.user.displayName || 'Tawa Lover',
+          email: email,
+          role: (email === 'yklove0001@gmail.com') ? 'admin' : 'user',
+          points: 0,
+          deliveryAddresses: [],
+          subscription: { plan: 'none', status: 'none', expiresAt: '' },
+          createdAt: new Date().toISOString()
+        };
+        await setDoc(userDocRef, profileData);
+        onLogin(profileData);
+        navigate(profileData.role === 'admin' ? '/admin' : '/dashboard');
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCred = await signInWithPopup(auth, provider);
+      const firebaseUser = userCred.user;
+      const uid = firebaseUser.uid;
+      const email = firebaseUser.email || '';
+
+      const userDocRef = doc(db, 'users', uid);
+      const userSnap = await getDoc(userDocRef);
+      
+      let profileData: User;
+      if (userSnap.exists()) {
+        const d = userSnap.data();
+        profileData = {
+          id: uid,
+          name: d.name || firebaseUser.displayName || 'Tawa Lover',
+          email: email,
+          role: d.role || ((email === 'yklove0001@gmail.com') ? 'admin' : 'user'),
+          points: d.points || 0,
+          deliveryAddresses: d.deliveryAddresses || [],
+          subscription: d.subscription || { plan: 'none', status: 'none', expiresAt: '' },
+          createdAt: d.createdAt || new Date().toISOString()
+        };
+      } else {
+        profileData = {
+          id: uid,
+          name: firebaseUser.displayName || 'Tawa Lover',
+          email: email,
+          role: (email === 'yklove0001@gmail.com') ? 'admin' : 'user',
+          points: 0,
+          deliveryAddresses: [],
+          subscription: {
+            plan: 'none',
+            status: 'none',
+            expiresAt: ''
+          },
+          createdAt: new Date().toISOString()
+        };
+        await setDoc(userDocRef, profileData);
+      }
+      onLogin(profileData);
+      navigate(profileData.role === 'admin' ? '/admin' : '/dashboard');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Google Sign-In failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -1084,9 +1517,32 @@ const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
               </button>
             </div>
           </div>
-          <button className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all active:scale-[0.98]">
-            Login
+          <button 
+            type="submit"
+            disabled={loading}
+            className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+          >
+            {loading ? 'Logging in...' : 'Login'}
           </button>
+          
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-white/10"></div>
+            <span className="flex-shrink mx-4 text-white/40 text-xs font-mono">OR</span>
+            <div className="flex-grow border-t border-white/10"></div>
+          </div>
+
+          <button 
+            onClick={handleGoogleLogin}
+            type="button"
+            disabled={loading}
+            className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 transition-all cursor-pointer"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.111C18.281 1.09 15.545 0 12.24 0 5.581 0 0 5.373 0 12s5.581 12 12.24 12c6.96 0 11.57-4.894 11.57-11.79 0-.795-.085-1.4-.192-1.925H12.24Z" />
+            </svg>
+            Continue with Google
+          </button>
+
           <p className="text-center text-white/60 text-sm">
             Don't have an account? <Link to="/register" className="text-brand-accent font-bold">Register Now</Link>
           </p>
@@ -1095,39 +1551,103 @@ const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
     </div>
   );
 };
- const RegisterPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
+
+const RegisterPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    if (users.find((u: any) => u.email === email)) {
-      setError('Email already registered');
-      return;
+    setLoading(true);
+    setError('');
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+      const uid = userCred.user.uid;
+
+      const profileData: User = {
+        id: uid,
+        name,
+        email,
+        role: (email === 'yklove0001@gmail.com') ? 'admin' : 'user',
+        points: 0,
+        deliveryAddresses: [],
+        subscription: {
+          plan: 'none',
+          status: 'none',
+          expiresAt: ''
+        },
+        createdAt: new Date().toISOString()
+      };
+
+      const userDocRef = doc(db, 'users', uid);
+      await setDoc(userDocRef, profileData);
+
+      onLogin(profileData);
+      navigate(profileData.role === 'admin' ? '/admin' : '/dashboard');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Registration failed');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    const newUser = {
-      id: Math.random().toString(36).substr(2, 9),
-      name,
-      email,
-      password,
-      role: (email.includes('admin') || email === 'yklove0001@gmail.com') ? 'admin' : 'user',
-      points: 0,
-      createdAt: new Date().toISOString()
-    };
+  const handleGoogleLogin = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCred = await signInWithPopup(auth, provider);
+      const firebaseUser = userCred.user;
+      const uid = firebaseUser.uid;
+      const email = firebaseUser.email || '';
 
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    
-    const { password: _, ...userWithoutPassword } = newUser;
-    onLogin(userWithoutPassword as User);
-    navigate(userWithoutPassword.role === 'admin' ? '/admin' : '/dashboard');
+      const userDocRef = doc(db, 'users', uid);
+      const userSnap = await getDoc(userDocRef);
+      
+      let profileData: User;
+      if (userSnap.exists()) {
+        const d = userSnap.data();
+        profileData = {
+          id: uid,
+          name: d.name || firebaseUser.displayName || 'Tawa Lover',
+          email: email,
+          role: d.role || ((email === 'yklove0001@gmail.com') ? 'admin' : 'user'),
+          points: d.points || 0,
+          deliveryAddresses: d.deliveryAddresses || [],
+          subscription: d.subscription || { plan: 'none', status: 'none', expiresAt: '' },
+          createdAt: d.createdAt || new Date().toISOString()
+        };
+      } else {
+        profileData = {
+          id: uid,
+          name: firebaseUser.displayName || 'Tawa Lover',
+          email: email,
+          role: (email === 'yklove0001@gmail.com') ? 'admin' : 'user',
+          points: 0,
+          deliveryAddresses: [],
+          subscription: {
+            plan: 'none',
+            status: 'none',
+            expiresAt: ''
+          },
+          createdAt: new Date().toISOString()
+        };
+        await setDoc(userDocRef, profileData);
+      }
+      onLogin(profileData);
+      navigate(profileData.role === 'admin' ? '/admin' : '/dashboard');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Google Sign-In failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -1188,9 +1708,32 @@ const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
               </button>
             </div>
           </div>
-          <button className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all active:scale-[0.98]">
-            Create Account
+          <button 
+            type="submit"
+            disabled={loading}
+            className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+          >
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
+
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-white/10"></div>
+            <span className="flex-shrink mx-4 text-white/40 text-xs font-mono">OR</span>
+            <div className="flex-grow border-t border-white/10"></div>
+          </div>
+
+          <button 
+            onClick={handleGoogleLogin}
+            type="button"
+            disabled={loading}
+            className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 transition-all cursor-pointer"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.111C18.281 1.09 15.545 0 12.24 0 5.581 0 0 5.373 0 12s5.581 12 12.24 12c6.96 0 11.57-4.894 11.57-11.79 0-.795-.085-1.4-.192-1.925H12.24Z" />
+            </svg>
+            Continue with Google
+          </button>
+
           <p className="text-center text-white/60 text-sm">
             Already have an account? <Link to="/login" className="text-brand-accent font-bold">Login</Link>
           </p>
@@ -1283,10 +1826,20 @@ const OrderStatusSteps = ({ status }: { status: OrderDetails['status'] }) => {
   );
 };
 
-const Dashboard = ({ user, orders, onUpdateStatus, onOpenEmailLogs }: { user: User, orders: OrderDetails[], onUpdateStatus: (id: string, status: OrderDetails['status']) => void, onOpenEmailLogs?: () => void }) => {
+const Dashboard = ({ user, orders, onUpdateStatus, onOpenEmailLogs, onUpdateUser }: { 
+  user: User, 
+  orders: OrderDetails[], 
+  onUpdateStatus: (id: string, status: OrderDetails['status']) => void, 
+  onOpenEmailLogs?: () => void,
+  onUpdateUser: (updatedFields: Partial<User>) => Promise<void>
+}) => {
   const [statusFilter, setStatusFilter] = useState<OrderDetails['status'] | 'all'>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [activeTab, setActiveTab] = useState<'orders' | 'profile'>('orders');
+  const [newAddress, setNewAddress] = useState('');
+  const [editingName, setEditingName] = useState(user.name);
+  const [isUpdatingName, setIsUpdatingName] = useState(false);
 
   const userOrders = orders.filter(o => o.userId === user.id);
 
@@ -1303,7 +1856,7 @@ const Dashboard = ({ user, orders, onUpdateStatus, onOpenEmailLogs }: { user: Us
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-12 gap-8">
         <div>
           <h2 className="text-5xl font-display font-black text-brand-primary mb-2">Welcome, {user.name}!</h2>
-          <p className="text-white/60">Manage your orders and track your desi cravings.</p>
+          <p className="text-white/60">Manage your orders and track your subscription details.</p>
           {onOpenEmailLogs && (
             <button 
               onClick={onOpenEmailLogs}
@@ -1340,213 +1893,455 @@ const Dashboard = ({ user, orders, onUpdateStatus, onOpenEmailLogs }: { user: Us
         </div>
       </div>
 
-      <div className="space-y-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <h3 className="text-2xl font-display font-bold text-brand-primary">Order History</h3>
-          
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="bg-white/5 p-1 rounded-2xl flex items-center gap-1 border border-white/10 flex-wrap">
-              {['all', 'pending', 'preparing', 'shipping', 'delivered', 'cancelled'].map((status) => (
-                <button
-                  key={status}
-                  onClick={() => setStatusFilter(status as any)}
-                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
-                    statusFilter === status 
-                      ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20' 
-                      : 'text-white/40 hover:text-white hover:bg-white/5'
-                  }`}
+      {/* Tabs Selector */}
+      <div className="flex border-b border-white/10 mb-8 gap-6">
+        <button 
+          onClick={() => setActiveTab('orders')}
+          className={`pb-4 text-sm font-black uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
+            activeTab === 'orders' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-white/40 hover:text-white'
+          }`}
+        >
+          🍛 Order History
+        </button>
+        <button 
+          onClick={() => setActiveTab('profile')}
+          className={`pb-4 text-sm font-black uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
+            activeTab === 'profile' ? 'border-brand-primary text-[#EA580C]' : 'border-transparent text-white/40 hover:text-white'
+          }`}
+        >
+          👤 Addresses & Subscription
+        </button>
+      </div>
+
+      <AnimatePresence mode="wait">
+        {activeTab === 'orders' ? (
+          <motion.div key="orders" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <h3 className="text-2xl font-display font-bold text-brand-primary">Order History</h3>
+              
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="bg-white/5 p-1 rounded-2xl flex items-center gap-1 border border-white/10 flex-wrap">
+                  {['all', 'pending', 'preparing', 'shipping', 'delivered', 'cancelled'].map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => setStatusFilter(status as any)}
+                      className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
+                        statusFilter === status 
+                          ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20' 
+                          : 'text-white/40 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      {status === 'shipping' ? 'shipping' : status}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Date Filters */}
+            <div className="flex flex-wrap items-center gap-4 bg-white/5 p-4 rounded-3xl border border-white/5">
+              <div className="flex items-center gap-3 px-4 py-2 bg-black/20 rounded-xl border border-white/10 flex-1 min-w-[200px]">
+                <Calendar className="w-4 h-4 text-brand-primary" />
+                <input 
+                  type="date" 
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="bg-transparent border-none focus:ring-0 text-xs font-bold text-white/80 w-full outline-none"
+                />
+                <span className="text-white/20 text-xs">to</span>
+                <input 
+                  type="date" 
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="bg-transparent border-none focus:ring-0 text-xs font-bold text-white/80 w-full outline-none"
+                />
+              </div>
+              {(startDate || endDate || statusFilter !== 'all') && (
+                <button 
+                  onClick={() => {
+                    setStartDate('');
+                    setEndDate('');
+                    setStatusFilter('all');
+                  }}
+                  className="px-4 py-2 text-xs font-bold text-brand-accent hover:text-white transition-colors"
                 >
-                  {status === 'shipping' ? 'shipping' : status}
+                  Clear Filters
                 </button>
-              ))}
+              )}
             </div>
-          </div>
-        </div>
 
-        {/* Date Filters */}
-        <div className="flex flex-wrap items-center gap-4 bg-white/5 p-4 rounded-3xl border border-white/5">
-          <div className="flex items-center gap-3 px-4 py-2 bg-black/20 rounded-xl border border-white/10 flex-1 min-w-[200px]">
-            <Calendar className="w-4 h-4 text-brand-primary" />
-            <input 
-              type="date" 
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="bg-transparent border-none focus:ring-0 text-xs font-bold text-white/80 w-full outline-none"
-            />
-            <span className="text-white/20 text-xs">to</span>
-            <input 
-              type="date" 
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="bg-transparent border-none focus:ring-0 text-xs font-bold text-white/80 w-full outline-none"
-            />
-          </div>
-          {(startDate || endDate || statusFilter !== 'all') && (
-            <button 
-              onClick={() => {
-                setStartDate('');
-                setEndDate('');
-                setStatusFilter('all');
-              }}
-              className="px-4 py-2 text-xs font-bold text-brand-accent hover:text-white transition-colors"
-            >
-              Clear Filters
-            </button>
-          )}
-        </div>
+            {filteredOrders.length === 0 ? (
+              <div className="glass-card p-20 rounded-[3rem] text-center border-white/5">
+                <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Filter className="w-10 h-10 text-white/20" />
+                </div>
+                <p className="text-white/60 text-lg">No orders match your current filters.</p>
+                {(startDate || endDate || statusFilter !== 'all') && (
+                  <button 
+                    onClick={() => {
+                      setStartDate('');
+                      setEndDate('');
+                      setStatusFilter('all');
+                    }}
+                    className="mt-4 text-brand-primary font-bold hover:underline"
+                  >
+                    Show all orders
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-6">
+                {filteredOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(order => (
+                  <motion.div 
+                    key={order.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="glass-card p-8 rounded-[2.5rem] border-white/5 flex flex-col md:flex-row justify-between gap-8"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Order #{order.id}</span>
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                          order.status === 'delivered' ? 'bg-green-500/20 text-green-500' :
+                          order.status === 'cancelled' ? 'bg-red-500/20 text-red-500' :
+                          order.status === 'shipping' ? 'bg-blue-500/20 text-blue-400' :
+                          'bg-brand-accent/20 text-brand-accent'
+                        }`}>
+                          {order.status === 'shipping' ? 'shipping' : order.status}
+                        </span>
+                      </div>
 
-        {filteredOrders.length === 0 ? (
-          <div className="glass-card p-20 rounded-[3rem] text-center border-white/5">
-            <div className="bg-white/5 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Filter className="w-10 h-10 text-white/20" />
-            </div>
-            <p className="text-white/60 text-lg">No orders match your current filters.</p>
-            {(startDate || endDate || statusFilter !== 'all') && (
-              <button 
-                onClick={() => {
-                  setStartDate('');
-                  setEndDate('');
-                  setStatusFilter('all');
-                }}
-                className="mt-4 text-brand-primary font-bold hover:underline"
-              >
-                Show all orders
-              </button>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6">
+                        <div>
+                          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Mobile</div>
+                          <div className="font-bold text-brand-primary">{order.mobile}</div>
+                        </div>
+                        <div className="col-span-2">
+                          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Address</div>
+                          <div className="font-bold text-brand-primary text-xs line-clamp-1">{order.address}</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Total</div>
+                          <div className="font-bold text-brand-primary">Rs. {order.total}</div>
+                          {order.discountAmount && order.discountAmount > 0 ? (
+                            <div className="text-[10px] text-brand-accent font-bold mt-1 tracking-tighter">-Rs. {order.discountAmount} saved</div>
+                          ) : null}
+                        </div>
+                        <div>
+                          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Rewards</div>
+                          <div className="text-brand-accent font-black tracking-tighter">+{order.loyaltyPointsEarned || 0} pts</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Payment</div>
+                          <div className="font-bold text-brand-accent uppercase text-[10px]">{order.paymentMethod === 'cod' ? 'Pay on Delivery' : 'Online'}</div>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {order.items.map(item => (
+                          <span key={item.id} className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/60">
+                            {item.name} x{item.quantity}
+                          </span>
+                        ))}
+                      </div>
+
+                      {order.notes && (
+                        <div className="mt-4 p-4 bg-brand-primary/5 rounded-2xl border border-brand-primary/10">
+                          <div className="text-[10px] font-bold text-brand-primary uppercase tracking-widest mb-1">Order Notes</div>
+                          <p className="text-white/80 text-sm italic">"{order.notes}"</p>
+                        </div>
+                      )}
+
+                      {/* Tracking Progress */}
+                      {order.status !== 'cancelled' && (
+                        <div className="mt-8 pt-6 border-t border-white/5">
+                          <div className="flex justify-between items-end mb-4">
+                            <div>
+                              <div className="text-[10px] font-bold text-brand-accent uppercase tracking-widest mb-1">Live Tracking</div>
+                              <div className="flex items-center gap-2">
+                                <motion.div
+                                  animate={{ scale: [1, 1.2, 1] }}
+                                  transition={{ duration: 2, repeat: Infinity }}
+                                  className="w-2.5 h-2.5 bg-brand-accent rounded-full"
+                                />
+                                <span className="text-sm font-bold text-white uppercase tracking-tight">
+                                  {order.status === 'pending' ? 'Order Confirmed' : 
+                                   order.status === 'preparing' ? 'Food being prepared' :
+                                   order.status === 'shipping' ? 'Out for Delivery 🛵' :
+                                   'Arrived & Delivered!'}
+                                </span>
+                              </div>
+                            </div>
+                            {order.estimatedDelivery && order.status !== 'delivered' && (
+                              <div className="text-right">
+                                <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Estimated Delivery</div>
+                                <div className="text-xl font-display font-black text-brand-primary">
+                                  {new Date(order.estimatedDelivery).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          
+                          <OrderStatusSteps status={order.status} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4">
+                      {order.status === 'pending' && (
+                        <div className="flex items-center gap-2 text-brand-accent">
+                          <Clock className="w-5 h-5" />
+                          <span className="font-bold">Preparing soon...</span>
+                        </div>
+                      )}
+                      {order.status === 'shipping' && (
+                        <div className="flex items-center gap-2 text-blue-400">
+                          <Compass className="w-5 h-5 animate-spin" />
+                          <span className="font-bold">On the Way 🛵</span>
+                        </div>
+                      )}
+                      {order.status === 'delivered' && (
+                        <div className="flex items-center gap-2 text-green-500">
+                          <CheckCircle2 className="w-5 h-5" />
+                          <span className="font-bold">Delivered</span>
+                        </div>
+                      )}
+                      {(order.status === 'pending' || order.status === 'preparing') && (
+                        <button 
+                          onClick={() => {
+                            if (window.confirm(`Are you sure you want to cancel order #${order.id}?`)) {
+                              onUpdateStatus(order.id, 'cancelled');
+                              alert('Order cancelled successfully.');
+                            }
+                          }}
+                          className="p-3 bg-red-500/10 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all font-bold text-xs"
+                        >
+                          Cancel Order
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             )}
-          </div>
+          </motion.div>
         ) : (
-          <div className="grid grid-cols-1 gap-6">
-            {filteredOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(order => (
-              <motion.div 
-                key={order.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="glass-card p-8 rounded-[2.5rem] border-white/5 flex flex-col md:flex-row justify-between gap-8"
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Order #{order.id}</span>
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                      order.status === 'delivered' ? 'bg-green-500/20 text-green-500' :
-                      order.status === 'cancelled' ? 'bg-red-500/20 text-red-500' :
-                      order.status === 'shipping' ? 'bg-blue-500/20 text-blue-400' :
-                      'bg-brand-accent/20 text-brand-accent'
-                    }`}>
-                      {order.status === 'shipping' ? 'shipping' : order.status}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-6">
-                    <div>
-                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Mobile</div>
-                      <div className="font-bold text-brand-primary">{order.mobile}</div>
-                    </div>
-                    <div className="col-span-2">
-                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Address</div>
-                      <div className="font-bold text-brand-primary text-xs line-clamp-1">{order.address}</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Total</div>
-                      <div className="font-bold text-brand-primary">Rs. {order.total}</div>
-                      {order.discountAmount && order.discountAmount > 0 ? (
-                        <div className="text-[10px] text-brand-accent font-bold mt-1 tracking-tighter">-Rs. {order.discountAmount} saved</div>
-                      ) : null}
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Rewards</div>
-                      <div className="text-brand-accent font-black tracking-tighter">+{order.loyaltyPointsEarned || 0} pts</div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Payment</div>
-                      <div className="font-bold text-brand-accent uppercase text-[10px]">{order.paymentMethod === 'cod' ? 'Pay on Delivery' : 'Online'}</div>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {order.items.map(item => (
-                      <span key={item.id} className="bg-white/5 px-3 py-1 rounded-lg text-xs text-white/60">
-                        {item.name} x{item.quantity}
-                      </span>
+          <motion.div key="profile" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8">
+            
+            {/* 1. Edit Name Display */}
+            <div className="glass-card p-8 rounded-[2.5rem] border-white/5 space-y-6">
+              <h4 className="text-xl font-display font-bold text-[#EADBBD]">Personal Details</h4>
+              <div className="flex flex-col sm:flex-row gap-4 items-end">
+                <div className="flex-1 space-y-2">
+                  <label className="text-xs font-bold text-white/40 uppercase tracking-widest">Your Full Name</label>
+                  <input 
+                    type="text"
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    className="w-full bg-white/5 border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary text-white outline-none transition-all"
+                  />
+                </div>
+                <button 
+                  onClick={async () => {
+                    setIsUpdatingName(true);
+                    await onUpdateUser({ name: editingName });
+                    setIsUpdatingName(false);
+                    alert('Name successfully updated!');
+                  }}
+                  disabled={isUpdatingName}
+                  className="px-6 py-4 bg-brand-primary hover:bg-brand-secondary text-white font-bold rounded-2xl transition-all cursor-pointer whitespace-nowrap disabled:opacity-50"
+                >
+                  {isUpdatingName ? 'Saving...' : 'Update Name'}
+                </button>
+              </div>
+            </div>
+
+            {/* 2. Saved Delivery Addresses */}
+            <div className="glass-card p-8 rounded-[2.5rem] border-white/5 space-y-6">
+              <h4 className="text-xl font-display font-bold text-[#EADBBD]">Saved Delivery Addresses</h4>
+              <div className="space-y-4">
+                {!user.deliveryAddresses || user.deliveryAddresses.length === 0 ? (
+                  <p className="text-white/40 text-sm">No saved delivery addresses yet. Add one below!</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {user.deliveryAddresses.map((addr, i) => (
+                      <div key={i} className="bg-white/5 p-4 rounded-2xl border border-white/10 flex justify-between items-start gap-4">
+                        <div className="flex items-start gap-2">
+                          <MapPin className="w-4 h-4 text-brand-primary mt-1 shrink-0" />
+                          <span className="text-xs font-bold text-white/80">{addr}</span>
+                        </div>
+                        <button 
+                          onClick={async () => {
+                            const updated = user.deliveryAddresses?.filter((_, idx) => idx !== i) || [];
+                            await onUpdateUser({ deliveryAddresses: updated });
+                          }}
+                          className="text-red-400 hover:text-red-500 transition-colors cursor-pointer text-xs font-bold font-mono p-1 shrink-0"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     ))}
                   </div>
+                )}
+                
+                <div className="border-t border-white/5 pt-6 flex flex-col sm:flex-row gap-4 items-end">
+                  <div className="flex-1 space-y-2">
+                    <label className="text-xs font-bold text-white/40 uppercase tracking-widest">New Delivery Address</label>
+                    <input 
+                      type="text"
+                      placeholder="House No, Apartment Name, Street, Landmark..."
+                      value={newAddress}
+                      onChange={(e) => setNewAddress(e.target.value)}
+                      className="w-full bg-white/5 border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary text-white outline-none transition-all text-xs"
+                    />
+                  </div>
+                  <button 
+                    onClick={async () => {
+                      if (!newAddress.trim()) return;
+                      const updated = [...(user.deliveryAddresses || []), newAddress.trim()];
+                      await onUpdateUser({ deliveryAddresses: updated });
+                      setNewAddress('');
+                      alert('Delivery address added!');
+                    }}
+                    className="px-6 py-4 bg-[#9E5638] hover:bg-[#B76F50] text-[#FAF6ED] font-bold rounded-2xl transition-all cursor-pointer whitespace-nowrap"
+                  >
+                    Add Address
+                  </button>
+                </div>
+              </div>
+            </div>
 
-                  {order.notes && (
-                    <div className="mt-4 p-4 bg-brand-primary/5 rounded-2xl border border-brand-primary/10">
-                      <div className="text-[10px] font-bold text-brand-primary uppercase tracking-widest mb-1">Order Notes</div>
-                      <p className="text-white/80 text-sm italic">"{order.notes}"</p>
+            {/* 3. Active Tawa Subscription Details */}
+            <div className="glass-card p-8 rounded-[2.5rem] border-white/5 space-y-6">
+              <h4 className="text-xl font-display font-bold text-[#EADBBD]">Active Subscription Details</h4>
+              
+              <div className="p-6 bg-brand-primary/5 rounded-3xl border border-brand-accent/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                  <div className="text-[10px] font-bold text-brand-accent uppercase tracking-widest mb-1">Your Selected Plan</div>
+                  <div className="text-2xl font-display font-black text-brand-primary">
+                    {!user.subscription || user.subscription.plan === 'none' ? 'No Active Subscription' : 
+                     user.subscription.plan === 'weekly_basic' ? 'Weekly Basic (7 Combos)' : 
+                     'Monthly Pro Box (30 Combos)'}
+                  </div>
+                  {user.subscription && user.subscription.status !== 'none' && user.subscription.status !== 'cancelled' && (
+                    <div className="text-xs text-white/60 mt-1">
+                      Status: <span className="font-bold text-brand-accent uppercase">{user.subscription.status}</span> • Expires on: <span className="font-bold text-brand-primary">{new Date(user.subscription.expiresAt).toLocaleDateString()}</span>
                     </div>
                   )}
-
-                  {/* Tracking Progress */}
-                  {order.status !== 'cancelled' && (
-                    <div className="mt-8 pt-6 border-t border-white/5">
-                      <div className="flex justify-between items-end mb-4">
-                        <div>
-                          <div className="text-[10px] font-bold text-brand-accent uppercase tracking-widest mb-1">Live Tracking</div>
-                          <div className="flex items-center gap-2">
-                            <motion.div
-                              animate={{ scale: [1, 1.2, 1] }}
-                              transition={{ duration: 2, repeat: Infinity }}
-                              className="w-2.5 h-2.5 bg-brand-accent rounded-full"
-                            />
-                            <span className="text-sm font-bold text-white uppercase tracking-tight">
-                              {order.status === 'pending' ? 'Order Confirmed' : 
-                               order.status === 'preparing' ? 'Food being prepared' :
-                               order.status === 'shipping' ? 'Out for Delivery 🛵' :
-                               'Arrived & Delivered!'}
-                            </span>
-                          </div>
-                        </div>
-                        {order.estimatedDelivery && order.status !== 'delivered' && (
-                          <div className="text-right">
-                            <div className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1">Estimated Delivery</div>
-                            <div className="text-xl font-display font-black text-brand-primary">
-                              {new Date(order.estimatedDelivery).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <OrderStatusSteps status={order.status} />
+                  {user.subscription && user.subscription.status === 'cancelled' && (
+                    <div className="text-xs text-red-400 mt-1">
+                      Subscription Cancelled. (Access remains valid until {new Date(user.subscription.expiresAt).toLocaleDateString()})
                     </div>
                   )}
                 </div>
-                  <div className="flex items-center gap-4">
-                    {order.status === 'pending' && (
-                      <div className="flex items-center gap-2 text-brand-accent">
-                        <Clock className="w-5 h-5" />
-                        <span className="font-bold">Preparing soon...</span>
-                      </div>
-                    )}
-                    {order.status === 'shipping' && (
-                      <div className="flex items-center gap-2 text-blue-400">
-                        <Compass className="w-5 h-5 animate-spin" />
-                        <span className="font-bold">On the Way 🛵</span>
-                      </div>
-                    )}
-                    {order.status === 'delivered' && (
-                      <div className="flex items-center gap-2 text-green-500">
-                        <CheckCircle2 className="w-5 h-5" />
-                        <span className="font-bold">Delivered</span>
-                      </div>
-                    )}
-                    {(order.status === 'pending' || order.status === 'preparing') && (
-                      <button 
-                        onClick={() => {
-                          if (window.confirm(`Are you sure you want to cancel order #${order.id}?`)) {
-                            onUpdateStatus(order.id, 'cancelled');
-                            alert('Order cancelled successfully.');
+                {user.subscription && user.subscription.status === 'active' && (
+                  <button 
+                    onClick={async () => {
+                      if (window.confirm('Are you sure you want to cancel your Tawa Box subscription?')) {
+                        await onUpdateUser({
+                          subscription: {
+                            plan: user.subscription?.plan || 'none',
+                            status: 'cancelled',
+                            expiresAt: user.subscription?.expiresAt || ''
                           }
-                        }}
-                        className="p-3 bg-red-500/10 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all font-bold text-xs"
-                      >
-                        Cancel Order
-                      </button>
-                    )}
+                        });
+                        alert('Subscription cancelled successfully.');
+                      }
+                    }}
+                    className="px-4 py-2 border border-red-500/30 text-red-400 bg-red-500/5 hover:bg-red-500 hover:text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+                  >
+                    Cancel Subscription
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                {/* Weekly Basic Plan */}
+                <div className={`p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between h-64 border transition-all ${
+                  user.subscription?.plan === 'weekly_basic' && user.subscription?.status === 'active'
+                    ? 'bg-brand-primary/10 border-brand-primary shadow-xl shadow-brand-primary/10 scale-102'
+                    : 'bg-white/5 border-white/10 hover:border-white/25'
+                }`}>
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[10px] uppercase font-bold text-brand-accent tracking-widest">7 Lunch/Dinner Boxes</span>
+                      {user.subscription?.plan === 'weekly_basic' && user.subscription?.status === 'active' && (
+                        <span className="bg-brand-primary text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full">Active</span>
+                      )}
+                    </div>
+                    <h5 className="text-xl font-bold font-serif text-[#EADBBD]">Weekly Basic</h5>
+                    <p className="text-white/60 text-xs mt-2">Get high-quality desi flame-cooked Lunch Box combos delivered daily. Baked rotis, sabji, salad and real sweets.</p>
                   </div>
-              </motion.div>
-            ))}
-          </div>
+                  <div className="flex justify-between items-center mt-4">
+                    <div>
+                      <span className="text-2xl font-display font-black text-[#EADBBD]">Rs. 499</span>
+                      <span className="text-[10px] text-white/40">/week</span>
+                    </div>
+                    {user.subscription?.plan !== 'weekly_basic' || user.subscription?.status !== 'active' ? (
+                      <button 
+                        onClick={async () => {
+                          const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+                          await onUpdateUser({
+                            subscription: {
+                              plan: 'weekly_basic',
+                              status: 'active',
+                              expiresAt
+                            }
+                          });
+                          alert('Successfully upgraded to Weekly Basic plan!');
+                        }}
+                        className="bg-[#9E5638] hover:bg-[#B76F50] text-[#FAF6ED] px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer"
+                      >
+                        Select Plan
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+
+                {/* Monthly Pro Plan */}
+                <div className={`p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between h-64 border transition-all ${
+                  user.subscription?.plan === 'monthly_pro' && user.subscription?.status === 'active'
+                    ? 'bg-brand-primary/10 border-brand-primary shadow-xl shadow-brand-primary/10 scale-102'
+                    : 'bg-white/5 border-white/10 hover:border-white/25'
+                }`}>
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[10px] uppercase font-bold text-brand-accent tracking-widest">30 Lunch/Dinner Boxes</span>
+                      {user.subscription?.plan === 'monthly_pro' && user.subscription?.status === 'active' && (
+                        <span className="bg-brand-primary text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full">Active</span>
+                      )}
+                    </div>
+                    <h5 className="text-xl font-bold font-serif text-[#EADBBD]">Monthly Pro Box</h5>
+                    <p className="text-white/60 text-xs mt-2">Our best-value subscription! 30 authentic clay-oven cooked lunch box combinations delivered straight to your home or office.</p>
+                  </div>
+                  <div className="flex justify-between items-center mt-4">
+                    <div>
+                      <span className="text-2xl font-display font-black text-[#EADBBD]">Rs. 1899</span>
+                      <span className="text-[10px] text-white/40">/month</span>
+                    </div>
+                    {user.subscription?.plan !== 'monthly_pro' || user.subscription?.status !== 'active' ? (
+                      <button 
+                        onClick={async () => {
+                          const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+                          await onUpdateUser({
+                            subscription: {
+                              plan: 'monthly_pro',
+                              status: 'active',
+                              expiresAt
+                            }
+                          });
+                          alert('Successfully upgraded to Monthly Pro Box plan!');
+                        }}
+                        className="bg-[#9E5638] hover:bg-[#B76F50] text-[#FAF6ED] px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer"
+                      >
+                        Select Plan
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 };
@@ -2050,7 +2845,7 @@ const GalleryPage = () => {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ delay: idx * 0.1 }}
-            className="aspect-[4/3] rounded-3xl overflow-hidden shadow-lg group cursor-pointer"
+            className="aspect-[4/3] rounded-[22px] overflow-hidden shadow-lg group cursor-pointer"
             onClick={() => setSelectedImage(img)}
           >
             <div className="relative w-full h-full overflow-hidden">
@@ -2090,7 +2885,7 @@ const GalleryPage = () => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative max-w-5xl w-full aspect-[4/3] rounded-[3rem] overflow-hidden shadow-2xl border border-white/10"
+              className="relative max-w-5xl w-full aspect-[4/3] rounded-[2.7rem] overflow-hidden shadow-2xl border border-white/10"
               onClick={(e) => e.stopPropagation()}
             >
               <img 
@@ -3272,12 +4067,54 @@ export default function App() {
     if (savedOrders) setOrders(JSON.parse(savedOrders));
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+      if (authUser) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', authUser.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data() as User;
+            setCurrentUser(userData);
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+          }
+        } catch (error) {
+          console.error("Error fetching user on auth change:", error);
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleUpdateUserProfile = async (updatedFields: Partial<User>) => {
+    if (!currentUser) return;
+    const updatedUser = { ...currentUser, ...updatedFields };
+    setCurrentUser(updatedUser);
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+
+    try {
+      await updateDoc(doc(db, 'users', currentUser.id), updatedFields);
+      console.log('User profile successfully updated in Firestore');
+    } catch (error) {
+      console.error('Failed to update user profile in Firestore, trying setDoc merger:', error);
+      try {
+        await setDoc(doc(db, 'users', currentUser.id), updatedUser, { merge: true });
+      } catch (innerError) {
+        handleFirestoreError(innerError, OperationType.UPDATE, `users/${currentUser.id}`);
+      }
+    }
+  };
+
   const handleLogin = (user: User) => {
     setCurrentUser(user);
     localStorage.setItem('currentUser', JSON.stringify(user));
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (e) {
+      console.error('Auth signOut error:', e);
+    }
     setCurrentUser(null);
     localStorage.removeItem('currentUser');
   };
@@ -3443,6 +4280,7 @@ export default function App() {
                 />
                 <WeeklyShowcase onAddToCart={addToCart} onOpenCart={() => setIsCartOpen(true)} />
                 <QuickOrderSteps />
+                <MorningDaliyaSection onAddToCart={addToCart} />
                 <MorningBreakfastCombo onAddToCart={addToCart} />
               </>
             } />
@@ -3454,7 +4292,7 @@ export default function App() {
             <Route path="/register" element={<RegisterPage onLogin={handleLogin} />} />
             <Route 
               path="/dashboard" 
-              element={currentUser ? <Dashboard user={currentUser} orders={orders} onUpdateStatus={handleUpdateOrderStatus} onOpenEmailLogs={() => setIsEmailLogsOpen(true)} /> : <Navigate to="/login" />} 
+              element={currentUser ? <Dashboard user={currentUser} orders={orders} onUpdateStatus={handleUpdateOrderStatus} onOpenEmailLogs={() => setIsEmailLogsOpen(true)} onUpdateUser={handleUpdateUserProfile} /> : <Navigate to="/login" />} 
             />
             <Route 
               path="/admin" 
