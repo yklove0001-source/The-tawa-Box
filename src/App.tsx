@@ -529,6 +529,20 @@ const MorningDaliyaSection = ({ onAddToCart }: { onAddToCart: (item: MenuItem) =
     }
   };
 
+  const planCarouselRef = useRef<HTMLDivElement>(null);
+
+  const scrollPlanLeft = () => {
+    if (planCarouselRef.current) {
+      planCarouselRef.current.scrollBy({ left: -280, behavior: 'smooth' });
+    }
+  };
+
+  const scrollPlanRight = () => {
+    if (planCarouselRef.current) {
+      planCarouselRef.current.scrollBy({ left: 280, behavior: 'smooth' });
+    }
+  };
+
   // Helper to add appropriate plan to cart
   const handleAddPlanToCart = (planId: string) => {
     const item = MENU_ITEMS.find(i => i.id === planId);
@@ -742,164 +756,175 @@ const MorningDaliyaSection = ({ onAddToCart }: { onAddToCart: (item: MenuItem) =
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
+          {/* Compact Left/Right Controls for Plan Carousel on mobile screens */}
+          <div className="flex justify-end gap-1.5 mb-2 mt-4 md:hidden">
+            <button 
+              onClick={scrollPlanLeft}
+              className="p-1.5 rounded-full bg-white hover:bg-[#FAF6ED] border border-[#5A3825]/10 text-[#5A3825]/75 active:scale-95 transition-all shadow-xs cursor-pointer"
+              title="Previous Plan"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+            <button 
+              onClick={scrollPlanRight}
+              className="p-1.5 rounded-full bg-[#9E5638] text-white hover:bg-[#83452B] border border-[#5A3825]/10 active:scale-95 transition-all shadow-xs cursor-pointer"
+              title="Next Plan"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Responsive Touch Carousel Wrapper (Touch-ready swipe layout on mobile, clean cols on desktop) */}
+          <div 
+            ref={planCarouselRef}
+            className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 md:pb-0 scroll-smooth w-full select-none md:grid md:grid-cols-3 md:gap-6 mt-4 md:mt-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          >
             
             {/* PLAN 1: 1 Day Trial Plan */}
             <motion.div 
-              whileHover={{ y: -5 }}
-              className="bg-[#FAF8F4] rounded-3xl border-2 border-[#5A3825]/10 shadow-sm flex flex-col justify-between overflow-hidden group hover:border-[#7A8B6B]/40 transition-colors"
+              whileHover={{ y: -3 }}
+              className="flex-shrink-0 w-[270px] sm:w-[290px] md:w-auto bg-[#FAF8F4] rounded-2xl border-2 border-[#5A3825]/8 shadow-xs flex flex-col justify-between overflow-hidden group hover:border-[#7A8B6B]/40 transition-colors snap-start"
             >
-              <div className="p-6 md:p-8 flex-1">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-black uppercase text-[#5A3825]/50 tracking-widest bg-white py-1 px-3 rounded-full border border-black/5">
+              <div className="p-4 sm:p-5 flex-1">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[9px] font-black uppercase text-[#5A3825]/50 tracking-wider bg-white py-0.5 px-2.5 rounded-md border border-black/5">
                     1 Day Test
                   </span>
-                  <UtensilsCrossed className="w-5 h-5 text-[#7A8B6B]" />
+                  <UtensilsCrossed className="w-4 h-4 text-[#7A8B6B]" />
                 </div>
-                <h4 className="text-lg font-serif font-black text-[#5A3825]">Daily Trial Diet Plan</h4>
-                <p className="text-[11px] text-[#2E1C12]/70 font-serif mt-2 min-h-[3rem]">
-                  Perfect for sampling on a single morning. Get today’s specialty daliya + organic salad pairing.
+                <h4 className="text-base font-serif font-black text-[#5A3825]">Daily Trial Diet Plan</h4>
+                <p className="text-[10.5px] leading-relaxed text-[#2E1C12]/70 font-serif mt-1.5">
+                  Sampling single morning daliya bowl paired with fresh organic garden salad.
                 </p>
-                <div className="my-6 pt-4 border-t border-[#5A3825]/5">
-                  <span className="text-xs text-[#5A3825]/40 block uppercase tracking-wider font-bold">COST</span>
-                  <span className="text-3xl font-serif font-black text-[#5A3825]">Rs. 199</span>
-                  <span className="text-xs text-[#5A3825]/50"> / one-day delivery</span>
+                <div className="my-3 py-2 border-t border-[#5A3825]/5">
+                  <span className="text-[9px] text-[#5A3825]/40 block uppercase tracking-wider font-bold leading-none mb-1">COST</span>
+                  <span className="text-2xl font-serif font-black text-[#5A3825]">Rs. 199</span>
+                  <span className="text-[10px] text-[#5A3825]/50"> / day delivery</span>
                 </div>
-                <ul className="space-y-2.5 text-xs text-[#2E1C12]/80 font-serif">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                <ul className="space-y-1.5 text-[11px] text-[#2E1C12]/80 font-serif">
+                  <li className="flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
                     <span>Selected Day Daliya Bowl</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                  <li className="flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
                     <span>Crunchy Fresh Daily Salad</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                  <li className="flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
                     <span>Eco Thermal Packed Hot</span>
                   </li>
                 </ul>
               </div>
-              <div className="p-6 md:px-8 md:pb-8 bg-[#FAF8F4] border-t border-[#5A3825]/5">
+              <div className="p-4 bg-[#FAF8F4] border-t border-[#5A3825]/5">
                 <button 
                   onClick={() => handleAddPlanToCart('daliya-1-day')}
-                  className="w-full py-3 bg-[#9E5638] hover:bg-[#B76F50] text-[#FAF6ED] rounded-full text-xs font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm cursor-pointer text-center block"
+                  className="w-full py-2 bg-[#9E5638] hover:bg-[#B76F50] text-[#FAF6ED] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm cursor-pointer text-center block"
                 >
                   Order Trial • Rs. 199
                 </button>
               </div>
             </motion.div>
-
+ 
             {/* PLAN 2: Weekly Subscription Plan */}
             <motion.div 
-              whileHover={{ y: -5 }}
-              className="bg-[#EADBBD]/20 rounded-3xl border-2 border-[#7A8B6B] shadow-sm flex flex-col justify-between overflow-hidden relative group"
+              whileHover={{ y: -3 }}
+              className="flex-shrink-0 w-[270px] sm:w-[290px] md:w-auto bg-[#EADBBD]/20 rounded-2xl border-2 border-[#7A8B6B] shadow-xs flex flex-col justify-between overflow-hidden relative group snap-start"
             >
-              <div className="absolute top-0 right-0 bg-[#7A8B6B] text-white text-[8px] font-black uppercase px-4 py-1.5 rounded-bl-xl tracking-wider">
+              <div className="absolute top-0 right-0 bg-[#7A8B6B] text-white text-[8px] font-black uppercase px-2.5 py-1 rounded-bl-lg tracking-wider">
                 POPULAR CHOICE
               </div>
               
-              <div className="p-6 md:p-8 flex-1">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-black uppercase text-[#7A8B6B] tracking-widest bg-white py-1 px-3 rounded-full border border-[#7A8B6B]/25 font-semibold">
+              <div className="p-4 sm:p-5 flex-1">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[9px] font-black uppercase text-[#7A8B6B] tracking-wider bg-white py-0.5 px-2.5 rounded-md border border-[#7A8B6B]/25 font-semibold">
                     6 Active Days
                   </span>
-                  <Calendar className="w-5 h-5 text-[#7A8B6B]" />
+                  <Calendar className="w-4 h-4 text-[#7A8B6B]" />
                 </div>
-                <h4 className="text-lg font-serif font-black text-[#5A3825]">Weekly Health Rotation</h4>
-                <p className="text-[11px] text-[#2E1C12]/70 font-serif mt-2 min-h-[3rem]">
-                  Monday to Saturday healthy morning daliya + salad schedule. Ensures continuous dietary control.
+                <h4 className="text-base font-serif font-black text-[#5A3825]">Weekly Health Rotation</h4>
+                <p className="text-[10.5px] leading-relaxed text-[#2E1C12]/70 font-serif mt-1.5">
+                  Monday to Saturday premium rotation with different salad schedules.
                 </p>
-                <div className="my-6 pt-4 border-t border-[#7A8B6B]/15">
-                  <span className="text-xs text-[#7A8B6B] block uppercase tracking-wider font-extrabold">COST</span>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-serif font-black text-[#5A3825]">Rs. 1099</span>
-                    <span className="text-xs text-[#7A8B6B]/80 font-bold line-through">Rs. 1194</span>
+                <div className="my-3 py-2 border-t border-[#7A8B6B]/15">
+                  <span className="text-[9px] text-[#7A8B6B] block uppercase tracking-wider font-extrabold leading-none mb-1">COST</span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-serif font-black text-[#5A3825]">Rs. 1099</span>
+                    <span className="text-[10px] text-[#7A8B6B]/80 font-bold line-through">Rs. 1194</span>
                   </div>
-                  <span className="text-xs text-[#5A3825]/50"> / Mon to Sat subscription</span>
                 </div>
-                <ul className="space-y-2.5 text-xs text-[#2E1C12]/80 font-serif">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
-                    <span>6 Balanced Daliya Recipies</span>
+                <ul className="space-y-1.5 text-[11px] text-[#2E1C12]/80 font-serif">
+                  <li className="flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
+                    <span>6 Balanced Daliya Bowls</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                  <li className="flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
                     <span>6 Different Salad Pairings</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
-                    <span>Free Regular Delivery Hours</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
+                  <li className="flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
                     <span>Cancel or Pause Any Day</span>
                   </li>
                 </ul>
               </div>
-              <div className="p-6 md:px-8 md:pb-8 bg-[#EADBBD]/10 border-t border-[#7A8B6B]/10">
+              <div className="p-4 bg-[#EADBBD]/10 border-t border-[#7A8B6B]/10">
                 <button 
                   onClick={() => handleAddPlanToCart('daliya-weekly')}
-                  className="w-full py-3 bg-[#7A8B6B] hover:bg-[#617054] text-white rounded-full text-xs font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm cursor-pointer text-center block"
+                  className="w-full py-2 bg-[#7A8B6B] hover:bg-[#617054] text-white rounded-xl text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm cursor-pointer text-center block"
                 >
                   Activate Weekly • Rs. 1099
                 </button>
               </div>
             </motion.div>
-
+ 
             {/* PLAN 3: Monthly Subscription Plan */}
             <motion.div 
-              whileHover={{ y: -5 }}
-              className="bg-[#FAF8F4] rounded-3xl border-2 border-[#5A3825]/10 shadow-sm flex flex-col justify-between overflow-hidden group hover:border-[#9E5638]/40 transition-colors"
+              whileHover={{ y: -3 }}
+              className="flex-shrink-0 w-[270px] sm:w-[290px] md:w-auto bg-[#FAF8F4] rounded-2xl border-2 border-[#5A3825]/8 shadow-xs flex flex-col justify-between overflow-hidden group hover:border-[#9E5638]/40 transition-colors snap-start"
             >
-              <div className="p-6 md:p-8 flex-1">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-black uppercase text-[#9E5638] tracking-widest bg-[#9E5638]/5 py-1 px-3 rounded-full border border-[#9E5638]/20 font-semibold">
+              <div className="p-4 sm:p-5 flex-1">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[9px] font-black uppercase text-[#9E5638] tracking-wider bg-[#9E5638]/5 py-0.5 px-2.5 rounded-md border border-[#9E5638]/20 font-semibold">
                     24 Active Days
                   </span>
-                  <Trophy className="w-5 h-5 text-[#9E5638]" />
+                  <Trophy className="w-4 h-4 text-[#9E5638]" />
                 </div>
-                <h4 className="text-lg font-serif font-black text-[#5A3825]">Monthly Master Plan</h4>
-                <p className="text-[11px] text-[#2E1C12]/70 font-serif mt-2 min-h-[3rem]">
-                  Super-saver package covering 4 consecutive Mon-Sat weeks. Ultimate weight management & vital digestion.
+                <h4 className="text-base font-serif font-black text-[#5A3825]">Monthly Master Plan</h4>
+                <p className="text-[10.5px] leading-relaxed text-[#2E1C12]/70 font-serif mt-1.5">
+                  Super-saver package covering 4 consecutive Mon-Sat weeks. Ultimate nutrition.
                 </p>
-                <div className="my-6 pt-4 border-t border-[#5A3825]/5">
-                  <span className="text-xs text-[#9E5638] block uppercase tracking-wider font-extrabold">COST</span>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-serif font-black text-[#5A3825]">Rs. 3999</span>
-                    <span className="text-xs text-[#5A3825]/40 line-through">Rs. 4776</span>
+                <div className="my-3 py-2 border-t border-[#5A3825]/5">
+                  <span className="text-[9px] text-[#9E5638] block uppercase tracking-wider font-extrabold leading-none mb-1">COST</span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-serif font-black text-[#5A3825]">Rs. 3999</span>
+                    <span className="text-[10px] text-[#5A3825]/40 line-through">Rs. 4776</span>
                   </div>
-                  <span className="text-xs text-[#5A3825]/50"> / 24-day master package</span>
                 </div>
-                <ul className="space-y-2.5 text-xs text-[#2E1C12]/80 font-serif">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#9E5638] flex-shrink-0" />
+                <ul className="space-y-1.5 text-[11px] text-[#2E1C12]/80 font-serif">
+                  <li className="flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-[#9E5638] flex-shrink-0" />
                     <span className="font-semibold text-[#5A3825]">Save Rs. 777 Instantly</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
-                    <span>Complete 4-Week Custom Rotation</span>
+                  <li className="flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
+                    <span>Complete Custom 4-Week Rotation</span>
                   </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
-                    <span>VIP Fast Morning Priority Slot</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-[#7A8B6B] flex-shrink-0" />
-                    <span>Free Diet Consult Call Coupon</span>
+                  <li className="flex items-center gap-1.5">
+                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
+                    <span>VIP Fast Morning Delivery Slot</span>
                   </li>
                 </ul>
               </div>
-              <div className="p-6 md:px-8 md:pb-8 bg-[#FAF8F4] border-t border-[#5A3825]/5">
+              <div className="p-4 bg-[#FAF8F4] border-t border-[#5A3825]/5">
                 <button 
                   onClick={() => handleAddPlanToCart('daliya-monthly')}
-                  className="w-full py-3 bg-[#9E5638] hover:bg-[#B76F50] text-[#FAF6ED] rounded-full text-xs font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm cursor-pointer text-center block"
+                  className="w-full py-2 bg-[#9E5638] hover:bg-[#B76F50] text-[#FAF6ED] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm cursor-pointer text-center block"
                 >
                   Activate Monthly • Rs. 3999
                 </button>
               </div>
             </motion.div>
-
           </div>
         </div>
 
@@ -4289,7 +4314,6 @@ export default function App() {
                     <div className="text-center mb-6">
                       <span className="text-[#9E5638] font-mono text-[9px] sm:text-[10px] uppercase font-black tracking-[0.25em] block mb-1">OUR DAILY EXPERT PROGRAM</span>
                       <h2 className="text-xl sm:text-2xl font-serif font-black text-[#5A3825] uppercase tracking-wider">Select Health Category</h2>
-                      <p className="text-xs text-[#7A8B6B] mt-1 font-serif max-w-sm mx-auto">Tap to instantly explore options, custom ingredients, and pricing details.</p>
                     </div>
 
                     <div className="bg-[#EADBBD]/20 p-1.5 rounded-2xl border border-[#5A3825]/10 grid grid-cols-2 gap-1 shadow-xs max-w-2xl mx-auto">

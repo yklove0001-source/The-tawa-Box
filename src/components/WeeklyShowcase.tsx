@@ -368,13 +368,13 @@ export const WeeklyShowcase = ({ onAddToCart, onOpenCart }: WeeklyShowcaseProps)
               </div>
               
               <div>
-                <span className="text-[10px] tracking-[0.2em] font-mono text-[#5A3825]/45 uppercase font-black">
+                <span className="text-[10px] tracking-[0.2em] font-mono text-black uppercase font-black">
                   Taste the Tradition
                 </span>
                 <h4 className="font-serif font-black text-lg text-[#5A3825] uppercase tracking-wide mt-1">
                   Trial a Day
                 </h4>
-                <p className="text-[11px] text-[#5A3825]/65 font-medium font-serif mt-2 mb-4 leading-relaxed max-w-[240px] mx-auto">
+                <p className="text-[11px] text-black font-black font-serif mt-2 mb-4 leading-relaxed max-w-[240px] mx-auto">
                   Experience a premium luxury thali hot from our mud-chulha clay fires directly to your hands.
                 </p>
               </div>
@@ -432,7 +432,7 @@ export const WeeklyShowcase = ({ onAddToCart, onOpenCart }: WeeklyShowcaseProps)
                 <h4 className="font-serif font-black text-lg text-[#5A3825] uppercase tracking-wide mt-1">
                   6-Meal Week Plan
                 </h4>
-                <p className="text-[11px] text-[#5A3825]/65 font-medium font-serif mt-2 mb-4 leading-relaxed max-w-[240px] mx-auto">
+                <p className="text-[11px] text-black font-black font-serif mt-2 mb-4 leading-relaxed max-w-[240px] mx-auto">
                   6 luxurious days (Monday to Saturday) of distinct mud-stoved thalis delivered at precise lunchtime slots.
                 </p>
               </div>
@@ -490,7 +490,7 @@ export const WeeklyShowcase = ({ onAddToCart, onOpenCart }: WeeklyShowcaseProps)
                 <h4 className="font-serif font-black text-lg text-[#5A3825] uppercase tracking-wide mt-1">
                   24-Meal Month Plan
                 </h4>
-                <p className="text-[11px] text-[#5A3825]/65 font-medium font-serif mt-2 mb-4 leading-relaxed max-w-[240px] mx-auto">
+                <p className="text-[11px] text-black font-black font-serif mt-2 mb-4 leading-relaxed max-w-[240px] mx-auto">
                   Ultimate savings of ₹2676. Full control to pause, skip, or modify meals daily on your profile block.
                 </p>
               </div>
