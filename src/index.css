@@ -10,8 +10,8 @@
   --color-brand-charcoal: #1A1A1A; /* Charcoal Slate */
   
   --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Playfair Display", Georgia, serif;
-  --font-serif: "Playfair Display", Georgia, serif;
+  --font-display: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Poppins", ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
