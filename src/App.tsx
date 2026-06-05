@@ -538,197 +538,191 @@ const MorningDaliyaSection = ({ onAddToCart }: { onAddToCart: (item: MenuItem) =
   };
 
   return (
-    <section id="morning-daliya" className="bg-[#FAF8F4] pt-8 pb-16 border-b border-[#5A3825]/5 select-none">
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
+    <section id="morning-daliya" className="bg-[#FAF8F4] pt-6 pb-12 sm:pt-8 sm:pb-16 border-b border-[#5A3825]/5 select-none">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
         
-        {/* Header Ribbon for Daliya Diet System */}
-        <div className="bg-[#9E5638] rounded-xl py-4 px-6 flex flex-col md:flex-row items-center justify-between shadow-md border border-[#B76F50]/20 mb-10 max-w-5xl mx-auto gap-3">
-          <div>
-            <span className="bg-white/15 text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-md tracking-widest inline-block mb-1">Diet Program</span>
-            <h2 className="text-sm md:text-base font-serif font-black tracking-[0.22em] text-[#FAF8F4] uppercase">
+        {/* Header Ribbon for Daliya Diet System (Responsive padding & stacking) */}
+        <div className="bg-[#9E5638] rounded-2xl py-4 px-4 sm:px-6 flex flex-col md:flex-row items-start md:items-center justify-between shadow-md border border-[#B76F50]/20 mb-6 sm:mb-10 max-w-5xl mx-auto gap-3.5">
+          <div className="w-full md:w-auto">
+            <span className="bg-white/15 text-white text-[8px] sm:text-[9px] font-black uppercase px-2.5 py-1 rounded-md tracking-widest inline-block mb-1.5">Diet Program</span>
+            <h2 className="text-xs sm:text-sm md:text-base font-serif font-black tracking-[0.15em] sm:tracking-[0.22em] text-[#FAF8F4] uppercase leading-tight">
               6-DAY MORNING DALIYA & SALAD DIET
             </h2>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] md:text-xs font-serif font-bold tracking-widest text-[#FAF8F4]/90 uppercase bg-black/10 py-1.5 px-3.5 rounded-lg border border-white/5">
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-start md:justify-end">
+            <span className="text-[9px] sm:text-[10px] md:text-xs font-serif font-bold tracking-wider sm:tracking-widest text-[#FAF8F4]/90 uppercase bg-black/10 py-1 px-2.5 sm:py-1.5 sm:px-3.5 rounded-lg border border-white/5">
               Service: Mon - Sat • 7 AM - 11 AM
             </span>
-            <span className="bg-[#7A8B6B] text-white text-[10px] mobile:text-[11px] px-3 py-1 rounded-full uppercase tracking-wider font-bold shadow-sm animate-pulse">
+            <span className="bg-[#7A8B6B] text-white text-[9px] sm:text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider font-bold shadow-sm animate-pulse">
               Healthy & Fresh
             </span>
           </div>
         </div>
 
-        {/* Dynamic 6-Day Showcase Component */}
-        <div className="max-w-5xl mx-auto mb-16 bg-[#FDFBF7] rounded-[2rem] border border-[#5A3825]/10 p-6 md:p-8 shadow-sm">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-serif font-black text-[#5A3825]">Wholesome Day-by-Day Menu</h3>
-            <p className="text-xs text-[#7A8B6B] mt-1 font-medium bg-[#7A8B6B]/5 px-4 py-1.5 rounded-full inline-block">
+        {/* Dynamic 6-Day Showcase Component (Optimized outer padding for small screens) */}
+        <div className="max-w-5xl mx-auto mb-10 sm:mb-16 bg-[#FDFBF7] rounded-3xl sm:rounded-[2rem] border border-[#5A3825]/10 p-3.5 sm:p-6 md:p-8 shadow-sm">
+          <div className="text-center mb-6 sm:mb-8">
+            <h3 className="text-xl sm:text-2xl font-serif font-black text-[#5A3825]">Wholesome Day-by-Day Menu</h3>
+            <p className="text-[10px] sm:text-xs text-[#7A8B6B] mt-1.5 font-medium bg-[#7A8B6B]/5 px-3.5 py-1 sm:py-1.5 rounded-full inline-block max-w-full">
               We rotate our recipes daily to ensure balanced nutrition and delicious variety!
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="w-full border border-[#5A3825]/12 rounded-2xl sm:rounded-3xl overflow-hidden bg-white shadow-xs max-w-5xl mx-auto">
             
-            {/* LARGE OPENED IMAGE DISPLAY COLUMN (Grid Span 7) */}
+            {/* TOP HALF: MAIN ACTIVE DAY DISPLAY CARD (Seamlessly merged & perfectly responsive) */}
             <motion.div 
               key={activeDayIdx}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="lg:col-span-7 flex flex-col gap-5"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="w-full grid grid-cols-1 md:grid-cols-12 items-stretch"
             >
-              <div className="relative h-64 sm:h-80 w-full overflow-hidden rounded-2xl shadow-md border border-[#5A3825]/5 bg-white">
+              {/* Left Column: Rich image of daliya + salad (Scaled beautifully) */}
+              <div className="md:col-span-6 relative h-52 sm:h-64 md:h-auto min-h-[200px] sm:min-h-[260px] md:min-h-[300px] w-full overflow-hidden bg-neutral-100">
                 <img 
                   src={activeDay.image} 
                   alt={activeDay.name} 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover absolute inset-0"
                   referrerPolicy="no-referrer"
                 />
                 
                 {/* Active Day Ribbon overlay on top-left of the running image */}
-                <span className="absolute top-4 left-4 bg-[#9E5638] text-white font-serif font-black text-xs uppercase px-4 py-2 rounded-full tracking-widest shadow-md">
+                <span className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-[#9E5638] text-white font-serif font-black text-[10px] sm:text-xs uppercase px-3 py-1.5 sm:px-4 sm:py-2 rounded-full tracking-wider sm:tracking-widest shadow-md z-10">
                   {activeDay.day} Diet
                 </span>
 
                 {/* Energy Stamp Badge */}
-                <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm border border-[#5A3825]/10 rounded-xl px-4 py-2 flex items-center gap-2 shadow-sm">
-                  <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
+                <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-white/95 backdrop-blur-sm border border-[#5A3825]/10 rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 flex items-center gap-2 shadow-sm z-10">
+                  <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
                   <div>
-                    <p className="text-[10px] text-[#5A3825]/50 leading-none font-bold uppercase">ENERGY</p>
-                    <p className="text-xs font-serif font-black text-[#5A3825]">{activeDay.calories}</p>
+                    <p className="text-[8px] sm:text-[10px] text-[#5A3825]/50 leading-none font-bold uppercase">ENERGY</p>
+                    <p className="text-[10px] sm:text-xs font-serif font-black text-[#5A3825] mt-0.5">{activeDay.calories}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Dynamic menu content card */}
-              <div className="bg-[#FAF8F4]/80 p-6 rounded-2xl border border-[#5A3825]/5">
-                <div className="flex flex-wrap items-center gap-2 mb-3">
-                  <span className="bg-[#7A8B6B]/10 text-[#7A8B6B] text-[9.5px] font-black uppercase px-2.5 py-1 rounded-md tracking-wide">
-                    {activeDay.benefitTag}
-                  </span>
-                  <span className="bg-[#9E5638]/10 text-[#9E5638] text-[9.5px] font-black uppercase px-2.5 py-1 rounded-md tracking-wide">
-                    Protein: {activeDay.protein}
-                  </span>
+              {/* Right Column: Dynamic menu content card with fresh salad pairing details (Optimized padding) */}
+              <div className="md:col-span-6 bg-[#FAF8F4]/40 p-4 sm:p-6 md:p-8 flex flex-col justify-between border-t md:border-t-0 md:border-l border-[#5A3825]/10">
+                <div>
+                  <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+                    <span className="bg-[#7A8B6B]/10 text-[#7A8B6B] text-[8.5px] sm:text-[9.5px] font-black uppercase px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md tracking-wide">
+                      {activeDay.benefitTag}
+                    </span>
+                    <span className="bg-[#9E5638]/10 text-[#9E5638] text-[8.5px] sm:text-[9.5px] font-black uppercase px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md tracking-wide">
+                      Protein: {activeDay.protein}
+                    </span>
+                  </div>
+
+                  <h3 className="text-lg sm:text-xl md:text-2xl font-serif font-black text-[#5A3825] leading-tight mb-3">
+                    {activeDay.name}
+                  </h3>
                 </div>
 
-                <h4 className="text-xl md:text-2xl font-serif font-black text-[#5A3825] leading-tight mb-2">
-                  {activeDay.name}
-                </h4>
-                
-                <p className="text-xs text-[#2E1C12]/85 font-serif leading-relaxed mb-4">
-                  {activeDay.description}
-                </p>
-
                 {/* Salad Pairing display box */}
-                <div className="p-3 bg-[#7A8B6B]/10 rounded-xl border border-[#7A8B6B]/20 flex items-center gap-3">
-                  <div className="bg-[#7A8B6B] text-white p-1.5 rounded-lg">
-                    <Leaf className="w-4 h-4" />
+                <div className="p-2.5 sm:p-3 bg-[#7A8B6B]/10 rounded-xl border border-[#7A8B6B]/20 flex items-center gap-2.5 sm:gap-3">
+                  <div className="bg-[#7A8B6B] text-white p-1.5 rounded-lg flex-shrink-0">
+                    <Leaf className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
-                  <div>
-                    <h5 className="text-[10px] font-black text-[#7A8B6B] uppercase tracking-wider leading-none">Fresh Salad Pairing</h5>
-                    <p className="text-xs font-semibold text-[#5A3825] mt-0.5">{activeDay.salad}</p>
+                  <div className="min-w-0 flex-1">
+                    <h5 className="text-[8.5px] sm:text-[10px] font-black text-[#7A8B6B] uppercase tracking-wider leading-none">Fresh Salad Pairing</h5>
+                    <p className="text-xs font-semibold text-[#5A3825] mt-1 truncate">{activeDay.salad}</p>
                   </div>
                 </div>
               </div>
             </motion.div>
 
-            {/* REST OF 5 SMALL IMAGES / PREVIEW LIST COLUMN (Grid Span 5) */}
-            <div className="lg:col-span-5 flex flex-col gap-4 self-stretch bg-[#FAF8F4] p-5 rounded-3xl border border-[#5A3825]/5 justify-between min-h-[480px]">
-              <div>
-                <div className="flex items-center justify-between pl-1 mb-3">
-                  <h4 className="text-xs font-black text-[#5A3825]/60 uppercase tracking-widest">
-                    Diet Track Carousel
-                  </h4>
-                  {/* Carousel Controls */}
-                  <div className="flex gap-1.5">
-                    <button 
-                      onClick={scrollLeft}
-                      className="p-1.5 rounded-full bg-white hover:bg-[#FAF6ED] border border-[#5A3825]/10 text-[#5A3825]/75 hover:text-[#5A3825] active:scale-95 transition-all shadow-sm cursor-pointer"
-                      title="Previous Slide"
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5" />
-                    </button>
-                    <button 
-                      onClick={scrollRight}
-                      className="p-1.5 rounded-full bg-white hover:bg-[#FAF6ED] border border-[#5A3825]/10 text-[#5A3825]/75 hover:text-[#5A3825] active:scale-95 transition-all shadow-sm cursor-pointer"
-                      title="Next Slide"
-                    >
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Subtitle tag */}
-                <p className="text-[11px] text-[#2E1C12]/60 font-serif mb-4 pl-1">
-                  Scroll and click any day below to discover details of that day's nourishing daliya and fresh salad.
-                </p>
-
-                {/* Carousel Track - Horizontal Scrollable Row for ALL viewports */}
-                <div 
-                  ref={carouselRef}
-                  className="flex gap-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overflow-x-auto pb-4 snap-x scroll-smooth w-full select-none"
-                >
-                  {daliyaDays.map((item, index) => {
-                    const isActive = index === activeDayIdx;
-                    if (isActive) return null; // We display the other 5 days as requested
-
-                    return (
-                      <motion.button
-                        key={item.day}
-                        whileHover={{ y: -3 }}
-                        onClick={() => setActiveDayIdx(index)}
-                        className="flex-shrink-0 w-[210px] flex flex-col p-3 bg-white border border-[#5A3825]/8 rounded-2xl transition-all cursor-pointer text-left shadow-sm hover:shadow-md snap-start h-[190px] justify-between"
-                      >
-                        {/* Thumbnail image with tag */}
-                        <div className="relative w-full h-24 rounded-lg overflow-hidden bg-white border border-black/5 flex-shrink-0">
-                          <img 
-                            src={item.image} 
-                            alt={item.day} 
-                            className="w-full h-full object-cover" 
-                            referrerPolicy="no-referrer"
-                          />
-                          <span className="absolute top-1.5 left-1.5 bg-[#9E5638] text-white text-[8px] font-bold uppercase px-1.5 py-0.5 rounded tracking-wide shadow-sm">
-                            {item.day}
-                          </span>
-                        </div>
-                        
-                        {/* Title and salad description */}
-                        <div className="mt-2 text-ellipsis overflow-hidden flex-1 flex flex-col justify-between">
-                          <div>
-                            <p className="text-xs font-black text-[#5A3825] line-clamp-1 leading-tight">
-                              {item.name.split(' with ')[0]}
-                            </p>
-                            <p className="text-[9.5px] text-[#2E1C12]/60 font-serif line-clamp-1 italic mt-1 flex items-center gap-1">
-                              <Leaf className="w-3 h-3 text-[#7A8B6B] flex-shrink-0" />
-                              <span>{item.salad}</span>
-                            </p>
-                          </div>
-                          
-                          <div className="flex items-center justify-between border-t border-[#5A3825]/5 pt-2 mt-1">
-                            <span className="text-[8px] font-black uppercase text-[#7A8B6B] tracking-wider">
-                              {item.calories}
-                            </span>
-                            <span className="text-[9px] font-black text-[#9E5638] flex items-center gap-0.5">
-                              View <ArrowRight className="w-2.5 h-2.5" />
-                            </span>
-                          </div>
-                        </div>
-                      </motion.button>
-                    );
-                  })}
+            {/* BOTTOM HALF: SMALL CAROUSEL ROW FOR OTHER DAY SELECTIONS (Exactly touching, styled perfectly for touch gesturing) */}
+            <div className="w-full flex flex-col bg-[#FAF8F4] px-4 pb-4 pt-3 sm:px-6 sm:pb-5 sm:pt-4 border-t border-[#5A3825]/12">
+              <div className="flex justify-end mb-2">
+                {/* Carousel Navigation Arrow Controls */}
+                <div className="flex gap-1.5">
+                  <button 
+                    onClick={scrollLeft}
+                    className="p-1.5 rounded-full bg-white hover:bg-[#FAF6ED] border border-[#5A3825]/10 text-[#5A3825]/75 hover:text-[#5A3825] active:scale-95 transition-all shadow-sm cursor-pointer"
+                    title="Previous Slide"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <button 
+                    onClick={scrollRight}
+                    className="p-1.5 rounded-full bg-[#9E5638] text-white hover:bg-[#83452B] border border-[#5A3825]/10 active:scale-95 transition-all shadow-sm cursor-pointer"
+                    title="Next Slide"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
 
-              {/* Bottom Call to Action showing details of current active plan */}
-              <div className="mt-4 pt-4 border-t border-[#5A3825]/10 bg-[#FAF8F4] rounded-2xl">
-                <div className="bg-[#7A8B6B]/15 rounded-xl p-3 flex items-center justify-between">
+              {/* Carousel Track - Horizontal Scrollable Row for other days (Touch-friendly sizes optimized to peek & invite swiping with minimal top margin) */}
+              <div 
+                ref={carouselRef}
+                className="flex gap-3 sm:gap-4 overflow-x-auto pb-3 snap-x scroll-smooth w-full select-none cursor-grab active:cursor-grabbing [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              >
+                {daliyaDays.map((item, index) => {
+                  const isActive = index === activeDayIdx;
+                  if (isActive) return null; // We display the other 5 days as requested
+
+                  return (
+                    <motion.button
+                      key={item.day}
+                      whileHover={{ y: -2 }}
+                      onClick={() => setActiveDayIdx(index)}
+                      className="flex-shrink-0 w-[170px] sm:w-[210px] flex flex-col p-2.5 sm:p-3 bg-white border border-[#5A3825]/8 rounded-xl sm:rounded-2xl transition-all cursor-pointer text-left shadow-xs hover:shadow-md snap-start h-[170px] sm:h-[190px] justify-between"
+                    >
+                      {/* Thumbnail image with tag overlay */}
+                      <div className="relative w-full h-20 sm:h-24 rounded-lg overflow-hidden bg-white border border-black/5 flex-shrink-0">
+                        <img 
+                          src={item.image} 
+                          alt={item.day} 
+                          className="w-full h-full object-cover" 
+                          referrerPolicy="no-referrer"
+                        />
+                        <span className="absolute top-1.5 left-1.5 bg-[#9E5638] text-white text-[7.5px] sm:text-[8px] font-bold uppercase px-1.5 py-0.5 rounded tracking-wide shadow-sm">
+                          {item.day}
+                        </span>
+                      </div>
+                      
+                      {/* Description / Content footer for small cards */}
+                      <div className="mt-2 text-ellipsis overflow-hidden flex-1 flex flex-col justify-between">
+                        <div>
+                          <p className="text-[11px] sm:text-xs font-black text-[#5A3825] line-clamp-1 leading-tight">
+                            {item.name.split(' with ')[0]}
+                          </p>
+                          <p className="text-[8.5px] sm:text-[9.5px] text-[#2E1C12]/60 font-serif line-clamp-1 italic mt-1.5 flex items-center gap-1">
+                            <Leaf className="w-2.5 h-2.5 text-[#7A8B6B] flex-shrink-0" />
+                            <span className="truncate">{item.salad}</span>
+                          </p>
+                        </div>
+                        
+                        <div className="flex items-center justify-between border-t border-[#5A3825]/5 pt-2 mt-1.5">
+                          <span className="text-[7.5px] sm:text-[8px] font-black uppercase text-[#7A8B6B] tracking-wider">
+                            {item.calories}
+                          </span>
+                          <span className="text-[8px] sm:text-[9px] font-black text-[#9E5638] flex items-center gap-0.5">
+                            View <ArrowRight className="w-2.5 h-2.5" />
+                          </span>
+                        </div>
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {/* Bottom active status bar inside the block (Mobile Stack-Friendly & highly interactive info) */}
+              <div className="bg-[#7A8B6B]/10 rounded-xl p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-1 gap-2.5 sm:gap-4 text-xs">
+                <div className="min-w-0">
+                  <span className="text-[8px] sm:text-[9px] font-black text-[#7A8B6B] uppercase block tracking-wider leading-none">CURRENT VIEWED DIET</span>
+                  <span className="text-xs font-black text-[#5A3825] mt-1 block truncate">{activeDay.day}: {activeDay.name.split(' with ')[0]}</span>
+                </div>
+                <div className="flex items-center justify-between sm:justify-end sm:text-right border-t sm:border-t-0 border-[#7A8B6B]/10 pt-2 sm:pt-0 gap-4">
                   <div>
-                    <span className="text-[9px] font-black text-[#7A8B6B] uppercase block">ACTIVE ITEM</span>
-                    <span className="text-xs font-black text-[#5A3825] line-clamp-1">{activeDay.day}: {activeDay.name.split(' with ')[0]}</span>
+                    <span className="text-[8px] sm:text-[9px] font-bold text-[#5A3825]/40 block uppercase tracking-wider leading-none">CALORIES</span>
+                    <span className="text-xs font-black text-[#5A3825] mt-1 block">{activeDay.calories}</span>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[9px] font-bold text-[#5A3825]/40 block uppercase">NUTRITION</span>
-                    <span className="text-xs font-black text-[#5A3825]">{activeDay.calories} • {activeDay.protein}</span>
+                  <div>
+                    <span className="text-[8px] sm:text-[9px] font-bold text-[#5A3825]/40 block uppercase tracking-wider leading-none">PROTEIN</span>
+                    <span className="text-xs font-black text-[#FAF8F4] bg-[#9E5638] px-2 py-0.5 rounded-lg mt-0.5 block">{activeDay.protein}</span>
                   </div>
                 </div>
               </div>
@@ -739,16 +733,16 @@ const MorningDaliyaSection = ({ onAddToCart }: { onAddToCart: (item: MenuItem) =
 
         {/* 3 SUBSCRIPTION / TRIAL PLANS AREA */}
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10">
-            <h3 className="text-xl md:text-2xl font-serif font-black text-[#5A3825]">
+          <div className="text-center m-0 p-0">
+            <h3 className="text-xl md:text-2xl font-serif font-black text-[#5A3825] m-0 p-0">
               Select Your Healthy Daliya Diet Plan
             </h3>
-            <p className="text-xs md:text-sm text-[#7A8B6B] mt-1 font-serif max-w-lg mx-auto">
+            <p className="text-xs md:text-sm text-[#7A8B6B] m-0 mt-0.5 p-0 font-serif max-w-lg mx-auto">
               Choose from our daily trials, flexible weekly packages, or best-value continuous monthly subscriptions. Delivered hot and fresh!
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
             
             {/* PLAN 1: 1 Day Trial Plan */}
             <motion.div 
@@ -3985,12 +3979,20 @@ const Footer = () => (
   </footer>
 );
 
-function ScrollToHash() {
+function ScrollToHash({ setActiveHomeTab }: { setActiveHomeTab: (t: 'daliya' | 'thali') => void }) {
   const location = useLocation();
 
   useEffect(() => {
     if (location.hash) {
       const id = location.hash.replace('#', '');
+      if (id === 'morning-daliya') {
+        setActiveHomeTab('daliya');
+      } else if (id === 'breakfast-lunch-combos') {
+        setActiveHomeTab('thali');
+      } else if (id === 'diet-and-meals-tabs') {
+        // any default hash can go here
+      }
+      
       const el = document.getElementById(id);
       if (el) {
         setTimeout(() => {
@@ -3998,7 +4000,7 @@ function ScrollToHash() {
         }, 120);
       }
     }
-  }, [location]);
+  }, [location, setActiveHomeTab]);
 
   return null;
 }
@@ -4030,6 +4032,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [orders, setOrders] = useState<OrderDetails[]>([]);
   const [isEmailLogsOpen, setIsEmailLogsOpen] = useState(false);
+  const [activeHomeTab, setActiveHomeTab] = useState<'daliya' | 'thali'>('thali');
   
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -4240,7 +4243,7 @@ export default function App() {
 
   return (
     <Router>
-      <ScrollToHash />
+      <ScrollToHash setActiveHomeTab={setActiveHomeTab} />
       <div className="min-h-screen bg-brand-bg selection:bg-brand-accent selection:text-white flex flex-col pb-20 md:pb-0">
         <Navbar 
           cartCount={cart.reduce((s, i) => s + i.quantity, 0)} 
@@ -4266,22 +4269,86 @@ export default function App() {
                 </AnimatePresence>
                 <HeroAnimation 
                   onExploreMenu={() => {
-                    const el = document.getElementById('breakfast-lunch-combos');
-                    if (el) {
-                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    } else {
-                      window.location.href = '/#breakfast-lunch-combos';
-                    }
+                    setActiveHomeTab('thali');
+                    setTimeout(() => {
+                      const el = document.getElementById('diet-and-meals-tabs');
+                      if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }
+                    }, 50);
                   }}
                   onTrackOrder={() => {
                     window.location.href = '/dashboard';
                   }}
                   hasActiveOrders={orders.some(o => o.userId === currentUser?.id && o.status !== 'delivered' && o.status !== 'cancelled')}
                 />
-                <WeeklyShowcase onAddToCart={addToCart} onOpenCart={() => setIsCartOpen(true)} />
+
+                {/* Compact, Segmented Tab switcher for mobile-friendly easy layout */}
+                <div id="diet-and-meals-tabs" className="bg-[#FAF8F4] pt-8 pb-4 border-b border-[#5A3825]/5 select-none scroll-mt-24">
+                  <div className="max-w-5xl mx-auto px-4">
+                    <div className="text-center mb-6">
+                      <span className="text-[#9E5638] font-mono text-[9px] sm:text-[10px] uppercase font-black tracking-[0.25em] block mb-1">OUR DAILY EXPERT PROGRAM</span>
+                      <h2 className="text-xl sm:text-2xl font-serif font-black text-[#5A3825] uppercase tracking-wider">Select Health Category</h2>
+                      <p className="text-xs text-[#7A8B6B] mt-1 font-serif max-w-sm mx-auto">Tap to instantly explore options, custom ingredients, and pricing details.</p>
+                    </div>
+
+                    <div className="bg-[#EADBBD]/20 p-1.5 rounded-2xl border border-[#5A3825]/10 grid grid-cols-2 gap-1 shadow-xs max-w-2xl mx-auto">
+                      {[
+                        { id: 'thali', label: '🍱 Desi Thali', desc: '6-Day Cycle' },
+                        { id: 'daliya', label: '🥣 Daliya Diet', desc: '6-Day Program' }
+                      ].map((tab) => {
+                        const isActive = activeHomeTab === tab.id;
+                        return (
+                          <button
+                            key={tab.id}
+                            onClick={() => setActiveHomeTab(tab.id as any)}
+                            className={`relative flex flex-col items-center justify-center py-2.5 px-1 sm:px-3 rounded-xl transition-all font-serif font-black text-center cursor-pointer overflow-hidden ${
+                              isActive
+                                ? 'bg-[#9E5638] text-white shadow-md'
+                                : 'text-[#5A3825]/85 hover:bg-[#FAF6ED] hover:text-[#5A3825]'
+                            }`}
+                          >
+                            <span className="text-xs sm:text-sm">{tab.label}</span>
+                            <span className={`text-[8px] sm:text-[9.5px] font-sans font-bold tracking-tight uppercase leading-none mt-1 ${isActive ? 'text-white/80' : 'text-[#2E1C12]/50'}`}>
+                              {tab.desc}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tab content panel */}
+                <div className="relative">
+                  <AnimatePresence mode="wait">
+                    {activeHomeTab === 'thali' && (
+                      <motion.div
+                        key="thali"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <WeeklyShowcase onAddToCart={addToCart} onOpenCart={() => setIsCartOpen(true)} />
+                      </motion.div>
+                    )}
+
+                    {activeHomeTab === 'daliya' && (
+                      <motion.div
+                        key="daliya"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <MorningDaliyaSection onAddToCart={addToCart} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
                 <QuickOrderSteps />
-                <MorningDaliyaSection onAddToCart={addToCart} />
-                <MorningBreakfastCombo onAddToCart={addToCart} />
               </>
             } />
             <Route path="/menu" element={<Navigate to="/#breakfast-lunch-combos" replace />} />

@@ -46,7 +46,7 @@ export const HeroAnimation = ({ onExploreMenu, onTrackOrder, hasActiveOrders = f
   return (
     <section 
       id="hero-section" 
-      className="relative w-full h-[65vh] min-h-[460px] md:h-[75vh] md:min-h-[560px] flex items-center justify-center overflow-hidden border-b border-[#5A3825]/30 bg-[#0F0A07]"
+      className="relative w-full h-[38vh] min-h-[290px] md:h-[48vh] md:min-h-[380px] flex items-center justify-center overflow-hidden border-b border-[#5A3825]/30 bg-[#0F0A07]"
     >
       {/* Background Image: Generated top-down Indian meal flatlay table from local asset */}
       <div 
@@ -61,7 +61,7 @@ export const HeroAnimation = ({ onExploreMenu, onTrackOrder, hasActiveOrders = f
 
       {/* Subtle Floating Ambient Sparks */}
       <div className="absolute inset-0 pointer-events-none z-15 overflow-hidden">
-        {Array.from({ length: 12 }).map((_, i) => (
+        {Array.from({ length: 8 }).map((_, i) => (
           <motion.div
             key={i}
             className="absolute w-1.5 h-1.5 bg-gradient-to-t from-amber-500 to-orange-400 rounded-full blur-[0.5px]"
@@ -70,7 +70,7 @@ export const HeroAnimation = ({ onExploreMenu, onTrackOrder, hasActiveOrders = f
               top: `${20 + Math.random() * 60}%` 
             }}
             animate={{
-              y: [0, -40, -80],
+              y: [0, -30, -60],
               opacity: [0, 0.7, 0],
               scale: [0.5, 1, 0.2]
             }}
@@ -92,10 +92,10 @@ export const HeroAnimation = ({ onExploreMenu, onTrackOrder, hasActiveOrders = f
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="mb-6 flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-[#D4AF37]/30 text-[#D4AF37] text-[9px] font-mono tracking-[0.2em] uppercase"
+          className="mb-3.5 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-[#D4AF37]/30 text-[#D4AF37] text-[8.5px] font-mono tracking-[0.2em] uppercase"
         >
-          <Sparkles className="w-3 h-3 text-[#D4AF37] animate-pulse" />
-          <span>ESTD. 2026 • RUSTIC HEARTH REVOLUTION</span>
+          <Sparkles className="w-2.5 h-2.5 text-[#D4AF37] animate-pulse" />
+          <span>ESTD. 2026 • RUSTIC HEARTH</span>
         </motion.div>
 
         {/* Central Display Slogan matching image typography exactly */}
@@ -103,10 +103,10 @@ export const HeroAnimation = ({ onExploreMenu, onTrackOrder, hasActiveOrders = f
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1 }}
-          className="space-y-4 max-w-4xl"
+          className="space-y-2.5 max-w-4xl"
         >
-          <h1 className="text-3xl sm:text-4.5xl md:text-5.5xl lg:text-6xl font-serif font-black tracking-[0.05em] leading-[1.2] text-[#FAF6ED] uppercase drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
-            <span className="bg-gradient-to-b from-[#FFFDF9] via-[#EADBBD] to-[#C8A76B] bg-clip-text text-transparent block mb-1">
+          <h1 className="text-xl sm:text-2xl md:text-3.5xl lg:text-4.5xl font-serif font-black tracking-[0.05em] leading-[1.2] text-[#FAF6ED] uppercase drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]">
+            <span className="bg-gradient-to-b from-[#FFFDF9] via-[#EADBBD] to-[#C8A76B] bg-clip-text text-transparent block mb-0.5">
               Hand-Crafted Desi Meals,
             </span>
             <span className="text-[#FAF6ED] block">
@@ -114,8 +114,8 @@ export const HeroAnimation = ({ onExploreMenu, onTrackOrder, hasActiveOrders = f
             </span>
           </h1>
 
-          <p className="text-white/85 text-xs sm:text-sm md:text-base font-medium max-w-xl mx-auto tracking-wide leading-relaxed bg-black/25 backdrop-blur-xs p-3.5 rounded-2xl border border-white/5 shadow-md">
-            Prepared with fresh wood-fired chulha roti, slow-cooked dal, and pure desi ingredients straight from the rustic kitchen clay ovens.
+          <p className="text-white/85 text-[10.5px] sm:text-xs md:text-sm font-medium max-w-lg mx-auto tracking-wide leading-relaxed bg-black/25 backdrop-blur-xs p-2 sm:p-2.5 rounded-xl border border-white/5 shadow-md">
+            Prepared with fresh wood-fired chulha roti, slow-cooked dal, and pure desi ingredients.
           </p>
         </motion.div>
 
@@ -124,20 +124,20 @@ export const HeroAnimation = ({ onExploreMenu, onTrackOrder, hasActiveOrders = f
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8 w-full max-w-md"
+          className="flex flex-row items-center justify-center gap-3 mt-5 w-full max-w-sm"
         >
           <button
             onClick={onExploreMenu}
-            className="group w-full sm:w-auto flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#8C5135] to-[#A05A3C] hover:from-[#9C5B3C] hover:to-[#B36846] text-[#FAF6ED] border border-[#D4AF37]/25 px-8 py-3.5 rounded-xl font-serif font-black text-sm tracking-wide shadow-xl hover:shadow-[#8C5135]/25 cursor-pointer transition-all hover:scale-102"
+            className="group flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-gradient-to-r from-[#8C5135] to-[#A05A3C] hover:from-[#9C5B3C] hover:to-[#B36846] text-[#FAF6ED] border border-[#D4AF37]/25 px-5 py-2.5 rounded-lg font-serif font-black text-xs tracking-wide shadow-xl hover:shadow-[#8C5135]/25 cursor-pointer transition-all hover:scale-102"
           >
             ORDER FROM CHULHA NOW
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </button>
           
           {onTrackOrder && (
             <button
               onClick={onTrackOrder}
-              className={`w-full sm:w-auto flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl border border-white/10 bg-black/40 backdrop-blur-xs text-[#FAF6ED]/90 hover:text-white font-serif font-bold text-xs tracking-wider uppercase hover:bg-white/5 transition-all cursor-pointer ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-white/10 bg-black/40 backdrop-blur-xs text-[#FAF6ED]/90 hover:text-white font-serif font-bold text-[10px] tracking-wider uppercase hover:bg-white/5 transition-all cursor-pointer ${
                 hasActiveOrders ? 'border-[#D4AF37]/40 ring-1 ring-[#D4AF37]/20 bg-[#1A1815]' : ''
               }`}
             >
@@ -147,12 +147,12 @@ export const HeroAnimation = ({ onExploreMenu, onTrackOrder, hasActiveOrders = f
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                   </span>
-                  <span>TRACK ACTIVE ORDER 🛵</span>
+                  <span>TRACK ORDER 🛵</span>
                 </>
               ) : (
                 <>
-                  <Compass className="w-4 h-4 text-[#D4AF37]" />
-                  <span>TRACK MY ORDER</span>
+                  <Compass className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>TRACK ORDER</span>
                 </>
               )}
             </button>
@@ -160,7 +160,7 @@ export const HeroAnimation = ({ onExploreMenu, onTrackOrder, hasActiveOrders = f
         </motion.div>
 
         {/* Decorative Indian Clay Pattern Border Overlay */}
-        <div className="absolute bottom-0 inset-x-0 h-1.5 bg-gradient-to-r from-[#D4AF37]/50 via-[#5A3825]/30 to-[#D4AF37]/50" />
+        <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-[#D4AF37]/50 via-[#5A3825]/30 to-[#D4AF37]/50" />
 
       </div>
     </section>
