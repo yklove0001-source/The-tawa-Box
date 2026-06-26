@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Calendar, Clock, ShoppingCart, Check, Heart, ShieldCheck, Flame, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MenuItem } from '../types';
@@ -98,6 +98,20 @@ export const WeeklyShowcase = ({ onAddToCart, onOpenCart }: WeeklyShowcaseProps)
 
   // Quick notification banner when added
   const [successMsg, setSuccessMsg] = useState<string>('');
+
+  const thaliPlansCarouselRef = useRef<HTMLDivElement>(null);
+
+  const scrollThaliPlansLeft = () => {
+    if (thaliPlansCarouselRef.current) {
+      thaliPlansCarouselRef.current.scrollBy({ left: -290, behavior: 'smooth' });
+    }
+  };
+
+  const scrollThaliPlansRight = () => {
+    if (thaliPlansCarouselRef.current) {
+      thaliPlansCarouselRef.current.scrollBy({ left: 290, behavior: 'smooth' });
+    }
+  };
 
   const triggerNotify = (msg: string) => {
     setSuccessMsg(msg);
@@ -358,10 +372,34 @@ export const WeeklyShowcase = ({ onAddToCart, onOpenCart }: WeeklyShowcaseProps)
         </AnimatePresence>
 
         {/* --- SUBSCRIPTION PREMIUM PLANS PRICING & CALLS TO ACTIONS --- */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        
+        {/* Compact Left/Right Controls for Plan Carousel on mobile screens */}
+        <div className="flex justify-end gap-1.5 mb-2 mt-2 md:hidden">
+          <button 
+            type="button"
+            onClick={scrollThaliPlansLeft}
+            className="p-1.5 rounded-full bg-white hover:bg-[#FAF6ED] border border-[#5A3825]/10 text-[#5A3825]/75 active:scale-95 transition-all shadow-xs cursor-pointer"
+            title="Previous Plan"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+          <button 
+            type="button"
+            onClick={scrollThaliPlansRight}
+            className="p-1.5 rounded-full bg-[#9E5638] text-white hover:bg-[#83452B] border border-[#5A3825]/10 active:scale-95 transition-all shadow-xs cursor-pointer"
+            title="Next Plan"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div 
+          ref={thaliPlansCarouselRef}
+          className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 md:pb-0 scroll-smooth w-full select-none md:grid md:grid-cols-3 md:gap-6 mt-2 md:mt-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+        >
           
           {/* PLAN 1: SINGLE DAY TRIAL */}
-          <div className="bg-[#FAF8F4] hover:bg-white border-2 border-[#5A3825]/10 hover:border-[#D4AF37]/50 rounded-3xl p-6 flex flex-col items-center justify-between text-center transition-all duration-300 transform hover:-translate-y-1 shadow-sm hover:shadow-md h-full">
+          <div className="flex-shrink-0 w-[280px] sm:w-[310px] md:w-auto snap-start bg-[#FAF8F4] hover:bg-white border-2 border-[#5A3825]/10 hover:border-[#D4AF37]/50 rounded-3xl p-6 flex flex-col items-center justify-between text-center transition-all duration-300 transform hover:-translate-y-1 shadow-sm hover:shadow-md h-full">
             <div className="w-full flex flex-col items-center">
               <div className="w-12 h-12 rounded-2xl bg-[#EADBBD]/25 text-[#9E5638] flex items-center justify-center border border-[#D4AF37]/20 mb-4 flex-shrink-0">
                 <Calendar className="w-5.5 h-5.5" />
@@ -414,7 +452,7 @@ export const WeeklyShowcase = ({ onAddToCart, onOpenCart }: WeeklyShowcaseProps)
           </div>
 
           {/* PLAN 2: 6-MEAL WEEKLY SUBSCRIPTION */}
-          <div className="bg-[#FAF8F4] hover:bg-white border-2 border-[#9E5638]/20 hover:border-[#D4AF37]/60 rounded-3xl p-6 flex flex-col items-center justify-between text-center transition-all duration-300 transform hover:-translate-y-1 shadow-md hover:shadow-lg h-full relative overflow-hidden">
+          <div className="flex-shrink-0 w-[280px] sm:w-[310px] md:w-auto snap-start bg-[#FAF8F4] hover:bg-white border-2 border-[#9E5638]/20 hover:border-[#D4AF37]/60 rounded-3xl p-6 flex flex-col items-center justify-between text-center transition-all duration-300 transform hover:-translate-y-1 shadow-md hover:shadow-lg h-full relative overflow-hidden">
             {/* Best Value Banner */}
             <div className="absolute top-0 right-0 bg-[#7A8B6B] text-white font-mono text-[8px] font-black tracking-widest uppercase px-4 py-1.5 rounded-bl-2xl shadow-sm border-l border-b border-white/20 select-none">
               Save 15%
@@ -472,7 +510,7 @@ export const WeeklyShowcase = ({ onAddToCart, onOpenCart }: WeeklyShowcaseProps)
           </div>
 
           {/* PLAN 3: 24-MEAL MONTHLY SUBSCRIPTION */}
-          <div className="bg-[#FAF8F4] hover:bg-white border-2 border-[#5A3825]/10 hover:border-[#D4AF37]/50 rounded-3xl p-6 flex flex-col items-center justify-between text-center transition-all duration-300 transform hover:-translate-y-1 shadow-sm hover:shadow-md h-full relative overflow-hidden">
+          <div className="flex-shrink-0 w-[280px] sm:w-[310px] md:w-auto snap-start bg-[#FAF8F4] hover:bg-white border-2 border-[#5A3825]/10 hover:border-[#D4AF37]/50 rounded-3xl p-6 flex flex-col items-center justify-between text-center transition-all duration-300 transform hover:-translate-y-1 shadow-sm hover:shadow-md h-full relative overflow-hidden">
             {/* Top Savings Banner */}
             <div className="absolute top-0 right-0 bg-[#9E5638] text-white font-mono text-[8px] font-black tracking-widest uppercase px-4 py-1.5 rounded-bl-2xl shadow-sm border-l border-b border-white/20 select-none">
               Save 37%

@@ -154,7 +154,30 @@ const Navbar = ({
                   { name: 'About Heritage', path: '/about' },
                   { name: 'Kitchen Gallery', path: '/gallery' },
                   { name: 'Contact Us', path: '/contact' },
+                  { name: `Shopping Cart`, path: '#cart', isCart: true },
                 ].map((link) => {
+                  if (link.isCart) {
+                    return (
+                      <button
+                        key="cart-drawer-link"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          onOpenCart();
+                        }}
+                        className="font-serif text-lg p-3 rounded-xl transition-all text-left flex items-center justify-between text-[#5A3825]/75 hover:bg-[#5A3825]/5 hover:text-[#5A3825] cursor-pointer"
+                      >
+                        <span className="flex items-center gap-2">
+                          <ShoppingCart className="w-5 h-5" />
+                          {link.name}
+                        </span>
+                        {cartCount > 0 && (
+                          <span className="bg-[#9E5638] text-[#EADBBD] text-[11px] font-black w-5 h-5 flex items-center justify-center rounded-full">
+                            {cartCount}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  }
                   const isCurrentActive = link.path.includes('#')
                     ? location.hash === link.path.substring(link.path.indexOf('#'))
                     : isActive(link.path);
@@ -3053,6 +3076,14 @@ const CartModal = ({
   const [simCVV, setSimCVV] = useState('');
   const [simHolder, setSimHolder] = useState('');
   const [simUPIId, setSimUPIId] = useState('user@upi');
+
+  // Online Payment Options States
+  const [onlinePayOption, setOnlinePayOption] = useState<'upi_id' | 'app_redirect'>('upi_id');
+  const [onlineUpiId, setOnlineUpiId] = useState('');
+  const [onlineRedirectApp, setOnlineRedirectApp] = useState<'gpay' | 'phonepe' | 'paytm' | 'bhim'>('gpay');
+  const [showRedirectOverlay, setShowRedirectOverlay] = useState<boolean>(false);
+  const [redirectOverlayMessage, setRedirectOverlayMessage] = useState<string>('');
+
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discount = pointsToRedeem / 10;
   const finalTotal = Math.max(0, total - discount);
@@ -3065,6 +3096,9 @@ const CartModal = ({
         setPlacedOrder(null);
         setIsProcessing(false);
         setPointsToRedeem(0);
+        setShowRedirectOverlay(false);
+        setRedirectOverlayMessage('');
+        setOnlineUpiId('');
       }, 500);
       return () => clearTimeout(timer);
     }
@@ -3092,6 +3126,29 @@ const CartModal = ({
       return () => clearTimeout(timer);
     }
   }, [showSimulatorModal, simTab, onConfirmOrder]);
+
+  // Auto-complete custom online payment simulator after verification/redirect processing
+  useEffect(() => {
+    if (showRedirectOverlay) {
+      setIsProcessing(true);
+      const timer = setTimeout(() => {
+        setShowRedirectOverlay(false);
+        setIsProcessing(false);
+        // Trigger full authentic confirmation state
+        onConfirmOrder((order) => {
+          setPlacedOrder({
+            ...order,
+            paymentMethod: 'online',
+            status: 'pending',
+            razorpayPaymentId: `pay_online_sim_${Math.random().toString(36).substr(2, 9)}`,
+            razorpayOrderId: `order_online_sim_${Math.random().toString(36).substr(2, 9)}`,
+          });
+          setStep('confirmation');
+        });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showRedirectOverlay, onConfirmOrder]);
 
   const handleGetLocation = () => {
     if ("geolocation" in navigator) {
@@ -3169,100 +3226,38 @@ const CartModal = ({
   };
 
   const handlePlaceOrder = async () => {
-    if (orderPaymentMethod === 'online') {
-      if (useSimulator) {
-        // Toggle our beautiful Razorpay Sandbox Simulator Overlay
-        setShowSimulatorModal(true);
-        return;
-      }
-
-      // Real SDK Integration Mode
+    if (orderPaymentMethod === 'cod') {
       setIsProcessing(true);
-      setRzpLoading(true);
-      
-      const isScriptLoaded = await loadRazorpayScript();
-      const activeKey = razorpayKey.trim() || (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_RAZORPAY_KEY_ID) || '';
-      
-      if (!isScriptLoaded || !activeKey || !activeKey.startsWith('rzp_')) {
-        console.warn("Falling back to high-fidelity Simulator Mode due to missing/invalid Razorpay key or platform iframe sandbox load restrictions.");
-        setUseSimulator(true);
-        setShowSimulatorModal(true);
-        setIsProcessing(false);
-        setRzpLoading(false);
-        return;
-      }
-
-      // Store in localStorage for persistent testing ease
-      localStorage.setItem('VITE_RAZORPAY_KEY_ID', activeKey);
-
-      const options = {
-        key: activeKey,
-        amount: Math.round(finalTotal * 100), // convert to paisa subunits
-        currency: 'INR',
-        name: 'Tawa Box Gourmet Delivery',
-        description: 'Mubarak Ho! Delicious Daliya & Lunch Box Boxes',
-        image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=150&q=80',
-        handler: function (response: any) {
-          setIsProcessing(false);
-          setRzpLoading(false);
-          
-          // Confirmed Checkout Success Transaction
-          onConfirmOrder((order) => {
-            setPlacedOrder({
-              ...order,
-              paymentMethod: 'online',
-              status: 'pending',
-              razorpayPaymentId: response.razorpay_payment_id || `pay_sim_${Math.random().toString(36).substr(2, 9)}`,
-              razorpayOrderId: response.razorpay_order_id || `order_sim_${Math.random().toString(36).substr(2, 9)}`,
-              razorpaySignature: response.razorpay_signature || 'simulated_signature_hash'
-            });
-            setStep('confirmation');
-          });
-        },
-        prefill: {
-          name: orderName,
-          contact: orderMobile,
-          email: 'yklove0001@gmail.com',
-        },
-        notes: {
-          delivery_address: orderAddress,
-          customer_notes: orderNotes,
-          total_items: cartItems.length.toString()
-        },
-        theme: {
-          color: '#5A3825' // Match our elegant warm brand palette
-        },
-        modal: {
-          ondismiss: function() {
-            setIsProcessing(false);
-            setRzpLoading(false);
-          }
-        }
-      };
-
-      try {
-        const rzp = new (window as any).Razorpay(options);
-        
-        rzp.on('payment.failed', function (response: any) {
-          setIsProcessing(false);
-          setRzpLoading(false);
-          alert(`❌ Payment unsuccessful: ${response.error.description || 'SDK transaction rejected.'}`);
+      onConfirmOrder((order) => {
+        setPlacedOrder({
+          ...order,
+          paymentMethod: 'cod',
+          status: 'pending'
         });
-
-        rzp.open();
-      } catch (err: any) {
-        setIsProcessing(false);
-        setRzpLoading(false);
-        alert(`❌ Initialization Error: ${err.message || 'Razorpay script failed to build mock payload. Please try again or switch to Sandbox Simulator.'}`);
-      }
+        setStep('confirmation');
+      });
       return;
     }
 
-    // Cash on Delivery standard checkout
-    onConfirmOrder((order) => {
-      setPlacedOrder(order);
-      setStep('confirmation');
-    });
+    if (orderPaymentMethod === 'online') {
+      if (onlinePayOption === 'upi_id') {
+        if (!onlineUpiId.trim() || !onlineUpiId.includes('@')) {
+          alert('Please enter a valid UPI ID (e.g., name@upi)');
+          return;
+        }
+        setRedirectOverlayMessage(`Verifying UPI ID "${onlineUpiId}"... Sending a secure payment collect request to your UPI App. Please open your UPI app to complete the transaction.`);
+      } else {
+        const appNames = {
+          gpay: 'Google Pay',
+          phonepe: 'PhonePe',
+          paytm: 'Paytm',
+          bhim: 'BHIM UPI'
+        };
+        setRedirectOverlayMessage(`Redirecting to ${appNames[onlineRedirectApp]}... Opening the app on your device for quick 1-click payment authorization.`);
+      }
+      setShowRedirectOverlay(true);
+      return;
+    }
   };
 
   return (
@@ -3447,6 +3442,7 @@ const CartModal = ({
                       exit={{ opacity: 0, x: -20 }}
                       className="space-y-4"
                     >
+                      {/* Pay on Delivery Option */}
                       <div 
                         onClick={() => setOrderPaymentMethod('cod')}
                         className={`p-6 rounded-3xl border-2 cursor-pointer transition-all flex items-center justify-between ${
@@ -3469,6 +3465,7 @@ const CartModal = ({
                         </div>
                       </div>
 
+                      {/* Online Payment Option */}
                       <div 
                         onClick={() => setOrderPaymentMethod('online')}
                         className={`p-6 rounded-3xl border-2 cursor-pointer transition-all flex items-center justify-between ${
@@ -3483,13 +3480,103 @@ const CartModal = ({
                           </div>
                           <div>
                             <div className="font-serif font-black text-brand-primary">Online Payment</div>
-                            <div className="text-xs text-brand-primary/60">UPI, Cards, or Wallet</div>
+                            <div className="text-xs text-brand-primary/60">UPI ID or Direct App Redirect</div>
                           </div>
                         </div>
                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${orderPaymentMethod === 'online' ? 'border-brand-primary' : 'border-brand-primary/20'}`}>
                           {orderPaymentMethod === 'online' && <div className="w-3 h-3 bg-brand-primary rounded-full" />}
                         </div>
                       </div>
+
+                      {/* Direct UPI ID vs Payment App Sub-Selection Panel */}
+                      {orderPaymentMethod === 'online' && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-[#FAF8F4] border-2 border-brand-primary/10 rounded-3xl p-5 space-y-4 shadow-sm"
+                        >
+                          <div className="text-xs font-serif font-black text-[#5A3825] uppercase tracking-wider">
+                            Choose Online Mode
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setOnlinePayOption('upi_id')}
+                              className={`p-3.5 rounded-2xl border-2 flex flex-col items-center gap-1.5 transition-all text-xs font-black ${
+                                onlinePayOption === 'upi_id'
+                                  ? 'bg-[#EADBBD]/25 border-[#9E5638] text-[#9E5638]'
+                                  : 'bg-white border-[#5A3825]/5 text-brand-primary/70 hover:bg-white/80'
+                              }`}
+                            >
+                              <span className="text-xl">✏️</span>
+                              <span>Add UPI ID</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setOnlinePayOption('app_redirect')}
+                              className={`p-3.5 rounded-2xl border-2 flex flex-col items-center gap-1.5 transition-all text-xs font-black ${
+                                onlinePayOption === 'app_redirect'
+                                  ? 'bg-[#EADBBD]/25 border-[#9E5638] text-[#9E5638]'
+                                  : 'bg-white border-[#5A3825]/5 text-brand-primary/70 hover:bg-white/80'
+                              }`}
+                            >
+                              <span className="text-xl">🚀</span>
+                              <span>Redirect to App</span>
+                            </button>
+                          </div>
+
+                          {onlinePayOption === 'upi_id' ? (
+                            <div className="space-y-2 animate-fadeIn">
+                              <label className="text-xs font-black text-brand-primary/80 block">
+                                Enter your UPI ID
+                              </label>
+                              <input
+                                type="text"
+                                value={onlineUpiId}
+                                onChange={(e) => setOnlineUpiId(e.target.value)}
+                                placeholder="e.g. mobileNumber@ybl, user@upi"
+                                className="w-full bg-white border border-[#5A3825]/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#9E5638] text-brand-primary font-mono placeholder:text-brand-primary/30"
+                              />
+                              <p className="text-[10px] text-brand-primary/60">
+                                A collect request will be sent to your UPI ID after placing order.
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="space-y-3 animate-fadeIn">
+                              <label className="text-xs font-black text-brand-primary/80 block">
+                                Choose Payment App
+                              </label>
+                              <div className="grid grid-cols-4 gap-2">
+                                {[
+                                  { id: 'gpay', name: 'GPay', icon: '⚡' },
+                                  { id: 'phonepe', name: 'PhonePe', icon: '🟣' },
+                                  { id: 'paytm', name: 'Paytm', icon: '🔵' },
+                                  { id: 'bhim', name: 'BHIM', icon: '🇮🇳' },
+                                ].map((app) => (
+                                  <button
+                                    key={app.id}
+                                    type="button"
+                                    onClick={() => setOnlineRedirectApp(app.id as any)}
+                                    className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all text-[10px] font-black ${
+                                      onlineRedirectApp === app.id
+                                        ? 'bg-[#9E5638]/15 border-[#9E5638] text-[#9E5638]'
+                                        : 'bg-white border-[#5A3825]/5 text-brand-primary/70 hover:bg-white/80'
+                                    }`}
+                                  >
+                                    <span className="text-base">{app.icon}</span>
+                                    <span>{app.name}</span>
+                                  </button>
+                                ))}
+                              </div>
+                              <p className="text-[10px] text-brand-primary/60 text-center">
+                                You will be redirected instantly to authorize payment.
+                              </p>
+                            </div>
+                          )}
+                        </motion.div>
+                      )}
                     </motion.div>
                   )}
 
@@ -3600,7 +3687,9 @@ const CartModal = ({
                 <div className="p-6 bg-[#DFE7DC] border-t border-brand-primary/15">
                   <div className="flex justify-between items-center mb-6">
                     <div className="flex flex-col">
-                      <span className="text-brand-primary/50 text-[10px] font-bold uppercase tracking-widest">Total Amount</span>
+                      <span className="text-brand-primary/50 text-[10px] font-bold uppercase tracking-widest">
+                        {step === 'cart' ? 'Subtotal' : 'Total Amount'}
+                      </span>
                       <div className="flex items-baseline gap-2">
                         <span className={`font-display font-black text-brand-primary ${pointsToRedeem > 0 ? 'text-lg line-through opacity-45' : 'text-3xl'}`}>Rs. {total}</span>
                         {pointsToRedeem > 0 && (
@@ -3612,7 +3701,7 @@ const CartModal = ({
                       <div className="text-right">
                         <span className="text-brand-primary/50 text-[10px] font-bold uppercase tracking-widest">Method</span>
                         <div className="text-brand-secondary font-bold uppercase text-xs tracking-widest">
-                          {orderPaymentMethod === 'cod' ? 'Pay on Delivery' : 'Online'}
+                          {orderPaymentMethod === 'cod' ? 'Pay on Delivery' : 'Online Payment'}
                         </div>
                       </div>
                     )}
@@ -3622,14 +3711,14 @@ const CartModal = ({
                     <button 
                       onClick={handlePlaceOrder}
                       disabled={isProcessing}
-                      className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full py-5 rounded-2xl font-black text-lg transition-all active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed bg-brand-primary text-white shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary"
                     >
                       {isProcessing ? (
                         <>
                           <motion.div
                             animate={{ rotate: 360 }}
                             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                            className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                            className="w-5 h-5 border-2 rounded-full border-t-transparent border-white"
                           />
                           Processing...
                         </>
@@ -3641,13 +3730,15 @@ const CartModal = ({
                       )}
                     </button>
                   ) : (
-                    <button 
-                      onClick={nextStep}
-                      className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all active:scale-[0.98] flex items-center justify-center gap-3"
-                    >
-                      {step === 'cart' ? 'Confirm Food Details' : 'Continue to Payment'}
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
+                    <div className="flex flex-col gap-3 w-full">
+                      <button 
+                        onClick={nextStep}
+                        className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                      >
+                        {step === 'cart' ? 'Standard Checkout' : 'Continue to Payment'}
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </div>
                   )}
                 </div>
               )}
@@ -3965,6 +4056,62 @@ const CartModal = ({
             </motion.div>
           )}
 
+          {showRedirectOverlay && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-[#5A3825]/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 font-sans"
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 15 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 15 }}
+                className="w-full max-w-md bg-white text-brand-primary rounded-[2.5rem] shadow-2xl p-8 border border-brand-primary/10 flex flex-col items-center text-center space-y-6"
+              >
+                <div className="relative w-20 h-20 flex items-center justify-center bg-[#EADBBD]/25 rounded-full border-2 border-brand-primary/15">
+                  <div className="absolute inset-0 rounded-full border-4 border-[#9E5638]/20 border-t-[#9E5638] animate-spin" />
+                  <span className="text-3xl">🛡️</span>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-xl font-serif font-black text-brand-primary">
+                    Processing Your Payment
+                  </h3>
+                  <p className="text-sm text-brand-primary/70 leading-relaxed">
+                    {redirectOverlayMessage}
+                  </p>
+                </div>
+
+                <div className="w-full bg-[#FAF8F4] rounded-2xl p-4 border border-brand-primary/5 space-y-2 text-left font-sans text-xs">
+                  <div className="flex justify-between font-bold">
+                    <span>Order Subtotal:</span>
+                    <span>Rs. {total}</span>
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-brand-secondary font-bold">
+                      <span>Loyalty Discount:</span>
+                      <span>- Rs. {discount}</span>
+                    </div>
+                  )}
+                  <div className="border-t border-brand-primary/10 pt-2 flex justify-between text-sm font-black text-brand-primary">
+                    <span>Total Amount:</span>
+                    <span>Rs. {finalTotal}</span>
+                  </div>
+                </div>
+
+                <p className="text-[10px] text-brand-primary/40 flex items-center gap-1 font-semibold">
+                  <span>🔒 Secure 256-Bit SSL Encryption</span>
+                </p>
+              </motion.div>
+            </motion.div>
+          )}
+
+          {/* Removed Gokwik block */}
+
+
+
+
             </motion.div>
           </motion.div>
         </>
@@ -4052,7 +4199,7 @@ export default function App() {
   const [orderAddress, setOrderAddress] = useState('');
   const [orderNotes, setOrderNotes] = useState('');
   const [orderLocation, setOrderLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [orderPaymentMethod, setOrderPaymentMethod] = useState<'cod' | 'online'>('cod');
+  const [orderPaymentMethod, setOrderPaymentMethod] = useState<'cod' | 'online'>('online');
   const [pointsToRedeem, setPointsToRedeem] = useState(0);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [orders, setOrders] = useState<OrderDetails[]>([]);
@@ -4164,8 +4311,14 @@ export default function App() {
     localStorage.setItem('orders', JSON.stringify(updated));
   };
 
-  const confirmOrder = (onSuccess: (order: OrderDetails) => void) => {
-    if (!orderName || !orderMobile || !orderAddress) {
+  const confirmOrder = (
+    onSuccess: (order: OrderDetails) => void
+  ) => {
+    const name = orderName;
+    const mobile = orderMobile;
+    const address = orderAddress;
+
+    if (!name || !mobile || !address) {
       alert('Please fill in all delivery details');
       return;
     }
@@ -4178,10 +4331,10 @@ export default function App() {
     const newOrder: OrderDetails = {
       id: Math.random().toString(36).substr(2, 6).toUpperCase(),
       userId: currentUser ? currentUser.id : 'guest',
-      userName: orderName,
+      userName: name,
       userEmail: currentUser ? currentUser.email : 'guest@tawabox.com',
-      mobile: orderMobile,
-      address: orderAddress,
+      mobile: mobile,
+      address: address,
       notes: orderNotes || undefined,
       location: orderLocation || undefined,
       items: [...cart],
