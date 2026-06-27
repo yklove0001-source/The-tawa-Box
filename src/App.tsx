@@ -3284,7 +3284,16 @@ const CartModal = ({
         });
 
         if (!response.ok) {
-          throw new Error('Failed to create secure Razorpay order with server');
+          let errorText = '';
+          try {
+            errorText = await response.text();
+          } catch (_) {}
+          
+          if (response.status === 404) {
+            throw new Error('Payment server endpoint not found (404). If you recently changed the code, please click the "Deploy" button in the top right to deploy the latest backend updates to your domain, wait a minute, and then try again!');
+          } else {
+            throw new Error(`Failed to create secure Razorpay order with server (Status ${response.status}: ${errorText || response.statusText || 'Internal Server Error'})`);
+          }
         }
 
         const rzpData = await response.json();

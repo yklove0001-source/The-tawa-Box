@@ -35,7 +35,7 @@ function getStripe(): Stripe {
 
 // Lazy initialize Razorpay
 let razorpayClient: Razorpay | null = null;
-function getRazorpay(): Razorpay {
+function getRazorpay(): any {
   if (!razorpayClient) {
     let keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID;
     let keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -49,7 +49,8 @@ function getRazorpay(): Razorpay {
       throw new Error('RAZORPAY_KEY_ID or VITE_RAZORPAY_KEY_ID environment variable is required');
     }
 
-    razorpayClient = new Razorpay({
+    const RazorpayConstructor = (Razorpay as any).default || Razorpay;
+    razorpayClient = new RazorpayConstructor({
       key_id: keyId,
       key_secret: keySecret || 'placeholder_secret',
     });
@@ -251,12 +252,14 @@ async function startServer() {
 
   // API: Create Razorpay Order
   app.post('/api/payments/razorpay/create-order', async (req, res) => {
+    let amountVal = 0;
     try {
-      const { amount, orderId } = req.body;
+      const { amount, orderId } = req.body || {};
+      amountVal = Number(amount) || 0;
       const razorpay = getRazorpay();
       
       const options = {
-        amount: Math.round(amount * 100), // amount in paisa (smallest currency unit)
+        amount: Math.round(amountVal * 100), // amount in paisa (smallest currency unit)
         currency: 'INR',
         receipt: `receipt_${orderId || Math.random().toString(36).substr(2, 6).toUpperCase()}`,
       };
@@ -278,7 +281,7 @@ async function startServer() {
       }
       res.json({
         id: mockOrderId,
-        amount: Math.round(req.body.amount * 100),
+        amount: Math.round(amountVal * 100) || 24900,
         currency: 'INR',
         keyId: keyId || 'rzp_test_placeholder',
         simulated: true,
