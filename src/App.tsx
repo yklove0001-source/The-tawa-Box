@@ -29,6 +29,9 @@ import {
 } from 'firebase/firestore';
 
 
+
+
+
 // @ts-ignore
 import tawaBoxHero from './assets/images/tawa_box_hero_1779282315522.png';
 // @ts-ignore
@@ -3078,11 +3081,30 @@ const CartModal = ({
   const [simUPIId, setSimUPIId] = useState('user@upi');
 
   // Online Payment Options States
-  const [onlinePayOption, setOnlinePayOption] = useState<'upi_id' | 'app_redirect'>('upi_id');
+  const [onlinePayOption, setOnlinePayOption] = useState<'stripe_checkout' | 'stripe_elements' | 'upi_id' | 'app_redirect'>('stripe_checkout');
   const [onlineUpiId, setOnlineUpiId] = useState('');
   const [onlineRedirectApp, setOnlineRedirectApp] = useState<'gpay' | 'phonepe' | 'paytm' | 'bhim'>('gpay');
   const [showRedirectOverlay, setShowRedirectOverlay] = useState<boolean>(false);
   const [redirectOverlayMessage, setRedirectOverlayMessage] = useState<string>('');
+  const [stripePromise, setStripePromise] = useState<any>(null);
+  const [stripeMisconfigured, setStripeMisconfigured] = useState<boolean>(false);
+
+  // Fetch Razorpay config dynamically
+  useEffect(() => {
+    fetch('/api/payments/razorpay/config')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.configured) {
+          setRazorpayKey(data.keyId);
+          setUseSimulator(false);
+        } else {
+          setUseSimulator(true);
+        }
+      })
+      .catch(() => {
+        setUseSimulator(true);
+      });
+  }, []);
 
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discount = pointsToRedeem / 10;
@@ -3240,22 +3262,81 @@ const CartModal = ({
     }
 
     if (orderPaymentMethod === 'online') {
-      if (onlinePayOption === 'upi_id') {
-        if (!onlineUpiId.trim() || !onlineUpiId.includes('@')) {
-          alert('Please enter a valid UPI ID (e.g., name@upi)');
-          return;
+      setIsProcessing(true);
+      try {
+        const scriptLoaded = await loadRazorpayScript();
+        if (!scriptLoaded) {
+          throw new Error('Failed to load Razorpay Checkout SDK. Please check your internet connection.');
         }
-        setRedirectOverlayMessage(`Verifying UPI ID "${onlineUpiId}"... Sending a secure payment collect request to your UPI App. Please open your UPI app to complete the transaction.`);
-      } else {
-        const appNames = {
-          gpay: 'Google Pay',
-          phonepe: 'PhonePe',
-          paytm: 'Paytm',
-          bhim: 'BHIM UPI'
+
+        const tempOrderId = Math.random().toString(36).substr(2, 6).toUpperCase();
+
+        // Create secure order on the backend
+        const response = await fetch('/api/payments/razorpay/create-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: finalTotal,
+            orderId: tempOrderId
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create secure Razorpay order with server');
+        }
+
+        const rzpData = await response.json();
+
+        // Options for Razorpay Popup Integration
+        const options = {
+          key: rzpData.keyId || razorpayKey || 'rzp_test_placeholder',
+          amount: rzpData.amount,
+          currency: rzpData.currency || 'INR',
+          name: "The Tawa Box",
+          description: "Fresh Tiffin & Daliya Subscription",
+          image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=128&auto=format&fit=crop&q=80",
+          order_id: rzpData.id,
+          handler: function (paymentResponse: any) {
+            onConfirmOrder((order) => {
+              setPlacedOrder({
+                ...order,
+                paymentMethod: 'online',
+                status: 'pending',
+                razorpayPaymentId: paymentResponse.razorpay_payment_id || `pay_${Math.random().toString(36).substr(2, 9)}`,
+                razorpayOrderId: paymentResponse.razorpay_order_id || rzpData.id,
+                razorpaySignature: paymentResponse.razorpay_signature || 'security_simulated_sha256'
+              });
+              setStep('confirmation');
+            });
+          },
+          prefill: {
+            name: orderName,
+            email: auth.currentUser?.email || "customer@tawabox.com",
+            contact: orderMobile
+          },
+          notes: {
+            address: orderAddress,
+            notes: orderNotes
+          },
+          theme: {
+            color: "#5A3825"
+          },
+          modal: {
+            ondismiss: function () {
+              setIsProcessing(false);
+            }
+          }
         };
-        setRedirectOverlayMessage(`Redirecting to ${appNames[onlineRedirectApp]}... Opening the app on your device for quick 1-click payment authorization.`);
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      } catch (err: any) {
+        console.error('[Razorpay Checkout Error]', err);
+        alert(err.message || 'An error occurred during Razorpay Checkout setup.');
+        setIsProcessing(false);
       }
-      setShowRedirectOverlay(true);
       return;
     }
   };
@@ -3442,137 +3523,79 @@ const CartModal = ({
                       exit={{ opacity: 0, x: -20 }}
                       className="space-y-4"
                     >
-                      {/* Pay on Delivery Option */}
-                      <div 
-                        onClick={() => setOrderPaymentMethod('cod')}
-                        className={`p-6 rounded-3xl border-2 cursor-pointer transition-all flex items-center justify-between ${
-                          orderPaymentMethod === 'cod' 
-                            ? 'bg-brand-primary/10 border-brand-primary shadow-lg shadow-brand-primary/10' 
-                            : 'bg-[#F1F6F0] border-brand-primary/10 hover:border-brand-primary/30'
-                        }`}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-2xl ${orderPaymentMethod === 'cod' ? 'bg-brand-primary text-white' : 'bg-brand-primary/10 text-brand-primary/60'}`}>
-                            <Banknote className="w-6 h-6" />
-                          </div>
-                          <div>
-                            <div className="font-serif font-black text-brand-primary">Pay on Delivery</div>
-                            <div className="text-xs text-brand-primary/60">Cash or UPI at your doorstep</div>
-                          </div>
-                        </div>
-                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${orderPaymentMethod === 'cod' ? 'border-brand-primary' : 'border-brand-primary/20'}`}>
-                          {orderPaymentMethod === 'cod' && <div className="w-3 h-3 bg-brand-primary rounded-full" />}
-                        </div>
-                      </div>
-
-                      {/* Online Payment Option */}
-                      <div 
-                        onClick={() => setOrderPaymentMethod('online')}
-                        className={`p-6 rounded-3xl border-2 cursor-pointer transition-all flex items-center justify-between ${
-                          orderPaymentMethod === 'online' 
-                            ? 'bg-brand-primary/10 border-brand-primary shadow-lg shadow-brand-primary/10' 
-                            : 'bg-[#F1F6F0] border-brand-primary/10 hover:border-brand-primary/30'
-                        }`}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-2xl ${orderPaymentMethod === 'online' ? 'bg-brand-primary text-white' : 'bg-brand-primary/10 text-brand-primary/60'}`}>
-                            <CreditCard className="w-6 h-6" />
-                          </div>
-                          <div>
-                            <div className="font-serif font-black text-brand-primary">Online Payment</div>
-                            <div className="text-xs text-brand-primary/60">UPI ID or Direct App Redirect</div>
-                          </div>
-                        </div>
-                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${orderPaymentMethod === 'online' ? 'border-brand-primary' : 'border-brand-primary/20'}`}>
-                          {orderPaymentMethod === 'online' && <div className="w-3 h-3 bg-brand-primary rounded-full" />}
-                        </div>
-                      </div>
-
-                      {/* Direct UPI ID vs Payment App Sub-Selection Panel */}
-                      {orderPaymentMethod === 'online' && (
-                        <motion.div 
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="bg-[#FAF8F4] border-2 border-brand-primary/10 rounded-3xl p-5 space-y-4 shadow-sm"
+                      {/* Selection tabs/cards */}
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* COD option */}
+                        <div 
+                          onClick={() => setOrderPaymentMethod('cod')}
+                          className={`p-5 rounded-3xl border-2 cursor-pointer transition-all flex flex-col gap-3 relative overflow-hidden ${
+                            orderPaymentMethod === 'cod' 
+                              ? 'bg-brand-primary/10 border-brand-primary shadow-lg shadow-brand-primary/10' 
+                              : 'bg-white border-brand-primary/10 hover:border-brand-primary/30'
+                          }`}
                         >
-                          <div className="text-xs font-serif font-black text-[#5A3825] uppercase tracking-wider">
-                            Choose Online Mode
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-3">
-                            <button
-                              type="button"
-                              onClick={() => setOnlinePayOption('upi_id')}
-                              className={`p-3.5 rounded-2xl border-2 flex flex-col items-center gap-1.5 transition-all text-xs font-black ${
-                                onlinePayOption === 'upi_id'
-                                  ? 'bg-[#EADBBD]/25 border-[#9E5638] text-[#9E5638]'
-                                  : 'bg-white border-[#5A3825]/5 text-brand-primary/70 hover:bg-white/80'
-                              }`}
-                            >
-                              <span className="text-xl">✏️</span>
-                              <span>Add UPI ID</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => setOnlinePayOption('app_redirect')}
-                              className={`p-3.5 rounded-2xl border-2 flex flex-col items-center gap-1.5 transition-all text-xs font-black ${
-                                onlinePayOption === 'app_redirect'
-                                  ? 'bg-[#EADBBD]/25 border-[#9E5638] text-[#9E5638]'
-                                  : 'bg-white border-[#5A3825]/5 text-brand-primary/70 hover:bg-white/80'
-                              }`}
-                            >
-                              <span className="text-xl">🚀</span>
-                              <span>Redirect to App</span>
-                            </button>
-                          </div>
-
-                          {onlinePayOption === 'upi_id' ? (
-                            <div className="space-y-2 animate-fadeIn">
-                              <label className="text-xs font-black text-brand-primary/80 block">
-                                Enter your UPI ID
-                              </label>
-                              <input
-                                type="text"
-                                value={onlineUpiId}
-                                onChange={(e) => setOnlineUpiId(e.target.value)}
-                                placeholder="e.g. mobileNumber@ybl, user@upi"
-                                className="w-full bg-white border border-[#5A3825]/20 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#9E5638] text-brand-primary font-mono placeholder:text-brand-primary/30"
-                              />
-                              <p className="text-[10px] text-brand-primary/60">
-                                A collect request will be sent to your UPI ID after placing order.
-                              </p>
+                          <div className="flex justify-between items-start w-full">
+                            <div className={`p-2.5 rounded-2xl ${orderPaymentMethod === 'cod' ? 'bg-brand-primary text-white' : 'bg-brand-primary/10 text-brand-primary/60'}`}>
+                              <Banknote className="w-5 h-5" />
                             </div>
-                          ) : (
-                            <div className="space-y-3 animate-fadeIn">
-                              <label className="text-xs font-black text-brand-primary/80 block">
-                                Choose Payment App
-                              </label>
-                              <div className="grid grid-cols-4 gap-2">
-                                {[
-                                  { id: 'gpay', name: 'GPay', icon: '⚡' },
-                                  { id: 'phonepe', name: 'PhonePe', icon: '🟣' },
-                                  { id: 'paytm', name: 'Paytm', icon: '🔵' },
-                                  { id: 'bhim', name: 'BHIM', icon: '🇮🇳' },
-                                ].map((app) => (
-                                  <button
-                                    key={app.id}
-                                    type="button"
-                                    onClick={() => setOnlineRedirectApp(app.id as any)}
-                                    className={`p-2.5 rounded-xl border flex flex-col items-center gap-1 transition-all text-[10px] font-black ${
-                                      onlineRedirectApp === app.id
-                                        ? 'bg-[#9E5638]/15 border-[#9E5638] text-[#9E5638]'
-                                        : 'bg-white border-[#5A3825]/5 text-brand-primary/70 hover:bg-white/80'
-                                    }`}
-                                  >
-                                    <span className="text-base">{app.icon}</span>
-                                    <span>{app.name}</span>
-                                  </button>
-                                ))}
-                              </div>
-                              <p className="text-[10px] text-brand-primary/60 text-center">
-                                You will be redirected instantly to authorize payment.
-                              </p>
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${orderPaymentMethod === 'cod' ? 'border-brand-primary' : 'border-brand-primary/20'}`}>
+                              {orderPaymentMethod === 'cod' && <div className="w-2.5 h-2.5 bg-brand-primary rounded-full" />}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="font-serif font-black text-brand-primary text-sm leading-tight">Pay on Delivery</div>
+                            <div className="text-[10px] text-brand-primary/60 mt-0.5">Cash or doorstep UPI</div>
+                          </div>
+                        </div>
+
+                        {/* Online Option */}
+                        <div 
+                          onClick={() => setOrderPaymentMethod('online')}
+                          className={`p-5 rounded-3xl border-2 cursor-pointer transition-all flex flex-col gap-3 relative overflow-hidden ${
+                            orderPaymentMethod === 'online' 
+                              ? 'bg-brand-primary/10 border-brand-primary shadow-lg shadow-brand-primary/10' 
+                              : 'bg-white border-brand-primary/10 hover:border-brand-primary/30'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start w-full">
+                            <div className={`p-2.5 rounded-2xl ${orderPaymentMethod === 'online' ? 'bg-brand-primary text-white' : 'bg-brand-primary/10 text-brand-primary/60'}`}>
+                              <CreditCard className="w-5 h-5" />
+                            </div>
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${orderPaymentMethod === 'online' ? 'border-brand-primary' : 'border-brand-primary/20'}`}>
+                              {orderPaymentMethod === 'online' && <div className="w-2.5 h-2.5 bg-brand-primary rounded-full" />}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="font-serif font-black text-brand-primary text-sm leading-tight">Online Payment</div>
+                            <div className="text-[10px] text-brand-primary/60 mt-0.5">Razorpay Gateway</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Display card based on selection */}
+                      {orderPaymentMethod === 'cod' ? (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-5 rounded-3xl bg-[#FAF8F4] border border-brand-primary/10 text-xs text-brand-primary/80 leading-relaxed"
+                        >
+                          <p className="font-serif font-black mb-1 text-[#5A3825]">📍 Step-by-Step Delivery Checkout</p>
+                          <p>You can complete your payment securely with physical cash or by scanning our delivery representative's QR code when the order arrives.</p>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-5 rounded-3xl bg-[#FAF8F4] border border-brand-primary/10 text-xs text-brand-primary/80 space-y-2 leading-relaxed"
+                        >
+                          <p className="font-serif font-black text-[#5A3825] flex items-center gap-1.5">
+                            🔒 Secure Payment Gateway
+                          </p>
+                          <p>We process payments safely through <strong>Razorpay</strong>. You can pay via Cards, UPI, NetBanking, or Wallet instantly.</p>
+                          {useSimulator && (
+                            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-[11px] text-amber-900 space-y-1">
+                              <p className="font-bold">✨ Interactive Sandbox Simulation Active</p>
+                              <p className="leading-normal">We'll guide you through a beautiful, seamless simulated checkout so you can test live email triggers, order tracking, and delivery dispatch without configuring real production credentials!</p>
                             </div>
                           )}
                         </motion.div>
@@ -3724,7 +3747,7 @@ const CartModal = ({
                         </>
                       ) : (
                         <>
-                          Place Order
+                          {orderPaymentMethod === 'cod' ? 'Place Order' : 'Pay & Place Order'}
                           <ChevronRight className="w-5 h-5" />
                         </>
                       )}
@@ -4199,7 +4222,7 @@ export default function App() {
   const [orderAddress, setOrderAddress] = useState('');
   const [orderNotes, setOrderNotes] = useState('');
   const [orderLocation, setOrderLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [orderPaymentMethod, setOrderPaymentMethod] = useState<'cod' | 'online'>('online');
+  const [orderPaymentMethod, setOrderPaymentMethod] = useState<'cod' | 'online'>('cod');
   const [pointsToRedeem, setPointsToRedeem] = useState(0);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [orders, setOrders] = useState<OrderDetails[]>([]);
@@ -4207,6 +4230,93 @@ export default function App() {
   const [activeHomeTab, setActiveHomeTab] = useState<'daliya' | 'thali'>('thali');
   
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Handle Stripe Redirection Success or Cancel Callback
+  useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const stripeStatus = queryParams.get('stripe_status');
+    const orderId = queryParams.get('order_id');
+
+    if (stripeStatus && orderId) {
+      if (stripeStatus === 'success') {
+        // Clear query parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        // Retrieve saved details from localStorage
+        const savedCart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const savedPointsToRedeem = parseInt(localStorage.getItem('pointsToRedeem') || '0', 10);
+        const name = localStorage.getItem('orderName') || 'Customer';
+        const mobile = localStorage.getItem('orderMobile') || '';
+        const address = localStorage.getItem('orderAddress') || '';
+        const notes = localStorage.getItem('orderNotes') || '';
+
+        const subtotal = savedCart.reduce((s: number, i: any) => s + i.price * i.quantity, 0);
+        const discountVal = savedPointsToRedeem / 10;
+        const finalTotal = Math.max(0, subtotal - discountVal);
+        const pointsEarned = Math.floor(finalTotal / 10);
+
+        const newOrder: OrderDetails = {
+          id: orderId,
+          userId: currentUser ? currentUser.id : 'guest',
+          userName: name,
+          userEmail: currentUser ? currentUser.email : 'guest@tawabox.com',
+          mobile: mobile,
+          address: address,
+          notes: notes || undefined,
+          items: savedCart,
+          total: finalTotal,
+          loyaltyPointsEarned: pointsEarned,
+          discountAmount: discountVal,
+          paymentMethod: 'online',
+          status: 'pending',
+          createdAt: new Date().toISOString(),
+          estimatedDelivery: new Date(Date.now() + 45 * 60000).toISOString()
+        };
+
+        // Add to orders list
+        setOrders(prev => {
+          if (prev.some(o => o.id === orderId)) return prev;
+          const updated = [newOrder, ...prev];
+          localStorage.setItem('orders', JSON.stringify(updated));
+          return updated;
+        });
+
+        // Update user loyalty points locally if user logged in
+        if (currentUser) {
+          const updatedUser = {
+            ...currentUser,
+            points: Math.max(0, (currentUser.points || 0) - savedPointsToRedeem + pointsEarned)
+          };
+          setCurrentUser(updatedUser);
+          localStorage.setItem('tawabox_user', JSON.stringify(updatedUser));
+        }
+
+        // Clear cart
+        setCart([]);
+        localStorage.removeItem('cart');
+        setPointsToRedeem(0);
+
+        // Show polished alert
+        alert(`🎉 Shukriya! Your Payment Succeeded!\nYour Order #${orderId} has been successfully received and our wood-fired chulha is firing up!`);
+
+        // Clean up localStorage keys
+        localStorage.removeItem('orderName');
+        localStorage.removeItem('orderMobile');
+        localStorage.removeItem('orderAddress');
+        localStorage.removeItem('orderNotes');
+        localStorage.removeItem('pointsToRedeem');
+
+        // Dispatch transactional confirmation email
+        triggerEmailNotification('order_confirmed', newOrder).catch(err => {
+          console.error('[Email Dispatch Failed]', err);
+        });
+
+      } else if (stripeStatus === 'cancel') {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        alert('❌ Stripe checkout was cancelled or failed. Please check your credentials and try again.');
+      }
+    }
+  }, [currentUser]);
 
   // Simulated Order Progression
   useEffect(() => {

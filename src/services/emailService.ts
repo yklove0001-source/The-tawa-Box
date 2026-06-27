@@ -237,27 +237,22 @@ export const triggerEmailNotification = async (
   // We document RESEND_API_KEY inside `.env.example`
   let restStatus: 'delivered' | 'failed' = 'delivered';
   try {
-    const resendApiKey = process.env.RESEND_API_KEY;
-    if (resendApiKey && resendApiKey !== 'placeholder') {
-      const resp = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${resendApiKey}`
-        },
-        body: JSON.stringify({
-          from: 'The Tawa Box <orders@tawabox.com>',
-          to: [order.userEmail],
-          subject: subject,
-          html: htmlContent
-        })
-      });
-      if (!resp.ok) {
-        console.warn('Real Resend API call received non-ok response (sandbox fallback enabled)', resp.status);
-      }
+    const resp = await fetch('/api/emails/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: order.userEmail,
+        subject: subject,
+        html: htmlContent
+      })
+    });
+    if (!resp.ok) {
+      console.warn('Backend proxy Resend API call received non-ok response (sandbox fallback enabled)');
     }
   } catch (err) {
-    console.error('Real Resend API fetch failed (retaining local sandbox log)', err);
+    console.error('Backend proxy Resend API fetch failed (retaining local sandbox log)', err);
   }
 
   // Preserve the dispatched email event to local storage so users can read them
