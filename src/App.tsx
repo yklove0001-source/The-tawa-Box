@@ -4222,7 +4222,7 @@ export default function App() {
   const [orderAddress, setOrderAddress] = useState('');
   const [orderNotes, setOrderNotes] = useState('');
   const [orderLocation, setOrderLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [orderPaymentMethod, setOrderPaymentMethod] = useState<'cod' | 'online'>('cod');
+  const [orderPaymentMethod, setOrderPaymentMethod] = useState<'cod' | 'online'>('online');
   const [pointsToRedeem, setPointsToRedeem] = useState(0);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [orders, setOrders] = useState<OrderDetails[]>([]);
