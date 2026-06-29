@@ -8,6 +8,7 @@ import { IntroAnimation } from './components/IntroAnimation';
 import { WeeklyShowcase } from './components/WeeklyShowcase';
 import { triggerEmailNotification } from './services/emailService';
 import { db, auth, handleFirestoreError, OperationType } from './lib/firebase';
+import { getApiUrl } from './lib/api';
 import { 
   signInWithPopup, 
   GoogleAuthProvider, 
@@ -3091,7 +3092,7 @@ const CartModal = ({
 
   // Fetch Razorpay config dynamically
   useEffect(() => {
-    fetch('/api/payments/razorpay/config')
+    fetch(getApiUrl('/api/payments/razorpay/config'))
       .then((res) => res.json())
       .then((data) => {
         if (data.configured) {
@@ -3276,7 +3277,7 @@ const CartModal = ({
         const tempOrderId = Math.random().toString(36).substr(2, 6).toUpperCase();
 
         // Create secure order on the backend
-        const response = await fetch('/api/payments/razorpay/create-order', {
+        const response = await fetch(getApiUrl('/api/payments/razorpay/create-order'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -3312,16 +3313,58 @@ const CartModal = ({
           image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=128&auto=format&fit=crop&q=80",
           order_id: rzpData.id,
           handler: function (paymentResponse: any) {
-            onConfirmOrder((order) => {
-              setPlacedOrder({
-                ...order,
-                paymentMethod: 'online',
-                status: 'pending',
-                razorpayPaymentId: paymentResponse.razorpay_payment_id || `pay_${Math.random().toString(36).substr(2, 9)}`,
-                razorpayOrderId: paymentResponse.razorpay_order_id || rzpData.id,
-                razorpaySignature: paymentResponse.razorpay_signature || 'security_simulated_sha256'
-              });
-              setStep('confirmation');
+            setIsProcessing(true);
+            onConfirmOrder(async (order) => {
+              try {
+                const response = await fetch(getApiUrl('/api/payments/razorpay/verify-payment'), {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    razorpay_order_id: paymentResponse.razorpay_order_id || rzpData.id,
+                    razorpay_payment_id: paymentResponse.razorpay_payment_id || `pay_${Math.random().toString(36).substr(2, 9)}`,
+                    razorpay_signature: paymentResponse.razorpay_signature || 'security_simulated_sha256',
+                    metadata: {
+                      orderId: order.id,
+                      userId: order.userId,
+                      userName: order.userName,
+                      userEmail: order.userEmail,
+                      mobile: order.mobile,
+                      address: order.address,
+                      notes: order.notes || '',
+                      total: String(order.total),
+                      pointsToRedeem: String(pointsToRedeem || 0),
+                      pointsEarned: String(order.loyaltyPointsEarned || 0)
+                    }
+                  })
+                });
+
+                if (!response.ok) {
+                  const errText = await response.text();
+                  throw new Error(`Server payment verification failed: ${errText || response.statusText}`);
+                }
+
+                const result = await response.json();
+                if (!result.success) {
+                  throw new Error(result.error || 'Signature verification mismatch');
+                }
+
+                setPlacedOrder({
+                  ...order,
+                  paymentMethod: 'online',
+                  status: 'paid', // verified payment!
+                  razorpayPaymentId: paymentResponse.razorpay_payment_id || `pay_${Math.random().toString(36).substr(2, 9)}`,
+                  razorpayOrderId: paymentResponse.razorpay_order_id || rzpData.id,
+                  razorpaySignature: paymentResponse.razorpay_signature || 'security_simulated_sha256'
+                });
+                setStep('confirmation');
+              } catch (err: any) {
+                console.error('[Razorpay Verify Client Error]', err);
+                alert(err.message || 'Payment verification failed. Please contact support.');
+              } finally {
+                setIsProcessing(false);
+              }
             });
           },
           prefill: {

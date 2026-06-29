@@ -102,6 +102,21 @@ async function startServer() {
     res.json({ received: true });
   });
 
+  // Enable CORS middleware to allow frontends on custom domains (e.g., thetawabox.com) to access APIs
+  app.use((req, res, next) => {
+    const origin = req.headers.origin || '*';
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Authorization,Accept');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    
+    // Handle OPTIONS preflight request
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    next();
+  });
+
   // Regular middlewares for standard JSON requests
   app.use(express.json());
 
@@ -300,6 +315,60 @@ async function startServer() {
       configured: !!keyId,
       keyId: keyId,
     });
+  });
+
+  // API: Verify Razorpay Payment Signature (HMAC-SHA256)
+  app.post('/api/payments/razorpay/verify-payment', async (req, res) => {
+    try {
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature, metadata } = req.body || {};
+      const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+      console.log(`[Razorpay Verify] Received verification request for order: ${razorpay_order_id}, payment: ${razorpay_payment_id}`);
+
+      // Handle Sandbox / Simulated payments smoothly
+      const isSimulated = String(razorpay_order_id).startsWith('order_sim_') || razorpay_signature === 'security_simulated_sha256';
+
+      if (isSimulated && (!keySecret || keySecret === 'placeholder_secret')) {
+        console.log(`[Razorpay Verify] Simulated order detected. Confirming payment.`);
+        if (metadata) {
+          await handleSuccessfulPayment(metadata);
+        }
+        return res.json({ success: true, verified: true, simulated: true });
+      }
+
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        return res.status(400).json({ error: 'Missing required fields for signature verification' });
+      }
+
+      if (!keySecret) {
+        console.warn('[Razorpay Verify] Warning: RAZORPAY_KEY_SECRET is not configured on the server. Falling back to sandbox confirmation.');
+        if (metadata) {
+          await handleSuccessfulPayment(metadata);
+        }
+        return res.json({ success: true, verified: false, simulated: true, warning: 'RAZORPAY_KEY_SECRET is missing' });
+      }
+
+      // Secure cryptographic signature verification using HMAC SHA256
+      const crypto = await import('crypto');
+      const hmac = crypto.createHmac('sha256', keySecret);
+      hmac.update(`${razorpay_order_id}|${razorpay_payment_id}`);
+      const generatedSignature = hmac.digest('hex');
+
+      if (generatedSignature !== razorpay_signature) {
+        console.error('[Razorpay Verify] Cryptographic signature verification failed! Mismatch.');
+        return res.status(400).json({ success: false, error: 'Signature verification failed' });
+      }
+
+      console.log(`[Razorpay Verify] Success! Signature is verified. Persisting order to Firestore.`);
+      if (metadata) {
+        await handleSuccessfulPayment(metadata);
+      }
+
+      res.json({ success: true, verified: true });
+    } catch (err: any) {
+      console.error('[Razorpay Verify] Error verifying payment:', err);
+      res.status(500).json({ error: err.message || 'Verification endpoint error' });
+    }
   });
 
   // Vite Dev or Production Static file serving

@@ -1,4 +1,5 @@
 import { OrderDetails, MenuItem } from '../types';
+import { getApiUrl } from '../lib/api';
 
 export interface SentEmail {
   id: string;
@@ -237,7 +238,7 @@ export const triggerEmailNotification = async (
   // We document RESEND_API_KEY inside `.env.example`
   let restStatus: 'delivered' | 'failed' = 'delivered';
   try {
-    const resp = await fetch('/api/emails/send', {
+    const resp = await fetch(getApiUrl('/api/emails/send'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
