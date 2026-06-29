@@ -3262,6 +3262,10 @@ const CartModal = ({
     }
 
     if (orderPaymentMethod === 'online') {
+      if (useSimulator) {
+        setShowSimulatorModal(true);
+        return;
+      }
       setIsProcessing(true);
       try {
         const scriptLoaded = await loadRazorpayScript();
