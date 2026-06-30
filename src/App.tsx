@@ -3133,22 +3133,66 @@ const CartModal = ({
       const timer = setTimeout(() => {
         setShowSimulatorModal(false);
         setSimTab('methods');
-        // Trigger full authentic confirmation state
-        onConfirmOrder((order) => {
-          setPlacedOrder({
-            ...order,
-            paymentMethod: 'online',
-            status: 'pending',
-            razorpayPaymentId: `pay_sandbox_mock_${Math.random().toString(36).substr(2, 9)}`,
-            razorpayOrderId: `order_sandbox_mock_${Math.random().toString(36).substr(2, 9)}`,
-            razorpaySignature: 'security_simulated_hmac_hash_code_256'
-          });
-          setStep('confirmation');
+        setIsProcessing(true);
+        // Trigger full authentic confirmation state via verify-payment backend
+        onConfirmOrder(async (order) => {
+          try {
+            const rzpOrderId = `order_sim_${Math.random().toString(36).substr(2, 9)}`;
+            const rzpPaymentId = `pay_sim_${Math.random().toString(36).substr(2, 9)}`;
+            const response = await fetch(getApiUrl('/api/payments/razorpay/verify-payment'), {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                razorpay_order_id: rzpOrderId,
+                razorpay_payment_id: rzpPaymentId,
+                razorpay_signature: 'security_simulated_sha256',
+                metadata: {
+                  orderId: order.id,
+                  userId: order.userId,
+                  userName: order.userName,
+                  userEmail: order.userEmail,
+                  mobile: order.mobile,
+                  address: order.address,
+                  notes: order.notes || '',
+                  total: String(order.total),
+                  pointsToRedeem: String(pointsToRedeem || 0),
+                  pointsEarned: String(order.loyaltyPointsEarned || 0)
+                }
+              })
+            });
+
+            if (!response.ok) {
+              const errText = await response.text();
+              throw new Error(`Simulated payment verification failed: ${errText || response.statusText}`);
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+              throw new Error(result.error || 'Signature verification mismatch');
+            }
+
+            setPlacedOrder({
+              ...order,
+              paymentMethod: 'online',
+              status: 'paid', // Mark as paid since verified!
+              razorpayPaymentId: rzpPaymentId,
+              razorpayOrderId: rzpOrderId,
+              razorpaySignature: 'security_simulated_sha256'
+            });
+            setStep('confirmation');
+          } catch (err: any) {
+            console.error('[Simulator Verify Client Error]', err);
+            alert(err.message || 'Simulated payment verification failed.');
+          } finally {
+            setIsProcessing(false);
+          }
         });
       }, 2500);
       return () => clearTimeout(timer);
     }
-  }, [showSimulatorModal, simTab, onConfirmOrder]);
+  }, [showSimulatorModal, simTab, onConfirmOrder, pointsToRedeem]);
 
   // Auto-complete custom online payment simulator after verification/redirect processing
   useEffect(() => {
@@ -3157,21 +3201,65 @@ const CartModal = ({
       const timer = setTimeout(() => {
         setShowRedirectOverlay(false);
         setIsProcessing(false);
-        // Trigger full authentic confirmation state
-        onConfirmOrder((order) => {
-          setPlacedOrder({
-            ...order,
-            paymentMethod: 'online',
-            status: 'pending',
-            razorpayPaymentId: `pay_online_sim_${Math.random().toString(36).substr(2, 9)}`,
-            razorpayOrderId: `order_online_sim_${Math.random().toString(36).substr(2, 9)}`,
-          });
-          setStep('confirmation');
+        // Trigger full authentic confirmation state via verify-payment backend
+        onConfirmOrder(async (order) => {
+          try {
+            const rzpOrderId = `order_sim_${Math.random().toString(36).substr(2, 9)}`;
+            const rzpPaymentId = `pay_sim_${Math.random().toString(36).substr(2, 9)}`;
+            const response = await fetch(getApiUrl('/api/payments/razorpay/verify-payment'), {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                razorpay_order_id: rzpOrderId,
+                razorpay_payment_id: rzpPaymentId,
+                razorpay_signature: 'security_simulated_sha256',
+                metadata: {
+                  orderId: order.id,
+                  userId: order.userId,
+                  userName: order.userName,
+                  userEmail: order.userEmail,
+                  mobile: order.mobile,
+                  address: order.address,
+                  notes: order.notes || '',
+                  total: String(order.total),
+                  pointsToRedeem: String(pointsToRedeem || 0),
+                  pointsEarned: String(order.loyaltyPointsEarned || 0)
+                }
+              })
+            });
+
+            if (!response.ok) {
+              const errText = await response.text();
+              throw new Error(`Simulated payment verification failed: ${errText || response.statusText}`);
+            }
+
+            const result = await response.json();
+            if (!result.success) {
+              throw new Error(result.error || 'Signature verification mismatch');
+            }
+
+            setPlacedOrder({
+              ...order,
+              paymentMethod: 'online',
+              status: 'paid', // Mark as paid since verified!
+              razorpayPaymentId: rzpPaymentId,
+              razorpayOrderId: rzpOrderId,
+              razorpaySignature: 'security_simulated_sha256'
+            });
+            setStep('confirmation');
+          } catch (err: any) {
+            console.error('[Redirect Simulator Verify Client Error]', err);
+            alert(err.message || 'Simulated redirection payment verification failed.');
+          } finally {
+            setIsProcessing(false);
+          }
         });
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [showRedirectOverlay, onConfirmOrder]);
+  }, [showRedirectOverlay, onConfirmOrder, pointsToRedeem]);
 
   const handleGetLocation = () => {
     if ("geolocation" in navigator) {
@@ -3642,18 +3730,56 @@ const CartModal = ({
                         <motion.div
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
-                          className="p-5 rounded-3xl bg-[#FAF8F4] border border-brand-primary/10 text-xs text-brand-primary/80 space-y-2 leading-relaxed"
+                          className="p-5 rounded-3xl bg-[#FAF8F4] border border-brand-primary/10 text-xs text-brand-primary/80 space-y-4 leading-relaxed"
                         >
-                          <p className="font-serif font-black text-[#5A3825] flex items-center gap-1.5">
-                            🔒 Secure Payment Gateway
-                          </p>
-                          <p>We process payments safely through <strong>Razorpay</strong>. You can pay via Cards, UPI, NetBanking, or Wallet instantly.</p>
-                          {useSimulator && (
-                            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-[11px] text-amber-900 space-y-1">
-                              <p className="font-bold">✨ Interactive Sandbox Simulation Active</p>
-                              <p className="leading-normal">We'll guide you through a beautiful, seamless simulated checkout so you can test live email triggers, order tracking, and delivery dispatch without configuring real production credentials!</p>
+                          <div className="flex flex-col gap-1.5">
+                            <p className="font-serif font-black text-[#5A3825] flex items-center gap-1.5 text-sm">
+                              🔒 Secure Payment Gateway
+                            </p>
+                            <p className="text-slate-600">We process payments safely through <strong>Razorpay</strong>. You can pay via Cards, UPI, NetBanking, or Wallet instantly.</p>
+                          </div>
+
+                          <div className="bg-brand-primary/5 border border-brand-primary/10 rounded-2xl p-4 space-y-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                              <span className="text-xs font-semibold text-brand-primary">Select Online Payment Flow:</span>
+                              <div className="flex items-center bg-[#EFECE6] p-1 rounded-full border border-brand-primary/5 self-start sm:self-auto">
+                                <button
+                                  type="button"
+                                  onClick={() => setUseSimulator(true)}
+                                  className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition-all tracking-wider ${
+                                    useSimulator 
+                                      ? 'bg-amber-600 text-white shadow-md' 
+                                      : 'text-brand-primary/60 hover:text-brand-primary'
+                                  }`}
+                                >
+                                  Sandbox Simulator
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setUseSimulator(false)}
+                                  className={`px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition-all tracking-wider ${
+                                    !useSimulator 
+                                      ? 'bg-emerald-600 text-white shadow-md' 
+                                      : 'text-brand-primary/60 hover:text-brand-primary'
+                                  }`}
+                                >
+                                  Real Gateway
+                                </button>
+                              </div>
                             </div>
-                          )}
+                            
+                            {useSimulator ? (
+                              <div className="text-[10px] text-amber-800 bg-amber-50/60 p-3 rounded-xl border border-amber-200/50 space-y-1">
+                                <p className="font-bold flex items-center gap-1">✨ Interactive Sandbox Active</p>
+                                <p className="leading-normal">We'll guide you through an educational simulated banking portal. Click "Confirm Approval" to securely verify simulated payments with the backend and trigger transactional emails!</p>
+                              </div>
+                            ) : (
+                              <div className="text-[10px] text-emerald-800 bg-emerald-50/60 p-3 rounded-xl border border-emerald-200/50 space-y-1">
+                                <p className="font-bold flex items-center gap-1">🔒 Real Razorpay Gateway Active</p>
+                                <p className="leading-normal">This launches the real Razorpay Checkout Standard modal. If keys are missing in the environment, it will automatically fallback to testing mode for your safety.</p>
+                              </div>
+                            )}
+                          </div>
                         </motion.div>
                       )}
                     </motion.div>
@@ -4095,17 +4221,60 @@ const CartModal = ({
                           onClick={() => {
                             setShowSimulatorModal(false);
                             setSimTab('methods');
-                            // Trigger full authentic confirmation state
-                            onConfirmOrder((order) => {
-                              setPlacedOrder({
-                                ...order,
-                                paymentMethod: 'online',
-                                status: 'pending',
-                                razorpayPaymentId: `pay_gateway_secure_${Math.random().toString(36).substr(2, 9)}`,
-                                razorpayOrderId: `order_gateway_secure_${Math.random().toString(36).substr(2, 9)}`,
-                                razorpaySignature: 'security_simulated_hmac_hash_code_256'
-                              });
-                              setStep('confirmation');
+                            setIsProcessing(true);
+                            onConfirmOrder(async (order) => {
+                              try {
+                                const rzpOrderId = `order_sim_${Math.random().toString(36).substr(2, 9)}`;
+                                const rzpPaymentId = `pay_sim_${Math.random().toString(36).substr(2, 9)}`;
+                                const response = await fetch(getApiUrl('/api/payments/razorpay/verify-payment'), {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                  },
+                                  body: JSON.stringify({
+                                    razorpay_order_id: rzpOrderId,
+                                    razorpay_payment_id: rzpPaymentId,
+                                    razorpay_signature: 'security_simulated_sha256',
+                                    metadata: {
+                                      orderId: order.id,
+                                      userId: order.userId,
+                                      userName: order.userName,
+                                      userEmail: order.userEmail,
+                                      mobile: order.mobile,
+                                      address: order.address,
+                                      notes: order.notes || '',
+                                      total: String(order.total),
+                                      pointsToRedeem: String(pointsToRedeem || 0),
+                                      pointsEarned: String(order.loyaltyPointsEarned || 0)
+                                    }
+                                  })
+                                });
+
+                                if (!response.ok) {
+                                  const errText = await response.text();
+                                  throw new Error(`Simulated payment verification failed: ${errText || response.statusText}`);
+                                }
+
+                                const result = await response.json();
+                                if (!result.success) {
+                                  throw new Error(result.error || 'Signature verification mismatch');
+                                }
+
+                                setPlacedOrder({
+                                  ...order,
+                                  paymentMethod: 'online',
+                                  status: 'paid', // Mark as paid since verified!
+                                  razorpayPaymentId: rzpPaymentId,
+                                  razorpayOrderId: rzpOrderId,
+                                  razorpaySignature: 'security_simulated_sha256'
+                                });
+                                setStep('confirmation');
+                              } catch (err: any) {
+                                console.error('[Simulator Verify Client Error]', err);
+                                alert(err.message || 'Simulated payment verification failed.');
+                              } finally {
+                                setIsProcessing(false);
+                              }
                             });
                           }}
                           className="bg-[#7A8B6B] hover:bg-[#667657] text-white py-3 px-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-[#7A8B6B]/15 cursor-pointer animate-pulse"
