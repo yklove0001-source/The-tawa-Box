@@ -1872,6 +1872,63 @@ const OrderStatusSteps = ({ status }: { status: OrderDetails['status'] }) => {
   );
 };
 
+const DEFAULT_HAIR_PATCH_SERVICES = [
+  {
+    id: 'hp-srv-101',
+    name: 'Premium Custom Hair Patch Design, Measurement & Bonding',
+    stylist: 'Senior Expert Rohan',
+    date: '2026-05-15',
+    cost: 14500,
+    status: 'completed' as const
+  },
+  {
+    id: 'hp-srv-102',
+    name: 'Standard Anti-Dandruff Cleaning, Re-bonding & Trimming Service',
+    stylist: 'Master Stylist Vikram',
+    date: '2026-06-12',
+    cost: 1800,
+    status: 'completed' as const
+  }
+];
+
+const DEFAULT_HAIR_PATCH_APPOINTMENTS = [
+  {
+    id: 'hp-apt-201',
+    name: 'Advanced Breathable Hair Patch Servicing & Head Cleanse',
+    stylist: 'Master Stylist Vikram',
+    date: '2026-07-10',
+    time: '11:00 AM',
+    status: 'scheduled' as const
+  }
+];
+
+const DEFAULT_HAIR_PATCH_PRODUCTS = [
+  {
+    id: 'hp-prod-301',
+    name: 'Ultra-Hold Waterproof Liquid Adhesive (3.4 oz)',
+    price: 1850,
+    purchaseDate: '2026-05-15',
+    status: 'delivered' as const,
+    image: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=200&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'hp-prod-302',
+    name: 'Dual-Sided Medical Grade Contour Bonding Tape (36pcs)',
+    price: 850,
+    purchaseDate: '2026-06-12',
+    status: 'delivered' as const,
+    image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=200&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'hp-prod-303',
+    name: 'Specialized Nourishing Hair Patch Revitalizing Shampoo',
+    price: 950,
+    purchaseDate: '2026-06-12',
+    status: 'delivered' as const,
+    image: 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?w=200&auto=format&fit=crop&q=80'
+  }
+];
+
 const Dashboard = ({ user, orders, onUpdateStatus, onOpenEmailLogs, onUpdateUser }: { 
   user: User, 
   orders: OrderDetails[], 
@@ -1882,10 +1939,69 @@ const Dashboard = ({ user, orders, onUpdateStatus, onOpenEmailLogs, onUpdateUser
   const [statusFilter, setStatusFilter] = useState<OrderDetails['status'] | 'all'>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [activeTab, setActiveTab] = useState<'orders' | 'profile'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'hairpatch'>('orders');
   const [newAddress, setNewAddress] = useState('');
   const [editingName, setEditingName] = useState(user.name);
   const [isUpdatingName, setIsUpdatingName] = useState(false);
+
+  // State for hair patch booking/management
+  const [rebookingService, setRebookingService] = useState<any | null>(null);
+  const [bookingDate, setBookingDate] = useState('');
+  const [bookingTime, setBookingTime] = useState('11:00 AM');
+  const [bookingStylist, setBookingStylist] = useState('Master Stylist Vikram');
+  const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
+
+  // Load from user or default
+  const hairPatchServices = user.hairPatchServices || DEFAULT_HAIR_PATCH_SERVICES;
+  const hairPatchAppointments = user.hairPatchAppointments || DEFAULT_HAIR_PATCH_APPOINTMENTS;
+  const hairPatchProducts = user.hairPatchProducts || DEFAULT_HAIR_PATCH_PRODUCTS;
+
+  const handleBookAppointment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bookingDate) {
+      alert('Please select a valid date for your appointment.');
+      return;
+    }
+    setIsBookingSubmitting(true);
+    try {
+      const newAppointment = {
+        id: `hp-apt-${Math.random().toString(36).substr(2, 9)}`,
+        name: rebookingService ? `Rebook: ${rebookingService.name}` : 'Hair Patch Standard Servicing',
+        stylist: bookingStylist,
+        date: bookingDate,
+        time: bookingTime,
+        status: 'scheduled' as const
+      };
+
+      const updatedAppointments = [...hairPatchAppointments, newAppointment];
+      await onUpdateUser({ hairPatchAppointments: updatedAppointments });
+      
+      alert(`Success! Your appointment for "${newAppointment.name}" is scheduled on ${bookingDate} at ${bookingTime} with ${bookingStylist}.`);
+      setRebookingService(null);
+      setBookingDate('');
+    } catch (err) {
+      console.error('Error booking hair patch appointment:', err);
+      alert('Could not book appointment. Please try again.');
+    } finally {
+      setIsBookingSubmitting(false);
+    }
+  };
+
+  const handleCancelAppointment = async (apptId: string) => {
+    if (!window.confirm('Are you sure you want to cancel this scheduled appointment?')) {
+      return;
+    }
+    try {
+      const updatedAppointments = hairPatchAppointments.map(appt => 
+        appt.id === apptId ? { ...appt, status: 'cancelled' as const } : appt
+      );
+      await onUpdateUser({ hairPatchAppointments: updatedAppointments });
+      alert('Appointment cancelled successfully.');
+    } catch (err) {
+      console.error('Error cancelling appointment:', err);
+      alert('Could not cancel appointment.');
+    }
+  };
 
   const userOrders = orders.filter(o => o.userId === user.id);
 
@@ -1940,18 +2056,26 @@ const Dashboard = ({ user, orders, onUpdateStatus, onOpenEmailLogs, onUpdateUser
       </div>
 
       {/* Tabs Selector */}
-      <div className="flex border-b border-white/10 mb-8 gap-6">
+      <div className="flex border-b border-white/10 mb-8 gap-6 overflow-x-auto scrollbar-none">
         <button 
           onClick={() => setActiveTab('orders')}
-          className={`pb-4 text-sm font-black uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
+          className={`pb-4 text-sm font-black uppercase tracking-wider transition-all border-b-2 cursor-pointer whitespace-nowrap ${
             activeTab === 'orders' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-white/40 hover:text-white'
           }`}
         >
           🍛 Order History
         </button>
         <button 
+          onClick={() => setActiveTab('hairpatch')}
+          className={`pb-4 text-sm font-black uppercase tracking-wider transition-all border-b-2 cursor-pointer whitespace-nowrap ${
+            activeTab === 'hairpatch' ? 'border-brand-primary text-[#D4AF37]' : 'border-transparent text-white/40 hover:text-white'
+          }`}
+        >
+          💇 Hair Patch Portal
+        </button>
+        <button 
           onClick={() => setActiveTab('profile')}
-          className={`pb-4 text-sm font-black uppercase tracking-wider transition-all border-b-2 cursor-pointer ${
+          className={`pb-4 text-sm font-black uppercase tracking-wider transition-all border-b-2 cursor-pointer whitespace-nowrap ${
             activeTab === 'profile' ? 'border-brand-primary text-[#EA580C]' : 'border-transparent text-white/40 hover:text-white'
           }`}
         >
@@ -2168,6 +2292,255 @@ const Dashboard = ({ user, orders, onUpdateStatus, onOpenEmailLogs, onUpdateUser
                 ))}
               </div>
             )}
+          </motion.div>
+        ) : activeTab === 'hairpatch' ? (
+          <motion.div 
+            key="hairpatch" 
+            initial={{ opacity: 0, y: 10 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            exit={{ opacity: 0, y: -10 }} 
+            className="space-y-8"
+          >
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div>
+                <h3 className="text-3xl font-display font-black text-brand-primary">💇 Hair Patch Client Portal</h3>
+                <p className="text-white/60 text-sm mt-1">Manage your custom hair patch appointments, service history, and care products in one place.</p>
+              </div>
+              <div className="bg-[#FAF8F4]/5 border border-brand-primary/20 px-4 py-2.5 rounded-2xl flex items-center gap-2 animate-pulse">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <span className="text-[10px] text-brand-accent font-black uppercase tracking-wider">Active Client Profile</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Left Column: Appointments & History */}
+              <div className="lg:col-span-2 space-y-8">
+                
+                {/* Section 1: Upcoming Appointments */}
+                <div className="glass-card p-6 md:p-8 rounded-[2.5rem] border-white/5 space-y-6">
+                  <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                    <h4 className="text-xl font-serif font-black text-[#EADBBD] flex items-center gap-2">
+                      📅 Upcoming Appointments
+                    </h4>
+                    <span className="bg-[#EADBBD]/10 text-[#EADBBD] text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                      {hairPatchAppointments.filter(a => a.status === 'scheduled').length} Scheduled
+                    </span>
+                  </div>
+
+                  {hairPatchAppointments.filter(a => a.status === 'scheduled').length === 0 ? (
+                    <div className="p-8 text-center bg-white/5 rounded-2xl border border-white/5 space-y-3">
+                      <p className="text-white/50 text-sm">You have no upcoming scheduled appointments.</p>
+                      <p className="text-[11px] text-brand-accent">Rebook one of your past services below to quickly schedule a maintenance or styling session!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {hairPatchAppointments.filter(a => a.status === 'scheduled').map((appt) => (
+                        <div 
+                          key={appt.id} 
+                          className="p-5 rounded-2xl bg-brand-primary/5 border border-brand-primary/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all hover:bg-brand-primary/10 animate-fade-in"
+                        >
+                          <div className="space-y-2">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-[#7A8B6B] bg-[#7A8B6B]/15 px-2.5 py-1 rounded-full">
+                              Confirmed Session
+                            </span>
+                            <h5 className="font-serif font-bold text-base text-white mt-1">{appt.name}</h5>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-1 gap-x-4 text-xs text-white/60">
+                              <div><strong>Date:</strong> {appt.date}</div>
+                              <div><strong>Time:</strong> {appt.time}</div>
+                              <div><strong>Stylist:</strong> {appt.stylist}</div>
+                            </div>
+                          </div>
+                          
+                          <button
+                            type="button"
+                            onClick={() => handleCancelAppointment(appt.id)}
+                            className="w-full md:w-auto px-4 py-2 bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-red-500/20 cursor-pointer text-center"
+                          >
+                            Cancel Appointment
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Section 2: Service History */}
+                <div className="glass-card p-6 md:p-8 rounded-[2.5rem] border-white/5 space-y-6">
+                  <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                    <h4 className="text-xl font-serif font-black text-[#EADBBD]">
+                      💇 Service History (Past Visits)
+                    </h4>
+                    <span className="text-white/40 text-xs font-medium">Click rebook to repeat any past service</span>
+                  </div>
+
+                  <div className="space-y-6">
+                    {hairPatchServices.map((srv) => {
+                      const isRebooking = rebookingService?.id === srv.id;
+                      return (
+                        <div 
+                          key={srv.id} 
+                          className="p-6 rounded-2xl bg-[#F4F1EA]/5 border border-white/10 space-y-4 transition-all hover:border-brand-primary/25"
+                        >
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <div>
+                              <h5 className="font-serif font-bold text-lg text-[#EADBBD]">{srv.name}</h5>
+                              <p className="text-xs text-white/60 mt-1">
+                                Completed on <strong>{srv.date}</strong> with Stylist: <strong>{srv.stylist}</strong>
+                              </p>
+                            </div>
+                            <div className="text-right flex sm:flex-col items-center sm:items-end justify-between sm:justify-center w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0 border-white/5">
+                              <span className="text-lg font-black text-brand-primary">Rs. {srv.cost}</span>
+                              <span className="text-[10px] text-[#7A8B6B] font-bold uppercase tracking-wider flex items-center gap-1 mt-0.5">
+                                <Check className="w-3.5 h-3.5" /> Completed
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Rebook Scheduler Section */}
+                          {isRebooking ? (
+                            <form 
+                              onSubmit={handleBookAppointment}
+                              className="bg-brand-primary/5 p-5 rounded-xl border border-brand-primary/20 space-y-4 mt-4"
+                            >
+                              <div className="text-xs font-black text-brand-accent uppercase tracking-widest border-b border-brand-primary/10 pb-2">
+                                📅 Schedule Rebooking for "{srv.name}"
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="space-y-1.5">
+                                  <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Select Date</label>
+                                  <input 
+                                    type="date"
+                                    required
+                                    min={new Date().toISOString().split('T')[0]}
+                                    value={bookingDate}
+                                    onChange={(e) => setBookingDate(e.target.value)}
+                                    className="w-full bg-black/20 border border-brand-primary/25 rounded-xl px-3 py-2 text-xs text-white outline-none focus:ring-1 focus:ring-brand-primary"
+                                  />
+                                </div>
+                                <div className="space-y-1.5">
+                                  <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Preferred Time Slot</label>
+                                  <select 
+                                    value={bookingTime}
+                                    onChange={(e) => setBookingTime(e.target.value)}
+                                    className="w-full bg-black/20 border border-brand-primary/25 rounded-xl px-3 py-2 text-xs text-white outline-none focus:ring-1 focus:ring-brand-primary [color-scheme:dark]"
+                                  >
+                                    <option value="10:00 AM">10:00 AM</option>
+                                    <option value="11:30 AM">11:30 AM</option>
+                                    <option value="1:00 PM">01:00 PM</option>
+                                    <option value="3:00 PM">03:00 PM</option>
+                                    <option value="5:00 PM">05:00 PM</option>
+                                  </select>
+                                </div>
+                                <div className="space-y-1.5">
+                                  <label className="text-[10px] font-bold uppercase tracking-wider text-white/50">Expert Stylist</label>
+                                  <select 
+                                    value={bookingStylist}
+                                    onChange={(e) => setBookingStylist(e.target.value)}
+                                    className="w-full bg-black/20 border border-brand-primary/25 rounded-xl px-3 py-2 text-xs text-white outline-none focus:ring-1 focus:ring-brand-primary [color-scheme:dark]"
+                                  >
+                                    <option value={srv.stylist}>{srv.stylist} (Previous)</option>
+                                    <option value="Senior Expert Rohan">Senior Expert Rohan</option>
+                                    <option value="Master Stylist Vikram">Master Stylist Vikram</option>
+                                    <option value="Any Professional Stylist">Any Professional Stylist</option>
+                                  </select>
+                                </div>
+                              </div>
+
+                              <div className="flex justify-end gap-3.5 pt-2 border-t border-brand-primary/10">
+                                <button
+                                  type="button"
+                                  onClick={() => setRebookingService(null)}
+                                  className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="submit"
+                                  disabled={isBookingSubmitting}
+                                  className="px-5 py-2 bg-[#9E5638] hover:bg-[#B76F50] text-[#FAF6ED] rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md shadow-brand-primary/20 cursor-pointer disabled:opacity-50"
+                                >
+                                  {isBookingSubmitting ? 'Booking...' : 'Confirm Appointment Booking'}
+                                </button>
+                              </div>
+                            </form>
+                          ) : (
+                            <div className="flex justify-end border-t border-white/5 pt-3.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setRebookingService(srv);
+                                  setBookingStylist(srv.stylist);
+                                  const nextWeek = new Date();
+                                  nextWeek.setDate(nextWeek.getDate() + 7);
+                                  setBookingDate(nextWeek.toISOString().split('T')[0]);
+                                }}
+                                className="px-4 py-2.5 bg-[#9E5638] hover:bg-[#B76F50] text-[#FAF6ED] rounded-xl text-xs font-black uppercase tracking-widest transition-all cursor-pointer shadow-md"
+                              >
+                                🔁 Rebook This Service
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Right Column: Purchased Products */}
+              <div className="space-y-8">
+                
+                <div className="glass-card p-6 md:p-8 rounded-[2.5rem] border-white/5 space-y-6">
+                  <div className="border-b border-white/5 pb-4">
+                    <h4 className="text-xl font-serif font-black text-[#EADBBD] flex items-center gap-2">
+                      🧴 Purchased Products
+                    </h4>
+                    <p className="text-[11px] text-white/50 mt-1">Hair patch tapes, adhesives, and special hair care items.</p>
+                  </div>
+
+                  <div className="space-y-4">
+                    {hairPatchProducts.map((prod) => (
+                      <div 
+                        key={prod.id} 
+                        className="bg-white/5 p-4 rounded-2xl border border-white/5 flex gap-4 items-center"
+                      >
+                        {prod.image ? (
+                          <img 
+                            src={prod.image} 
+                            alt={prod.name} 
+                            className="w-16 h-16 object-cover rounded-xl border border-white/10 shrink-0"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 bg-brand-primary/20 rounded-xl flex items-center justify-center shrink-0">
+                            <Package className="text-brand-primary w-6 h-6" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h5 className="font-bold text-xs text-white truncate">{prod.name}</h5>
+                          <div className="text-[10px] text-white/40 mt-1">Purchased: {prod.purchaseDate}</div>
+                          <div className="flex justify-between items-center mt-1.5">
+                            <span className="text-xs font-black text-brand-primary">Rs. {prod.price}</span>
+                            <span className="text-[9px] font-bold text-[#7A8B6B] uppercase tracking-wider bg-[#7A8B6B]/10 px-2 py-0.5 rounded-lg">
+                              {prod.status}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="bg-brand-accent/5 p-4 rounded-2xl border border-brand-accent/10 space-y-2">
+                    <h5 className="text-xs font-black text-brand-accent uppercase tracking-wider">💡 Care Specialist Tips</h5>
+                    <p className="text-[11px] text-white/70 leading-relaxed">
+                      For maximum lifespan and natural blending, clean and re-bond your hair patch every 3-4 weeks. Keep your bonding tape away from direct heat or prolonged hot showers.
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
           </motion.div>
         ) : (
           <motion.div key="profile" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-8">
@@ -2429,13 +2802,13 @@ const AdminPanel = ({ orders, onUpdateStatus, onOpenEmailLogs }: { orders: Order
       <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-12 gap-8">
         <div>
           <h2 className="text-5xl font-display font-black text-brand-primary mb-2">Admin Panel</h2>
-          <p className="text-white/60">Manage all incoming orders and update their status.</p>
+          <p className="text-[#1A1A1A] font-medium">Manage all incoming orders and update their status.</p>
           {onOpenEmailLogs && (
             <button 
               onClick={onOpenEmailLogs}
-              className="mt-4 flex items-center gap-2 bg-[#7A8B6B]/15 hover:bg-[#7A8B6B]/25 text-[#E8EFE5] px-4 py-2 rounded-xl text-xs font-bold transition-all border border-[#7A8B6B]/30 cursor-pointer"
+              className="mt-4 flex items-center gap-2 bg-[#7A8B6B]/20 hover:bg-[#7A8B6B]/35 text-[#2E1C12] px-4 py-2 rounded-xl text-xs font-black transition-all border border-[#7A8B6B]/45 cursor-pointer shadow-sm"
             >
-              <Mail className="w-4 h-4 text-[#7A8B6B]" />
+              <Mail className="w-4 h-4 text-[#5F6E51]" />
               📬 View Transactional Email Logs (Resend Outbox)
             </button>
           )}
@@ -2443,13 +2816,13 @@ const AdminPanel = ({ orders, onUpdateStatus, onOpenEmailLogs }: { orders: Order
         <div className="flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
           {/* Search Box */}
           <div className="relative w-full md:w-64 group">
-            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 group-focus-within:text-brand-primary transition-colors" />
+            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-brand-primary transition-colors" />
             <input 
               type="text" 
               placeholder="Search ID, Name..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-6 py-3.5 outline-none focus:ring-2 focus:ring-brand-primary transition-all text-white font-medium text-xs"
+              className="w-full bg-white border border-brand-primary/15 rounded-2xl pl-12 pr-6 py-3.5 outline-none focus:ring-2 focus:ring-brand-primary transition-all text-[#1A1A1A] placeholder-slate-500 font-bold text-xs shadow-sm"
             />
           </div>
 
@@ -2458,33 +2831,56 @@ const AdminPanel = ({ orders, onUpdateStatus, onOpenEmailLogs }: { orders: Order
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-brand-primary transition-all text-white font-bold text-xs appearance-none cursor-pointer [color-scheme:dark]"
+              className="w-full bg-white border border-brand-primary/15 rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-brand-primary transition-all text-[#1A1A1A] font-bold text-xs appearance-none cursor-pointer [color-scheme:light] shadow-sm"
             >
               <option value="date_newest">Date: Newest First</option>
               <option value="date_oldest">Date: Oldest First</option>
               <option value="amount_highest">Amount: High to Low</option>
               <option value="amount_lowest">Amount: Low to High</option>
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-white/40">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
               <ChevronRight className="w-3 h-3 transform rotate-90" />
             </div>
           </div>
 
-          {/* Status Filter Tab Buttons */}
-          <div className="bg-white/5 p-1 rounded-2xl flex items-center gap-1 border border-white/10 w-full md:w-auto flex-wrap">
-            {['all', 'pending', 'preparing', 'shipping', 'delivered'].map((status) => (
-              <button
-                key={status}
-                onClick={() => setStatusFilter(status as any)}
-                className={`flex-1 md:flex-none px-3.5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
-                  statusFilter === status 
-                    ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20' 
-                    : 'text-white/40 hover:text-white hover:bg-white/5'
-                }`}
+          {/* Status Filter Selector */}
+          <div className="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto">
+            {/* Status Filter Dropdown */}
+            <div className="relative w-full md:w-44 group">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="w-full bg-white border border-brand-primary/15 rounded-2xl px-4 py-3.5 outline-none focus:ring-2 focus:ring-brand-primary transition-all text-[#1A1A1A] font-bold text-xs appearance-none cursor-pointer [color-scheme:light] shadow-sm"
               >
-                {status}
-              </button>
-            ))}
+                <option value="all">All Statuses</option>
+                <option value="pending">Pending ⏳</option>
+                <option value="preparing">Preparing 🍳</option>
+                <option value="shipping">Shipping 🛵</option>
+                <option value="delivered">Delivered ✅</option>
+                <option value="cancelled">Cancelled ❌</option>
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+                <ChevronRight className="w-3 h-3 transform rotate-90" />
+              </div>
+            </div>
+
+            {/* Status Filter Tab Buttons */}
+            <div className="bg-white/80 p-1 rounded-2xl flex items-center gap-1 border border-brand-primary/10 w-full md:w-auto flex-wrap shadow-sm">
+              {['all', 'pending', 'preparing', 'shipping', 'delivered', 'cancelled'].map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() => setStatusFilter(status as any)}
+                  className={`flex-1 md:flex-none px-3.5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
+                    statusFilter === status 
+                      ? 'bg-brand-primary text-white shadow-md' 
+                      : 'text-slate-600 hover:text-brand-primary hover:bg-slate-100'
+                  }`}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>

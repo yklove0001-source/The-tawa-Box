@@ -53,4 +53,34 @@ export interface User {
     expiresAt: string;
   };
   createdAt: string;
+  hairPatchServices?: HairPatchService[];
+  hairPatchAppointments?: HairPatchAppointment[];
+  hairPatchProducts?: HairPatchProduct[];
+}
+
+export interface HairPatchService {
+  id: string;
+  name: string;
+  stylist: string;
+  date: string;
+  cost: number;
+  status: 'completed' | 'cancelled';
+}
+
+export interface HairPatchAppointment {
+  id: string;
+  name: string;
+  stylist: string;
+  date: string;
+  time: string;
+  status: 'scheduled' | 'cancelled' | 'rescheduled';
+}
+
+export interface HairPatchProduct {
+  id: string;
+  name: string;
+  price: number;
+  purchaseDate: string;
+  status: 'delivered' | 'shipped' | 'pending';
+  image?: string;
 }
