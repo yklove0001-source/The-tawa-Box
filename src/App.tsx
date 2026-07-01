@@ -3429,7 +3429,8 @@ const CartModal = ({
   userPoints,
   pointsToRedeem,
   setPointsToRedeem,
-  onConfirmOrder
+  onConfirmOrder,
+  setOrders
 }: { 
   isOpen: boolean, 
   onClose: () => void, 
@@ -3450,7 +3451,8 @@ const CartModal = ({
   userPoints: number,
   pointsToRedeem: number,
   setPointsToRedeem: (v: number) => void,
-  onConfirmOrder: (onSuccess: (order: OrderDetails) => void) => void
+  onConfirmOrder: (onSuccess: (order: OrderDetails) => void) => void,
+  setOrders?: React.Dispatch<React.SetStateAction<OrderDetails[]>>
 }) => {
   const [step, setStep] = useState<'cart' | 'delivery' | 'payment' | 'confirmation'>('cart');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -3569,6 +3571,13 @@ const CartModal = ({
               throw new Error(result.error || 'Signature verification mismatch');
             }
 
+            if (setOrders) {
+              setOrders(prev => {
+                const updated = prev.map(o => o.id === order.id ? { ...o, status: 'paid' as const } : o);
+                localStorage.setItem('orders', JSON.stringify(updated));
+                return updated;
+              });
+            }
             setPlacedOrder({
               ...order,
               paymentMethod: 'online',
@@ -3636,6 +3645,13 @@ const CartModal = ({
               throw new Error(result.error || 'Signature verification mismatch');
             }
 
+            if (setOrders) {
+              setOrders(prev => {
+                const updated = prev.map(o => o.id === order.id ? { ...o, status: 'paid' as const } : o);
+                localStorage.setItem('orders', JSON.stringify(updated));
+                return updated;
+              });
+            }
             setPlacedOrder({
               ...order,
               paymentMethod: 'online',
@@ -3834,6 +3850,13 @@ const CartModal = ({
                   throw new Error(result.error || 'Signature verification mismatch');
                 }
 
+                if (setOrders) {
+                  setOrders(prev => {
+                    const updated = prev.map(o => o.id === order.id ? { ...o, status: 'paid' as const } : o);
+                    localStorage.setItem('orders', JSON.stringify(updated));
+                    return updated;
+                  });
+                }
                 setPlacedOrder({
                   ...order,
                   paymentMethod: 'online',
@@ -4656,6 +4679,13 @@ const CartModal = ({
                                   throw new Error(result.error || 'Signature verification mismatch');
                                 }
 
+                                if (setOrders) {
+                                  setOrders(prev => {
+                                    const updated = prev.map(o => o.id === order.id ? { ...o, status: 'paid' as const } : o);
+                                    localStorage.setItem('orders', JSON.stringify(updated));
+                                    return updated;
+                                  });
+                                }
                                 setPlacedOrder({
                                   ...order,
                                   paymentMethod: 'online',
@@ -5297,6 +5327,7 @@ export default function App() {
           pointsToRedeem={pointsToRedeem}
           setPointsToRedeem={setPointsToRedeem}
           onConfirmOrder={confirmOrder}
+          setOrders={setOrders}
         />
         <ThaliCustomizationModal 
           isOpen={showThaliModal} 

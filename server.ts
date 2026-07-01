@@ -37,8 +37,8 @@ function getStripe(): Stripe {
 let razorpayClient: Razorpay | null = null;
 function getRazorpay(): any {
   if (!razorpayClient) {
-    let keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID;
-    let keySecret = process.env.RAZORPAY_KEY_SECRET;
+    let keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || process.env.RAZORPAY_API_KEY;
+    let keySecret = process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_SECRET_KEY;
 
     // Fallback if they configured their Razorpay Key ID in the STRIPE_SECRET_KEY slot
     if (!keyId && process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.startsWith('rzp_')) {
@@ -46,7 +46,7 @@ function getRazorpay(): any {
     }
 
     if (!keyId) {
-      throw new Error('RAZORPAY_KEY_ID or VITE_RAZORPAY_KEY_ID environment variable is required');
+      throw new Error('RAZORPAY_KEY_ID, RAZORPAY_API_KEY or VITE_RAZORPAY_KEY_ID environment variable is required');
     }
 
     const RazorpayConstructor = (Razorpay as any).default || Razorpay;
@@ -284,13 +284,13 @@ async function startServer() {
         id: rzpOrder.id,
         amount: rzpOrder.amount,
         currency: rzpOrder.currency,
-        keyId: (razorpay as any).key_id || process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || ''
+        keyId: (razorpay as any).key_id || process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || process.env.RAZORPAY_API_KEY || ''
       });
     } catch (err: any) {
       console.warn('[Razorpay API Warning] Error creating order, triggering high-fidelity sandbox simulation:', err.message);
       // Fallback in case of lack of credentials or actual API errors, return a simulated order id for seamless UI testing
       const mockOrderId = `order_sim_${Math.random().toString(36).substr(2, 9)}`;
-      let keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || '';
+      let keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || process.env.RAZORPAY_API_KEY || '';
       if (!keyId && process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.startsWith('rzp_')) {
         keyId = process.env.STRIPE_SECRET_KEY;
       }
@@ -307,7 +307,7 @@ async function startServer() {
 
   // API: Razorpay configuration check
   app.get('/api/payments/razorpay/config', (req, res) => {
-    let keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || '';
+    let keyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || process.env.RAZORPAY_API_KEY || '';
     if (!keyId && process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.startsWith('rzp_')) {
       keyId = process.env.STRIPE_SECRET_KEY;
     }
@@ -321,7 +321,7 @@ async function startServer() {
   app.post('/api/payments/razorpay/verify-payment', async (req, res) => {
     try {
       const { razorpay_order_id, razorpay_payment_id, razorpay_signature, metadata } = req.body || {};
-      const keySecret = process.env.RAZORPAY_KEY_SECRET;
+      const keySecret = process.env.RAZORPAY_KEY_SECRET || process.env.RAZORPAY_SECRET_KEY;
 
       console.log(`[Razorpay Verify] Received verification request for order: ${razorpay_order_id}, payment: ${razorpay_payment_id}`);
 
