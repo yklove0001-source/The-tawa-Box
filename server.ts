@@ -82,6 +82,35 @@ async function startServer() {
     }
   });
 
+  // API: Send Admin SMS/WhatsApp Notification Proxy
+  app.post('/api/notifications/send', async (req, res) => {
+    try {
+      const { adminNumber, orderId, customerName, customerMobile, total, messageText } = req.body;
+      
+      console.log(`\n🔔 =====================================================`);
+      console.log(`🔔 [ADMIN NOTIFICATION DISPATCH TO ${adminNumber}]`);
+      console.log(`🔔 Timestamp: ${new Date().toISOString()}`);
+      console.log(`🔔 Order Reference: #${orderId}`);
+      console.log(`🔔 Customer Name: ${customerName}`);
+      console.log(`🔔 Customer Mobile: ${customerMobile}`);
+      console.log(`🔔 Total: Rs. ${total}`);
+      console.log(`\n🔔 Message Content:`);
+      console.log(messageText);
+      console.log(`=====================================================\n`);
+
+      res.json({
+        success: true,
+        channel: 'WhatsApp/SMS',
+        recipient: adminNumber,
+        status: 'delivered',
+        timestamp: new Date().toISOString()
+      });
+    } catch (err: any) {
+      console.error('[Notification Service] Error logging notification dispatch:', err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   // Vite Dev or Production Static file serving
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({

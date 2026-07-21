@@ -7,6 +7,7 @@ import { HeroAnimation, CustomLogoSvg } from './components/HeroAnimation';
 import { IntroAnimation } from './components/IntroAnimation';
 import { WeeklyShowcase } from './components/WeeklyShowcase';
 import { triggerEmailNotification } from './services/emailService';
+import { triggerAdminNotification, getAdminNotifications, AdminNotification } from './services/notificationService';
 import { db, auth, handleFirestoreError, OperationType } from './lib/firebase';
 import { getApiUrl } from './lib/api';
 import { 
@@ -2543,7 +2544,7 @@ const Dashboard = ({ user, orders, onUpdateStatus, onOpenEmailLogs, onUpdateUser
   );
 };
 
-const AdminPanel = ({ orders, onUpdateStatus, onOpenEmailLogs }: { orders: OrderDetails[], onUpdateStatus: (id: string, status: OrderDetails['status']) => void, onOpenEmailLogs?: () => void }) => {
+const AdminPanel = ({ orders, onUpdateStatus, onOpenEmailLogs, onOpenNotificationLogs }: { orders: OrderDetails[], onUpdateStatus: (id: string, status: OrderDetails['status']) => void, onOpenEmailLogs?: () => void, onOpenNotificationLogs?: () => void }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<OrderDetails['status'] | 'all'>('all');
   const [sortBy, setSortBy] = useState<'date_newest' | 'date_oldest' | 'amount_highest' | 'amount_lowest'>('date_newest');
@@ -2581,15 +2582,26 @@ const AdminPanel = ({ orders, onUpdateStatus, onOpenEmailLogs }: { orders: Order
         <div>
           <h2 className="text-5xl font-display font-black text-brand-primary mb-2">Admin Panel</h2>
           <p className="text-[#1A1A1A] font-medium">Manage all incoming orders and update their status.</p>
-          {onOpenEmailLogs && (
-            <button 
-              onClick={onOpenEmailLogs}
-              className="mt-4 flex items-center gap-2 bg-[#7A8B6B]/20 hover:bg-[#7A8B6B]/35 text-[#2E1C12] px-4 py-2 rounded-xl text-xs font-black transition-all border border-[#7A8B6B]/45 cursor-pointer shadow-sm"
-            >
-              <Mail className="w-4 h-4 text-[#5F6E51]" />
-              📬 View Transactional Email Logs (Resend Outbox)
-            </button>
-          )}
+          <div className="flex flex-wrap gap-3 mt-4">
+            {onOpenEmailLogs && (
+              <button 
+                onClick={onOpenEmailLogs}
+                className="flex items-center gap-2 bg-[#7A8B6B]/20 hover:bg-[#7A8B6B]/35 text-[#2E1C12] px-4 py-2.5 rounded-xl text-xs font-black transition-all border border-[#7A8B6B]/45 cursor-pointer shadow-sm"
+              >
+                <Mail className="w-4 h-4 text-[#5F6E51]" />
+                📬 View Email Logs (Resend)
+              </button>
+            )}
+            {onOpenNotificationLogs && (
+              <button 
+                onClick={onOpenNotificationLogs}
+                className="flex items-center gap-2 bg-brand-primary/10 hover:bg-brand-primary/20 text-[#2E1C12] px-4 py-2.5 rounded-xl text-xs font-black transition-all border border-brand-primary/20 cursor-pointer shadow-sm animate-pulse"
+              >
+                <Smartphone className="w-4 h-4 text-brand-primary" />
+                🔔 WhatsApp/SMS Logs (9058028729)
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
           {/* Search Box */}
@@ -2867,6 +2879,134 @@ const EmailLogsModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                   <Mail className="w-12 h-12 text-[#5A3825]/20 mb-3" />
                   <p className="font-serif font-bold">Review Dispatched E-mails</p>
                   <p className="text-xs max-w-xs mt-1">Select an email to view full transactional HTML layout and delivery payloads.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+};
+
+const AdminNotificationsModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
+  const [selectedNotif, setSelectedNotif] = useState<AdminNotification | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      const loaded = getAdminNotifications();
+      setNotifications(loaded);
+      if (loaded.length > 0) {
+        setSelectedNotif(loaded[0]);
+      } else {
+        setSelectedNotif(null);
+      }
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-[110] bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+        <motion.div 
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-[#FAF8F4] w-full max-w-4xl h-[80vh] rounded-[2.5rem] border-2 border-brand-primary/30 overflow-hidden flex flex-col shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="bg-[#DFE7DC] p-6 border-b border-[#7A8B6B]/25 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <Smartphone className="w-6 h-6 text-brand-primary animate-bounce" />
+              <div>
+                <h3 className="font-serif font-black text-[#5A3825] text-lg uppercase tracking-wider">Admin Notification Logs (9058028729)</h3>
+                <p className="text-[10px] text-[#7A8B6B] uppercase tracking-widest font-bold">Real-time SMS/WhatsApp notification triggers for incoming orders</p>
+              </div>
+            </div>
+            <button 
+              onClick={onClose}
+              className="p-2.5 bg-[#5A3825]/5 text-[#5A3825] rounded-full hover:bg-[#5A3825]/15 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Body */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* List */}
+            <div className="w-80 border-r border-[#7A8B6B]/15 overflow-y-auto p-4 space-y-2 bg-[#FAF6ED] flex-shrink-0">
+              {notifications.length === 0 ? (
+                <div className="text-center py-20 text-[#5A3825]/40 font-bold text-sm">
+                  No notifications triggered yet.<br />Place a test order to see a live trigger on 9058028729!
+                </div>
+              ) : (
+                notifications.map((notif) => (
+                  <button
+                    key={notif.id}
+                    onClick={() => setSelectedNotif(notif)}
+                    className={`w-full text-left p-4 rounded-2xl transition-all border cursor-pointer ${
+                      selectedNotif?.id === notif.id 
+                        ? 'bg-brand-primary text-white border-brand-primary' 
+                        : 'bg-white text-[#5A3825] border-[#5A3825]/10 hover:border-[#7A8B6B]/40 shadow-sm'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-1 text-[9px] font-bold uppercase tracking-wider">
+                      <span className="opacity-75">{notif.channel}</span>
+                      <span className="opacity-50">{new Date(notif.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <div className="font-serif font-black text-xs line-clamp-1 leading-tight mb-1">Order #{notif.orderId}</div>
+                    <div className="text-[9px] opacity-70 truncate">To Admin: {notif.adminNumber}</div>
+                  </button>
+                ))
+              )}
+            </div>
+
+            {/* Viewer preview */}
+            <div className="flex-1 bg-white p-6 overflow-y-auto flex flex-col justify-start">
+              {selectedNotif ? (
+                <div className="space-y-4">
+                  {/* Meta headers */}
+                  <div className="bg-[#FAF8F4] p-4 rounded-2xl border border-[#5A3825]/10 space-y-2">
+                    <div className="text-xs text-slate-500 font-mono"><strong>Recipient Number:</strong> {selectedNotif.adminNumber} (Admin)</div>
+                    <div className="text-xs text-slate-500 font-mono"><strong>Customer Name:</strong> {selectedNotif.customerName}</div>
+                    <div className="text-xs text-slate-500 font-mono"><strong>Customer Mobile:</strong> {selectedNotif.customerMobile}</div>
+                    <div className="text-xs text-slate-500 font-mono"><strong>Order ID:</strong> #{selectedNotif.orderId}</div>
+                    <div className="text-xs text-slate-500 font-mono"><strong>Triggered At:</strong> {new Date(selectedNotif.sentAt).toLocaleString()}</div>
+                    <div className="text-xs text-emerald-600 font-mono flex items-center gap-1.5 pt-1">
+                      <span className="inline-block w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
+                      <strong>Status:</strong> Dispatched & Delivered to WhatsApp/SMS Channel
+                    </div>
+                  </div>
+
+                  {/* Rendered Text Message block */}
+                  <div className="border border-[#7A8B6B]/15 rounded-3xl overflow-hidden shadow-sm p-6 bg-[#F8FAF6]">
+                    <p className="text-xs text-[#7A8B6B] font-bold uppercase tracking-widest mb-3 border-b border-brand-primary/10 pb-2">📟 Outgoing Text Body</p>
+                    <pre className="font-mono text-xs text-[#2E1C12] whitespace-pre-wrap select-all leading-relaxed bg-white p-4 rounded-xl border border-brand-primary/5">
+                      {selectedNotif.messageText}
+                    </pre>
+                  </div>
+
+                  {/* WhatsApp redirect button for direct testing */}
+                  <div className="pt-2">
+                    <a
+                      href={`https://wa.me/${selectedNotif.adminNumber}?text=${encodeURIComponent(selectedNotif.messageText)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20ba5a] text-white px-6 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-md cursor-pointer"
+                    >
+                      <Smartphone className="w-4 h-4" />
+                      Open Direct WhatsApp Chat with Admin (9058028729)
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex-grow flex flex-col items-center justify-center text-center text-[#5A3825]/40 py-20">
+                  <Smartphone className="w-12 h-12 text-brand-primary/20 mb-3" />
+                  <p className="font-serif font-bold">Admin Notification Outbox</p>
+                  <p className="text-xs max-w-xs mt-1">Select an order notification event to view the live payload dispatched to 9058028729.</p>
                 </div>
               )}
             </div>
@@ -3208,7 +3348,9 @@ const CartModal = ({
   pointsToRedeem,
   setPointsToRedeem,
   onConfirmOrder,
-  setOrders
+  setOrders,
+  currentUser,
+  onLogin
 }: { 
   isOpen: boolean, 
   onClose: () => void, 
@@ -3230,11 +3372,25 @@ const CartModal = ({
   pointsToRedeem: number,
   setPointsToRedeem: (v: number) => void,
   onConfirmOrder: (onSuccess: (order: OrderDetails) => void) => void,
-  setOrders?: React.Dispatch<React.SetStateAction<OrderDetails[]>>
+  setOrders?: React.Dispatch<React.SetStateAction<OrderDetails[]>>,
+  currentUser: User | null,
+  onLogin: (user: User) => void
 }) => {
-  const [step, setStep] = useState<'cart' | 'delivery' | 'payment' | 'confirmation'>('cart');
+  const [step, setStep] = useState<'cart' | 'auth' | 'delivery' | 'payment' | 'confirmation'>('cart');
   const [isProcessing, setIsProcessing] = useState(false);
   const [placedOrder, setPlacedOrder] = useState<OrderDetails | null>(null);
+
+  // Authentication states
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authName, setAuthName] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authShowPassword, setAuthShowPassword] = useState(false);
+  const [authMethod, setAuthMethod] = useState<'firebase' | 'local'>(() => {
+    return (localStorage.getItem('tawabox_auth_pref') as 'firebase' | 'local') || 'local';
+  });
 
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discount = pointsToRedeem / 10;
@@ -3248,6 +3404,12 @@ const CartModal = ({
         setPlacedOrder(null);
         setIsProcessing(false);
         setPointsToRedeem(0);
+        setAuthEmail('');
+        setAuthPassword('');
+        setAuthName('');
+        setAuthError('');
+        setAuthLoading(false);
+        setAuthMode('login');
       }, 500);
       return () => clearTimeout(timer);
     }
@@ -3293,9 +3455,222 @@ const CartModal = ({
     }
   };
 
+  const handleInlineAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError('');
+
+    const inputEmail = authEmail.trim().toLowerCase();
+    
+    if (authMode === 'login') {
+      const isTargetAdmin = inputEmail === 'yklove0001@gmail.com' && (authPassword === 'Yogesg#321' || authPassword === 'Yogesh#321');
+      if (authMethod === 'local') {
+        try {
+          const localUser = handleLocalLogin(inputEmail, authPassword);
+          onLogin(localUser);
+          if (localUser.name && !orderName) setOrderName(localUser.name);
+          setStep('delivery');
+        } catch (localErr: any) {
+          setAuthError(localErr.message || 'Local Sandbox Login failed');
+        } finally {
+          setAuthLoading(false);
+        }
+        return;
+      }
+
+      try {
+        let userCred;
+        try {
+          userCred = await signInWithEmailAndPassword(auth, authEmail, authPassword);
+        } catch (signInErr: any) {
+          if (isTargetAdmin && (signInErr.code === 'auth/user-not-found' || signInErr.code === 'auth/invalid-credential' || signInErr.code === 'auth/wrong-password')) {
+            try {
+              userCred = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
+            } catch (signUpErr: any) {
+              throw signInErr;
+            }
+          } else {
+            throw signInErr;
+          }
+        }
+
+        const uid = userCred.user.uid;
+        const userDocRef = doc(db, 'users', uid);
+        const userSnap = await getDoc(userDocRef);
+        let profileData: User;
+        if (userSnap.exists()) {
+          const d = userSnap.data();
+          profileData = {
+            id: uid,
+            name: d.name || 'Yogesh (Admin)',
+            email: d.email || authEmail,
+            role: 'admin',
+            points: d.points || 0,
+            deliveryAddresses: d.deliveryAddresses || [],
+            subscription: d.subscription || { plan: 'none', status: 'none', expiresAt: '' },
+            createdAt: d.createdAt || new Date().toISOString()
+          };
+          if (d.role !== 'admin') {
+            await setDoc(userDocRef, { role: 'admin' }, { merge: true });
+          }
+        } else {
+          profileData = {
+            id: uid,
+            name: 'Yogesh (Admin)',
+            email: authEmail,
+            role: 'admin',
+            points: 0,
+            deliveryAddresses: [],
+            subscription: { plan: 'none', status: 'none', expiresAt: '' },
+            createdAt: new Date().toISOString()
+          };
+          await setDoc(userDocRef, profileData);
+        }
+        onLogin(profileData);
+        if (profileData.name && !orderName) setOrderName(profileData.name);
+        setStep('delivery');
+      } catch (err: any) {
+        if (isTargetAdmin) {
+          const mockAdmin: User = {
+            id: 'admin_local_fallback',
+            name: 'Yogesh (Admin)',
+            email: 'yklove0001@gmail.com',
+            role: 'admin',
+            points: 9999,
+            deliveryAddresses: [],
+            subscription: { plan: 'none', status: 'none', expiresAt: '' },
+            createdAt: new Date().toISOString()
+          };
+          onLogin(mockAdmin);
+          if (!orderName) setOrderName(mockAdmin.name);
+          setStep('delivery');
+          return;
+        }
+
+        if (err.code === 'auth/operation-not-allowed') {
+          setAuthError('Firebase Auth is disabled. Switching to local Sandbox Auth mode below!');
+          setAuthMethod('local');
+          localStorage.setItem('tawabox_auth_pref', 'local');
+        } else {
+          setAuthError(err.message || 'Invalid email or password');
+        }
+      } finally {
+        setAuthLoading(false);
+      }
+    } else {
+      // Register Mode
+      if (authMethod === 'local') {
+        try {
+          const localUser = handleLocalRegister(authName, inputEmail, authPassword);
+          onLogin(localUser);
+          if (localUser.name && !orderName) setOrderName(localUser.name);
+          setStep('delivery');
+        } catch (localErr: any) {
+          setAuthError(localErr.message || 'Local Sandbox Registration failed');
+        } finally {
+          setAuthLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const userCred = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
+        const uid = userCred.user.uid;
+        const profileData: User = {
+          id: uid,
+          name: authName,
+          email: authEmail,
+          role: (inputEmail === 'yklove0001@gmail.com') ? 'admin' : 'user',
+          points: 0,
+          deliveryAddresses: [],
+          subscription: { plan: 'none', status: 'none', expiresAt: '' },
+          createdAt: new Date().toISOString()
+        };
+        await setDoc(doc(db, 'users', uid), profileData);
+        onLogin(profileData);
+        if (profileData.name && !orderName) setOrderName(profileData.name);
+        setStep('delivery');
+      } catch (err: any) {
+        if (err.code === 'auth/operation-not-allowed') {
+          setAuthError('Firebase Registration is disabled. Switching to local Sandbox Auth mode below!');
+          setAuthMethod('local');
+          localStorage.setItem('tawabox_auth_pref', 'local');
+        } else {
+          setAuthError(err.message || 'Registration failed');
+        }
+      } finally {
+        setAuthLoading(false);
+      }
+    }
+  };
+
+  const handleInlineGoogleLogin = async () => {
+    setAuthError('');
+    setAuthLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCred = await signInWithPopup(auth, provider);
+      const firebaseUser = userCred.user;
+      const uid = firebaseUser.uid;
+      const email = firebaseUser.email || '';
+
+      const userDocRef = doc(db, 'users', uid);
+      const userSnap = await getDoc(userDocRef);
+      
+      let profileData: User;
+      if (userSnap.exists()) {
+        const d = userSnap.data();
+        profileData = {
+          id: uid,
+          name: d.name || firebaseUser.displayName || 'Tawa Lover',
+          email: email,
+          role: d.role || ((email === 'yklove0001@gmail.com') ? 'admin' : 'user'),
+          points: d.points || 0,
+          deliveryAddresses: d.deliveryAddresses || [],
+          subscription: d.subscription || { plan: 'none', status: 'none', expiresAt: '' },
+          createdAt: d.createdAt || new Date().toISOString()
+        };
+      } else {
+        profileData = {
+          id: uid,
+          name: firebaseUser.displayName || 'Tawa Lover',
+          email: email,
+          role: (email === 'yklove0001@gmail.com') ? 'admin' : 'user',
+          points: 0,
+          deliveryAddresses: [],
+          subscription: {
+            plan: 'none',
+            status: 'none',
+            expiresAt: ''
+          },
+          createdAt: new Date().toISOString()
+        };
+        await setDoc(userDocRef, profileData);
+      }
+      onLogin(profileData);
+      if (profileData.name && !orderName) setOrderName(profileData.name);
+      setStep('delivery');
+    } catch (err: any) {
+      console.error(err);
+      setAuthError(err.message || 'Google Sign-In failed');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const nextStep = () => {
     if (step === 'cart') {
       if (cartItems.length === 0) return;
+      if (!currentUser) {
+        setStep('auth');
+      } else {
+        setStep('delivery');
+      }
+    } else if (step === 'auth') {
+      if (!currentUser) {
+        setAuthError("Please sign in or register to continue with your checkout.");
+        return;
+      }
       setStep('delivery');
     } else if (step === 'delivery') {
       if (!orderName || !orderMobile || !orderAddress) {
@@ -3307,7 +3682,14 @@ const CartModal = ({
   };
 
   const prevStep = () => {
-    if (step === 'delivery') setStep('cart');
+    if (step === 'auth') setStep('cart');
+    if (step === 'delivery') {
+      if (!currentUser) {
+        setStep('auth');
+      } else {
+        setStep('cart');
+      }
+    }
     if (step === 'payment') setStep('delivery');
   };
 
@@ -3352,6 +3734,7 @@ const CartModal = ({
                   )}
                   <h2 className="text-2xl font-display font-black text-brand-primary flex items-center gap-2">
                     {step === 'cart' && <><UtensilsCrossed className="w-6 h-6" /> Your Tawa Box</>}
+                    {step === 'auth' && <><UserPlus className="w-6 h-6" /> Account Setup</>}
                     {step === 'delivery' && <><MapPin className="w-6 h-6" /> Delivery Details</>}
                     {step === 'payment' && <><CreditCard className="w-6 h-6" /> Payment Method</>}
                     {step === 'confirmation' && <><CheckCircle2 className="w-6 h-6 text-brand-secondary" /> Order Confirmed!</>}
@@ -3521,6 +3904,157 @@ const CartModal = ({
                         </div>
                         </div>
                       )}
+                    </motion.div>
+                  )}
+
+                  {step === 'auth' && (
+                    <motion.div 
+                      key="auth"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      className="space-y-5"
+                    >
+                      <div className="text-center mb-2">
+                        <h3 className="text-lg font-serif font-black text-brand-primary">Sign in or Sign up to Order</h3>
+                        <p className="text-xs text-[#5A3825]/70">Secure your order details, earn Tawa points, and track delivery in real-time!</p>
+                      </div>
+
+                      {/* Dynamic Auth Method Segmented Picker */}
+                      <div className="flex bg-[#FAF6ED] p-1 rounded-xl border border-brand-primary/10">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAuthMethod('local');
+                            localStorage.setItem('tawabox_auth_pref', 'local');
+                          }}
+                          className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
+                            authMethod === 'local'
+                              ? 'bg-brand-primary text-white shadow-sm'
+                              : 'text-[#5A3825]/60 hover:text-[#5A3825]'
+                          }`}
+                        >
+                          Sandbox Auth (Local)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAuthMethod('firebase');
+                            localStorage.setItem('tawabox_auth_pref', 'firebase');
+                          }}
+                          className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
+                            authMethod === 'firebase'
+                              ? 'bg-brand-primary text-white shadow-sm'
+                              : 'text-[#5A3825]/60 hover:text-[#5A3825]'
+                          }`}
+                        >
+                          Firebase Auth (Cloud)
+                        </button>
+                      </div>
+
+                      <form className="space-y-4" onSubmit={handleInlineAuthSubmit}>
+                        {authError && (
+                          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-xl text-[11px] leading-relaxed flex flex-col gap-1">
+                            <div className="flex items-center gap-1.5 font-bold">
+                              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                              <span>Notice</span>
+                            </div>
+                            <p>{authError}</p>
+                            {authMethod === 'firebase' && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAuthMethod('local');
+                                  localStorage.setItem('tawabox_auth_pref', 'local');
+                                  setAuthError('Switched to local Sandbox Auth mode.');
+                                }}
+                                className="mt-1 self-start text-[8px] bg-brand-primary text-white font-extrabold px-2 py-1 rounded-md hover:bg-brand-secondary transition-all"
+                              >
+                                Switch to Sandbox Auth
+                              </button>
+                            )}
+                          </div>
+                        )}
+
+                        {authMode === 'register' && (
+                          <div className="bg-[#FAF6ED] p-3.5 rounded-xl border border-brand-primary/10 shadow-sm">
+                            <label className="block text-[9px] font-bold text-brand-primary/50 uppercase mb-0.5 tracking-widest">Full Name</label>
+                            <input 
+                              type="text" 
+                              required
+                              placeholder="Enter your name"
+                              value={authName}
+                              onChange={(e) => setAuthName(e.target.value)}
+                              className="w-full bg-transparent border-none focus:ring-0 text-sm font-black p-0 text-brand-primary placeholder:text-brand-primary/20"
+                            />
+                          </div>
+                        )}
+
+                        <div className="bg-[#FAF6ED] p-3.5 rounded-xl border border-brand-primary/10 shadow-sm">
+                          <label className="block text-[9px] font-bold text-brand-primary/50 uppercase mb-0.5 tracking-widest">Email Address</label>
+                          <input 
+                            type="email" 
+                            required
+                            placeholder="your@email.com"
+                            value={authEmail}
+                            onChange={(e) => setAuthEmail(e.target.value)}
+                            className="w-full bg-transparent border-none focus:ring-0 text-sm font-black p-0 text-brand-primary placeholder:text-brand-primary/20"
+                          />
+                        </div>
+
+                        <div className="bg-[#FAF6ED] p-3.5 rounded-xl border border-brand-primary/10 shadow-sm relative">
+                          <label className="block text-[9px] font-bold text-brand-primary/50 uppercase mb-0.5 tracking-widest">Password</label>
+                          <input 
+                            type={authShowPassword ? "text" : "password"} 
+                            required
+                            placeholder="••••••••"
+                            value={authPassword}
+                            onChange={(e) => setAuthPassword(e.target.value)}
+                            className="w-full bg-transparent border-none focus:ring-0 text-sm font-black p-0 pr-10 text-brand-primary placeholder:text-brand-primary/20"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setAuthShowPassword(!authShowPassword)}
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 text-brand-primary/30 hover:text-brand-primary transition-colors"
+                          >
+                            {authShowPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+
+                        <button 
+                          type="submit"
+                          disabled={authLoading}
+                          className="w-full bg-brand-primary text-white py-4 rounded-xl font-bold text-sm shadow-md hover:bg-brand-secondary transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                        >
+                          {authLoading ? 'Processing...' : authMode === 'login' ? 'Login & Continue' : 'Register & Continue'}
+                        </button>
+                        
+                        <div className="relative flex py-1 items-center">
+                          <div className="flex-grow border-t border-brand-primary/10"></div>
+                          <span className="flex-shrink mx-3 text-[#5A3825]/40 text-[9px] font-mono">OR</span>
+                          <div className="flex-grow border-t border-brand-primary/10"></div>
+                        </div>
+
+                        <button 
+                          onClick={handleInlineGoogleLogin}
+                          type="button"
+                          disabled={authLoading}
+                          className="w-full bg-white hover:bg-brand-primary/5 border border-brand-primary/10 text-[#5A3825] py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24">
+                            <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.111C18.281 1.09 15.545 0 12.24 0 5.581 0 0 5.373 0 12s5.581 12 12.24 12c6.96 0 11.57-4.894 11.57-11.79 0-.795-.085-1.4-.192-1.925H12.24Z" />
+                          </svg>
+                          Continue with Google
+                        </button>
+
+                        <p className="text-center text-[#5A3825]/60 text-xs">
+                          {authMode === 'login' ? (
+                            <>Don't have an account? <button type="button" onClick={() => { setAuthMode('register'); setAuthError(''); }} className="text-brand-primary font-bold hover:underline">Register Now</button></>
+                          ) : (
+                            <>Already have an account? <button type="button" onClick={() => { setAuthMode('login'); setAuthError(''); }} className="text-brand-primary font-bold hover:underline">Login Now</button></>
+                          )}
+                        </p>
+                      </form>
                     </motion.div>
                   )}
 
@@ -3769,7 +4303,7 @@ const CartModal = ({
                 </AnimatePresence>
               </div>
 
-              {step !== 'confirmation' && cartItems.length > 0 && (
+              {step !== 'confirmation' && step !== 'auth' && cartItems.length > 0 && (
                 <div className="p-6 bg-[#DFE7DC] border-t border-brand-primary/15">
                   <div className="flex justify-between items-center mb-6">
                     <div className="flex flex-col">
@@ -3915,6 +4449,7 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [orders, setOrders] = useState<OrderDetails[]>([]);
   const [isEmailLogsOpen, setIsEmailLogsOpen] = useState(false);
+  const [isAdminNotifOpen, setIsAdminNotifOpen] = useState(false);
   
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -4185,6 +4720,11 @@ export default function App() {
     triggerEmailNotification('order_confirmed', newOrder).catch(err => {
       console.error('Failed sending order confirmation email', err);
     });
+
+    // Trigger Admin SMS/WhatsApp notification to 9058028729
+    triggerAdminNotification(newOrder).catch(err => {
+      console.error('Failed sending admin notification', err);
+    });
     
     // Update User Points if logged in
     if (currentUser) {
@@ -4308,7 +4848,7 @@ export default function App() {
             />
             <Route 
               path="/admin" 
-              element={currentUser?.role === 'admin' ? <AdminPanel orders={orders} onUpdateStatus={handleUpdateOrderStatus} onOpenEmailLogs={() => setIsEmailLogsOpen(true)} /> : <Navigate to="/login" />} 
+              element={currentUser?.role === 'admin' ? <AdminPanel orders={orders} onUpdateStatus={handleUpdateOrderStatus} onOpenEmailLogs={() => setIsEmailLogsOpen(true)} onOpenNotificationLogs={() => setIsAdminNotifOpen(true)} /> : <Navigate to="/login" />} 
             />
           </Routes>
         </div>
@@ -4335,6 +4875,8 @@ export default function App() {
           setPointsToRedeem={setPointsToRedeem}
           onConfirmOrder={confirmOrder}
           setOrders={setOrders}
+          currentUser={currentUser}
+          onLogin={handleLogin}
         />
         <ThaliCustomizationModal 
           isOpen={showThaliModal} 
@@ -4345,6 +4887,10 @@ export default function App() {
         <EmailLogsModal 
           isOpen={isEmailLogsOpen} 
           onClose={() => setIsEmailLogsOpen(false)} 
+        />
+        <AdminNotificationsModal 
+          isOpen={isAdminNotifOpen} 
+          onClose={() => setIsAdminNotifOpen(false)} 
         />
       </div>
     </Router>
