@@ -38,6 +38,7 @@ export interface OrderDetails {
   razorpayPaymentId?: string;
   razorpayOrderId?: string;
   razorpaySignature?: string;
+  whatsapp?: string;
 }
 
 export interface User {

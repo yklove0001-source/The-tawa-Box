@@ -1,10 +1,10 @@
 {
-  "projectId": "tensile-cargo-9nzsc",
-  "appId": "1:65184572184:web:ade4da180cd8c6abd8346d",
-  "apiKey": "AIzaSyCB3mLQYY8De6EhlpDwbKrgJI_HHNemn5w",
-  "authDomain": "tensile-cargo-9nzsc.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-94898131-a87b-47d8-9800-3fa14238bce8",
-  "storageBucket": "tensile-cargo-9nzsc.firebasestorage.app",
-  "messagingSenderId": "65184572184",
+  "projectId": "ai-studio-applet-webapp-b53c4",
+  "appId": "1:240267450149:web:4fde27f1d4fc465c4baccc",
+  "apiKey": "AIzaSyDVd2P4pp3TFAwYMK5ue-MfZcFS1WsbeoM",
+  "authDomain": "ai-studio-applet-webapp-b53c4.firebaseapp.com",
+  "firestoreDatabaseId": "",
+  "storageBucket": "ai-studio-applet-webapp-b53c4.firebasestorage.app",
+  "messagingSenderId": "240267450149",
   "measurementId": ""
 }

@@ -50,9 +50,6 @@ const MENU_ITEMS: MenuItem[] = [
   { id: '15', name: 'Lunch Box', description: 'Gourmet lunch box tray cooked over slow firewood. Includes hot, fresh rotis baked on clay oven, delicious seasonal dry subji, basmati rice, garden salad, and sweet fruits.', price: 199, category: 'combo', image: desiLunchTrayImg },
   { id: '16', name: 'Salty Veggie Daliya', description: 'A wholesome, high-fiber broken wheat bowl cooked with fresh veggies, green peas, aromatic ginger, tempered with dynamic mustard seeds and curry leaves.', price: 199, category: 'healthy', image: namkeenDaliyaImg },
   { id: '17', name: 'Cardamom Doodh Daliya', description: 'Wholesome broken wheat simmered in pure milk, sweetened with organic jaggery, infused with cardamom, and served with almonds & raisins.', price: 199, category: 'healthy', image: doodhDaliyaImg },
-  { id: 'daliya-1-day', name: 'Daliya Diet (1 Day Trial Plan)', description: 'Wholesome Morning Daliya and Fresh Daily Salad prepared exactly down to your health preferences.', price: 199, category: 'healthy', image: namkeenDaliyaImg },
-  { id: 'daliya-weekly', name: 'Daliya Diet (Weekly Subscription - 6 Days)', description: 'Freshly prepared Daily Daliya + Special Salad rotation delivered straight to your door from Monday to Saturday.', price: 1099, category: 'healthy', image: tawaBoxHero },
-  { id: 'daliya-monthly', name: 'Daliya Diet (Monthly Subscription - 24 Days)', description: 'The absolute health-tracker pack: 24 active week-days of clean, delicious Daliya & diverse loaded salad rotations.', price: 3999, category: 'healthy', image: lunchSideMealImg },
 ];
 
 const TESTIMONIALS = [
@@ -476,489 +473,7 @@ const MorningBreakfastCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) 
   );
 };
 
-const MorningDaliyaSection = ({ onAddToCart }: { onAddToCart: (item: MenuItem) => void }) => {
-  const daliyaDays = [
-    {
-      day: 'Monday',
-      name: 'Veggie Masala Daliya with Mixed Garden Salad',
-      description: 'A robust, high-fiber broken wheat bowl slow-cooked with organic carrots, tender green peas, aromatic ginger, and freshly ground country spices, tempered with dynamic mustard seeds and warm curry leaves.',
-      image: namkeenDaliyaImg,
-      calories: '280 kcal',
-      protein: '9g',
-      salad: 'Moong Sprouts & Cucumber Salad',
-      benefitTag: 'High Fiber • Pure Energy'
-    },
-    {
-      day: 'Tuesday',
-      name: 'Cardamom Doodh Daliya with Sliced Fruits',
-      description: 'Golden broken wheat tenderly simmered in hot milk, sweetened with organic village jaggery, infused with green cardamom pods, and topped with roasted crunch almonds, black raisins, and fresh banana slices.',
-      image: doodhDaliyaImg,
-      calories: '320 kcal',
-      protein: '11g',
-      salad: 'Fresh Minty Apple & Beet Salad',
-      benefitTag: 'Rich Calcium • Fitness Fuel'
-    },
-    {
-      day: 'Wednesday',
-      name: 'High-Protein Paneer Daliya Khichdi & Salad',
-      description: 'Comforting, creamy country daliya khichdi loaded with low-fat organic paneer cubes, whole yellow lentils, fresh dill leaves, and a pure cow ghee tempering of roasted cumin.',
-      image: lunchSideMealImg,
-      calories: '310 kcal',
-      protein: '14g',
-      salad: 'Crunchy Spiced Chickpea Salad',
-      benefitTag: 'Muscle Recovery • Peak Protein'
-    },
-    {
-      day: 'Thursday',
-      name: 'Rustic Wood-Fired Daliya Pulao & Raita',
-      description: 'Infused with smoky clay stove heat, this dry vegetable daliya features french beans, cauliflower heads, and spring onions, lightly sautéed with black pepper. Served with tomato-cucumber cool raita.',
-      image: tawaBoxHero,
-      calories: '260 kcal',
-      protein: '8g',
-      salad: 'Spiced Tomato & Cucumber Garden Toss',
-      benefitTag: 'Weight Management • Good Carbs'
-    },
-    {
-      day: 'Friday',
-      name: 'Garlic-Herb Buttered Daliya with Corn',
-      description: 'Fragrant roasted broken wheat tossed in a tiny hint of yellow farm butter, real garlic cloves, sweet corn niblets, fresh dynamic garden mint, and custom lemon juice. Supremely easy on digestion.',
-      image: desiLunchTrayLocal,
-      calories: '290 kcal',
-      protein: '9g',
-      salad: 'Garden-Fresh Mixed Greens & Corn Salad',
-      benefitTag: 'Active Metabolism • Gut Health'
-    },
-    {
-      day: 'Saturday',
-      name: 'Saffron Badam Doodh Daliya Infusion',
-      description: 'A weekend special! Whole broken daliya slow-cooked in thick almond milk, steeped with premium Kashmiri saffron strands, sweetened with organic dates, and loaded with roasted walnuts and cashews.',
-      image: doodhDaliyaImg,
-      calories: '340 kcal',
-      protein: '12g',
-      salad: 'Sweet Sliced Pear & Golden Raisin Toss',
-      benefitTag: 'Premium Nutrition • Heart Loving'
-    }
-  ];
 
-  const [activeDayIdx, setActiveDayIdx] = useState(0);
-  const activeDay = daliyaDays[activeDayIdx];
-  const carouselRef = useRef<HTMLDivElement>(null);
-
-  const scrollLeft = () => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({ left: -240, behavior: 'smooth' });
-    }
-  };
-
-  const scrollRight = () => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({ left: 240, behavior: 'smooth' });
-    }
-  };
-
-  const planCarouselRef = useRef<HTMLDivElement>(null);
-
-  const scrollPlanLeft = () => {
-    if (planCarouselRef.current) {
-      planCarouselRef.current.scrollBy({ left: -280, behavior: 'smooth' });
-    }
-  };
-
-  const scrollPlanRight = () => {
-    if (planCarouselRef.current) {
-      planCarouselRef.current.scrollBy({ left: 280, behavior: 'smooth' });
-    }
-  };
-
-  // Helper to add appropriate plan to cart
-  const handleAddPlanToCart = (planId: string) => {
-    const item = MENU_ITEMS.find(i => i.id === planId);
-    if (item) {
-      onAddToCart(item);
-    }
-  };
-
-  return (
-    <section id="morning-daliya" className="bg-[#FAF8F4] pt-6 pb-12 sm:pt-8 sm:pb-16 border-b border-[#5A3825]/5 select-none">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6">
-        
-        {/* Header Ribbon for Daliya Diet System (Responsive padding & stacking) */}
-        <div className="bg-[#9E5638] rounded-2xl py-4 px-4 sm:px-6 flex flex-col md:flex-row items-start md:items-center justify-between shadow-md border border-[#B76F50]/20 mb-6 sm:mb-10 max-w-5xl mx-auto gap-3.5">
-          <div className="w-full md:w-auto">
-            <span className="bg-white/15 text-white text-[8px] sm:text-[9px] font-black uppercase px-2.5 py-1 rounded-md tracking-widest inline-block mb-1.5">Diet Program</span>
-            <h2 className="text-xs sm:text-sm md:text-base font-serif font-black tracking-[0.15em] sm:tracking-[0.22em] text-[#FAF8F4] uppercase leading-tight">
-              6-DAY MORNING DALIYA & SALAD DIET
-            </h2>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-start md:justify-end">
-            <span className="text-[9px] sm:text-[10px] md:text-xs font-serif font-bold tracking-wider sm:tracking-widest text-[#FAF8F4]/90 uppercase bg-black/10 py-1 px-2.5 sm:py-1.5 sm:px-3.5 rounded-lg border border-white/5">
-              Service: Mon - Sat • 7 AM - 11 AM
-            </span>
-            <span className="bg-[#7A8B6B] text-white text-[9px] sm:text-[10px] px-2.5 py-1 rounded-full uppercase tracking-wider font-bold shadow-sm animate-pulse">
-              Healthy & Fresh
-            </span>
-          </div>
-        </div>
-
-        {/* Dynamic 6-Day Showcase Component (Optimized outer padding for small screens) */}
-        <div className="max-w-5xl mx-auto mb-10 sm:mb-16 bg-[#FDFBF7] rounded-3xl sm:rounded-[2rem] border border-[#5A3825]/10 p-3.5 sm:p-6 md:p-8 shadow-sm">
-          <div className="text-center mb-6 sm:mb-8">
-            <h3 className="text-xl sm:text-2xl font-serif font-black text-[#5A3825]">Wholesome Day-by-Day Menu</h3>
-            <p className="text-[10px] sm:text-xs text-[#7A8B6B] mt-1.5 font-medium bg-[#7A8B6B]/5 px-3.5 py-1 sm:py-1.5 rounded-full inline-block max-w-full">
-              We rotate our recipes daily to ensure balanced nutrition and delicious variety!
-            </p>
-          </div>
-
-          <div className="w-full border border-[#5A3825]/12 rounded-2xl sm:rounded-3xl overflow-hidden bg-white shadow-xs max-w-5xl mx-auto">
-            
-            {/* TOP HALF: MAIN ACTIVE DAY DISPLAY CARD (Seamlessly merged & perfectly responsive) */}
-            <motion.div 
-              key={activeDayIdx}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="w-full grid grid-cols-1 md:grid-cols-12 items-stretch"
-            >
-              {/* Left Column: Rich image of daliya + salad (Scaled beautifully) */}
-              <div className="md:col-span-6 relative h-52 sm:h-64 md:h-auto min-h-[200px] sm:min-h-[260px] md:min-h-[300px] w-full overflow-hidden bg-neutral-100">
-                <img 
-                  src={activeDay.image} 
-                  alt={activeDay.name} 
-                  className="w-full h-full object-cover absolute inset-0"
-                  referrerPolicy="no-referrer"
-                />
-                
-                {/* Active Day Ribbon overlay on top-left of the running image */}
-                <span className="absolute top-3 left-3 sm:top-4 sm:left-4 bg-[#9E5638] text-white font-serif font-black text-[10px] sm:text-xs uppercase px-3 py-1.5 sm:px-4 sm:py-2 rounded-full tracking-wider sm:tracking-widest shadow-md z-10">
-                  {activeDay.day} Diet
-                </span>
-
-                {/* Energy Stamp Badge */}
-                <div className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-white/95 backdrop-blur-sm border border-[#5A3825]/10 rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 flex items-center gap-2 shadow-sm z-10">
-                  <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
-                  <div>
-                    <p className="text-[8px] sm:text-[10px] text-[#5A3825]/50 leading-none font-bold uppercase">ENERGY</p>
-                    <p className="text-[10px] sm:text-xs font-serif font-black text-[#5A3825] mt-0.5">{activeDay.calories}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column: Dynamic menu content card with fresh salad pairing details (Optimized padding) */}
-              <div className="md:col-span-6 bg-[#FAF8F4]/40 p-4 sm:p-6 md:p-8 flex flex-col justify-between border-t md:border-t-0 md:border-l border-[#5A3825]/10">
-                <div>
-                  <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
-                    <span className="bg-[#7A8B6B]/10 text-[#7A8B6B] text-[8.5px] sm:text-[9.5px] font-black uppercase px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md tracking-wide">
-                      {activeDay.benefitTag}
-                    </span>
-                    <span className="bg-[#9E5638]/10 text-[#9E5638] text-[8.5px] sm:text-[9.5px] font-black uppercase px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md tracking-wide">
-                      Protein: {activeDay.protein}
-                    </span>
-                  </div>
-
-                  <h3 className="text-lg sm:text-xl md:text-2xl font-serif font-black text-[#5A3825] leading-tight mb-3">
-                    {activeDay.name}
-                  </h3>
-                </div>
-
-                {/* Salad Pairing display box */}
-                <div className="p-2.5 sm:p-3 bg-[#7A8B6B]/10 rounded-xl border border-[#7A8B6B]/20 flex items-center gap-2.5 sm:gap-3">
-                  <div className="bg-[#7A8B6B] text-white p-1.5 rounded-lg flex-shrink-0">
-                    <Leaf className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h5 className="text-[8.5px] sm:text-[10px] font-black text-[#7A8B6B] uppercase tracking-wider leading-none">Fresh Salad Pairing</h5>
-                    <p className="text-xs font-semibold text-[#5A3825] mt-1 truncate">{activeDay.salad}</p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* BOTTOM HALF: SMALL CAROUSEL ROW FOR OTHER DAY SELECTIONS (Exactly touching, styled perfectly for touch gesturing) */}
-            <div className="w-full flex flex-col bg-[#FAF8F4] px-4 pb-4 pt-3 sm:px-6 sm:pb-5 sm:pt-4 border-t border-[#5A3825]/12">
-              <div className="flex justify-end mb-2">
-                {/* Carousel Navigation Arrow Controls */}
-                <div className="flex gap-1.5">
-                  <button 
-                    onClick={scrollLeft}
-                    className="p-1.5 rounded-full bg-white hover:bg-[#FAF6ED] border border-[#5A3825]/10 text-[#5A3825]/75 hover:text-[#5A3825] active:scale-95 transition-all shadow-sm cursor-pointer"
-                    title="Previous Slide"
-                  >
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                  </button>
-                  <button 
-                    onClick={scrollRight}
-                    className="p-1.5 rounded-full bg-[#9E5638] text-white hover:bg-[#83452B] border border-[#5A3825]/10 active:scale-95 transition-all shadow-sm cursor-pointer"
-                    title="Next Slide"
-                  >
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Carousel Track - Horizontal Scrollable Row for other days (Touch-friendly sizes optimized to peek & invite swiping with minimal top margin) */}
-              <div 
-                ref={carouselRef}
-                className="flex gap-3 sm:gap-4 overflow-x-auto pb-3 snap-x scroll-smooth w-full select-none cursor-grab active:cursor-grabbing [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-              >
-                {daliyaDays.map((item, index) => {
-                  const isActive = index === activeDayIdx;
-                  if (isActive) return null; // We display the other 5 days as requested
-
-                  return (
-                    <motion.button
-                      key={item.day}
-                      whileHover={{ y: -2 }}
-                      onClick={() => setActiveDayIdx(index)}
-                      className="flex-shrink-0 w-[170px] sm:w-[210px] flex flex-col p-2.5 sm:p-3 bg-white border border-[#5A3825]/8 rounded-xl sm:rounded-2xl transition-all cursor-pointer text-left shadow-xs hover:shadow-md snap-start h-[170px] sm:h-[190px] justify-between"
-                    >
-                      {/* Thumbnail image with tag overlay */}
-                      <div className="relative w-full h-20 sm:h-24 rounded-lg overflow-hidden bg-white border border-black/5 flex-shrink-0">
-                        <img 
-                          src={item.image} 
-                          alt={item.day} 
-                          className="w-full h-full object-cover" 
-                          referrerPolicy="no-referrer"
-                        />
-                        <span className="absolute top-1.5 left-1.5 bg-[#9E5638] text-white text-[7.5px] sm:text-[8px] font-bold uppercase px-1.5 py-0.5 rounded tracking-wide shadow-sm">
-                          {item.day}
-                        </span>
-                      </div>
-                      
-                      {/* Description / Content footer for small cards */}
-                      <div className="mt-2 text-ellipsis overflow-hidden flex-1 flex flex-col justify-between">
-                        <div>
-                          <p className="text-[11px] sm:text-xs font-black text-[#5A3825] line-clamp-1 leading-tight">
-                            {item.name.split(' with ')[0]}
-                          </p>
-                          <p className="text-[8.5px] sm:text-[9.5px] text-[#2E1C12]/60 font-serif line-clamp-1 italic mt-1.5 flex items-center gap-1">
-                            <Leaf className="w-2.5 h-2.5 text-[#7A8B6B] flex-shrink-0" />
-                            <span className="truncate">{item.salad}</span>
-                          </p>
-                        </div>
-                        
-                        <div className="flex items-center justify-between border-t border-[#5A3825]/5 pt-2 mt-1.5">
-                          <span className="text-[7.5px] sm:text-[8px] font-black uppercase text-[#7A8B6B] tracking-wider">
-                            {item.calories}
-                          </span>
-                          <span className="text-[8px] sm:text-[9px] font-black text-[#9E5638] flex items-center gap-0.5">
-                            View <ArrowRight className="w-2.5 h-2.5" />
-                          </span>
-                        </div>
-                      </div>
-                    </motion.button>
-                  );
-                })}
-              </div>
-
-              {/* Bottom active status bar inside the block (Mobile Stack-Friendly & highly interactive info) */}
-              <div className="bg-[#7A8B6B]/10 rounded-xl p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between mt-1 gap-2.5 sm:gap-4 text-xs">
-                <div className="min-w-0">
-                  <span className="text-[8px] sm:text-[9px] font-black text-[#7A8B6B] uppercase block tracking-wider leading-none">CURRENT VIEWED DIET</span>
-                  <span className="text-xs font-black text-[#5A3825] mt-1 block truncate">{activeDay.day}: {activeDay.name.split(' with ')[0]}</span>
-                </div>
-                <div className="flex items-center justify-between sm:justify-end sm:text-right border-t sm:border-t-0 border-[#7A8B6B]/10 pt-2 sm:pt-0 gap-4">
-                  <div>
-                    <span className="text-[8px] sm:text-[9px] font-bold text-[#5A3825]/40 block uppercase tracking-wider leading-none">CALORIES</span>
-                    <span className="text-xs font-black text-[#5A3825] mt-1 block">{activeDay.calories}</span>
-                  </div>
-                  <div>
-                    <span className="text-[8px] sm:text-[9px] font-bold text-[#5A3825]/40 block uppercase tracking-wider leading-none">PROTEIN</span>
-                    <span className="text-xs font-black text-[#FAF8F4] bg-[#9E5638] px-2 py-0.5 rounded-lg mt-0.5 block">{activeDay.protein}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* 3 SUBSCRIPTION / TRIAL PLANS AREA */}
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center m-0 p-0">
-            <h3 className="text-xl md:text-2xl font-serif font-black text-[#5A3825] m-0 p-0">
-              Select Your Healthy Daliya Diet Plan
-            </h3>
-            <p className="text-xs md:text-sm text-[#7A8B6B] m-0 mt-0.5 p-0 font-serif max-w-lg mx-auto">
-              Choose from our daily trials, flexible weekly packages, or best-value continuous monthly subscriptions. Delivered hot and fresh!
-            </p>
-          </div>
-
-          {/* Compact Left/Right Controls for Plan Carousel on mobile screens */}
-          <div className="flex justify-end gap-1.5 mb-2 mt-4 md:hidden">
-            <button 
-              onClick={scrollPlanLeft}
-              className="p-1.5 rounded-full bg-white hover:bg-[#FAF6ED] border border-[#5A3825]/10 text-[#5A3825]/75 active:scale-95 transition-all shadow-xs cursor-pointer"
-              title="Previous Plan"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </button>
-            <button 
-              onClick={scrollPlanRight}
-              className="p-1.5 rounded-full bg-[#9E5638] text-white hover:bg-[#83452B] border border-[#5A3825]/10 active:scale-95 transition-all shadow-xs cursor-pointer"
-              title="Next Plan"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Responsive Touch Carousel Wrapper (Touch-ready swipe layout on mobile, clean cols on desktop) */}
-          <div 
-            ref={planCarouselRef}
-            className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 md:pb-0 scroll-smooth w-full select-none md:grid md:grid-cols-3 md:gap-6 mt-4 md:mt-6 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          >
-            
-            {/* PLAN 1: 1 Day Trial Plan */}
-            <motion.div 
-              whileHover={{ y: -3 }}
-              className="flex-shrink-0 w-[270px] sm:w-[290px] md:w-auto bg-[#FAF8F4] rounded-2xl border-2 border-[#5A3825]/8 shadow-xs flex flex-col justify-between overflow-hidden group hover:border-[#7A8B6B]/40 transition-colors snap-start"
-            >
-              <div className="p-4 sm:p-5 flex-1">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[9px] font-black uppercase text-[#5A3825]/50 tracking-wider bg-white py-0.5 px-2.5 rounded-md border border-black/5">
-                    1 Day Test
-                  </span>
-                  <UtensilsCrossed className="w-4 h-4 text-[#7A8B6B]" />
-                </div>
-                <h4 className="text-base font-serif font-black text-[#5A3825]">Daily Trial Diet Plan</h4>
-                <p className="text-[10.5px] leading-relaxed text-[#2E1C12]/70 font-serif mt-1.5">
-                  Sampling single morning daliya bowl paired with fresh organic garden salad.
-                </p>
-                <div className="my-3 py-2 border-t border-[#5A3825]/5">
-                  <span className="text-[9px] text-[#5A3825]/40 block uppercase tracking-wider font-bold leading-none mb-1">COST</span>
-                  <span className="text-2xl font-serif font-black text-[#5A3825]">Rs. 199</span>
-                  <span className="text-[10px] text-[#5A3825]/50"> / day delivery</span>
-                </div>
-                <ul className="space-y-1.5 text-[11px] text-[#2E1C12]/80 font-serif">
-                  <li className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
-                    <span>Selected Day Daliya Bowl</span>
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
-                    <span>Crunchy Fresh Daily Salad</span>
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
-                    <span>Eco Thermal Packed Hot</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="p-4 bg-[#FAF8F4] border-t border-[#5A3825]/5">
-                <button 
-                  onClick={() => handleAddPlanToCart('daliya-1-day')}
-                  className="w-full py-2 bg-[#9E5638] hover:bg-[#B76F50] text-[#FAF6ED] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm cursor-pointer text-center block"
-                >
-                  Order Trial • Rs. 199
-                </button>
-              </div>
-            </motion.div>
- 
-            {/* PLAN 2: Weekly Subscription Plan */}
-            <motion.div 
-              whileHover={{ y: -3 }}
-              className="flex-shrink-0 w-[270px] sm:w-[290px] md:w-auto bg-[#EADBBD]/20 rounded-2xl border-2 border-[#7A8B6B] shadow-xs flex flex-col justify-between overflow-hidden relative group snap-start"
-            >
-              <div className="absolute top-0 right-0 bg-[#7A8B6B] text-white text-[8px] font-black uppercase px-2.5 py-1 rounded-bl-lg tracking-wider">
-                POPULAR CHOICE
-              </div>
-              
-              <div className="p-4 sm:p-5 flex-1">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[9px] font-black uppercase text-[#7A8B6B] tracking-wider bg-white py-0.5 px-2.5 rounded-md border border-[#7A8B6B]/25 font-semibold">
-                    6 Active Days
-                  </span>
-                  <Calendar className="w-4 h-4 text-[#7A8B6B]" />
-                </div>
-                <h4 className="text-base font-serif font-black text-[#5A3825]">Weekly Health Rotation</h4>
-                <p className="text-[10.5px] leading-relaxed text-[#2E1C12]/70 font-serif mt-1.5">
-                  Monday to Saturday premium rotation with different salad schedules.
-                </p>
-                <div className="my-3 py-2 border-t border-[#7A8B6B]/15">
-                  <span className="text-[9px] text-[#7A8B6B] block uppercase tracking-wider font-extrabold leading-none mb-1">COST</span>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-serif font-black text-[#5A3825]">Rs. 1099</span>
-                    <span className="text-[10px] text-[#7A8B6B]/80 font-bold line-through">Rs. 1194</span>
-                  </div>
-                </div>
-                <ul className="space-y-1.5 text-[11px] text-[#2E1C12]/80 font-serif">
-                  <li className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
-                    <span>6 Balanced Daliya Bowls</span>
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
-                    <span>6 Different Salad Pairings</span>
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
-                    <span>Cancel or Pause Any Day</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="p-4 bg-[#EADBBD]/10 border-t border-[#7A8B6B]/10">
-                <button 
-                  onClick={() => handleAddPlanToCart('daliya-weekly')}
-                  className="w-full py-2 bg-[#7A8B6B] hover:bg-[#617054] text-white rounded-xl text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm cursor-pointer text-center block"
-                >
-                  Activate Weekly • Rs. 1099
-                </button>
-              </div>
-            </motion.div>
- 
-            {/* PLAN 3: Monthly Subscription Plan */}
-            <motion.div 
-              whileHover={{ y: -3 }}
-              className="flex-shrink-0 w-[270px] sm:w-[290px] md:w-auto bg-[#FAF8F4] rounded-2xl border-2 border-[#5A3825]/8 shadow-xs flex flex-col justify-between overflow-hidden group hover:border-[#9E5638]/40 transition-colors snap-start"
-            >
-              <div className="p-4 sm:p-5 flex-1">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[9px] font-black uppercase text-[#9E5638] tracking-wider bg-[#9E5638]/5 py-0.5 px-2.5 rounded-md border border-[#9E5638]/20 font-semibold">
-                    24 Active Days
-                  </span>
-                  <Trophy className="w-4 h-4 text-[#9E5638]" />
-                </div>
-                <h4 className="text-base font-serif font-black text-[#5A3825]">Monthly Master Plan</h4>
-                <p className="text-[10.5px] leading-relaxed text-[#2E1C12]/70 font-serif mt-1.5">
-                  Super-saver package covering 4 consecutive Mon-Sat weeks. Ultimate nutrition.
-                </p>
-                <div className="my-3 py-2 border-t border-[#5A3825]/5">
-                  <span className="text-[9px] text-[#9E5638] block uppercase tracking-wider font-extrabold leading-none mb-1">COST</span>
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-serif font-black text-[#5A3825]">Rs. 3999</span>
-                    <span className="text-[10px] text-[#5A3825]/40 line-through">Rs. 4776</span>
-                  </div>
-                </div>
-                <ul className="space-y-1.5 text-[11px] text-[#2E1C12]/80 font-serif">
-                  <li className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#9E5638] flex-shrink-0" />
-                    <span className="font-semibold text-[#5A3825]">Save Rs. 777 Instantly</span>
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
-                    <span>Complete Custom 4-Week Rotation</span>
-                  </li>
-                  <li className="flex items-center gap-1.5">
-                    <Check className="w-3.5 h-3.5 text-[#7A8B6B] flex-shrink-0" />
-                    <span>VIP Fast Morning Delivery Slot</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="p-4 bg-[#FAF8F4] border-t border-[#5A3825]/5">
-                <button 
-                  onClick={() => handleAddPlanToCart('daliya-monthly')}
-                  className="w-full py-2 bg-[#9E5638] hover:bg-[#B76F50] text-[#FAF6ED] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 shadow-sm cursor-pointer text-center block"
-                >
-                  Activate Monthly • Rs. 3999
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-  );
-};
 
 const LunchBoxCombo = ({ onAddToCart }: { onAddToCart: (item: MenuItem) => void }) => {
   const lunchItem = MENU_ITEMS.find(item => item.id === '14') || {
@@ -1407,12 +922,91 @@ const AboutPage = () => (
   </div>
 );
 
+const handleLocalRegister = (name: string, email: string, passwordHash: string): User => {
+  const localUsersRaw = localStorage.getItem('tawabox_local_users');
+  const localUsers: any[] = localUsersRaw ? JSON.parse(localUsersRaw) : [];
+
+  if (localUsers.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+    throw new Error('An account with this email already exists locally.');
+  }
+
+  const role = (email.toLowerCase() === 'yklove0001@gmail.com') ? 'admin' : 'user';
+
+  const newUser: User = {
+    id: 'local_' + Math.random().toString(36).substring(2, 9),
+    name,
+    email,
+    role,
+    points: 0,
+    deliveryAddresses: [],
+    subscription: { plan: 'none', status: 'none', expiresAt: '' },
+    createdAt: new Date().toISOString()
+  };
+
+  localUsers.push({ ...newUser, passwordHash });
+  localStorage.setItem('tawabox_local_users', JSON.stringify(localUsers));
+  localStorage.setItem('tawabox_auth_pref', 'local');
+  return newUser;
+};
+
+const handleLocalLogin = (email: string, passwordHash: string): User => {
+  const localUsersRaw = localStorage.getItem('tawabox_local_users');
+  const localUsers: any[] = localUsersRaw ? JSON.parse(localUsersRaw) : [];
+
+  const found = localUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+  
+  // Special auto-create for target admin if not exists in local users
+  const inputEmail = email.trim().toLowerCase();
+  const isTargetAdmin = inputEmail === 'yklove0001@gmail.com' && (passwordHash === 'Yogesg#321' || passwordHash === 'Yogesh#321');
+
+  if (!found) {
+    if (isTargetAdmin) {
+      const newAdmin: User = {
+        id: 'local_admin_default',
+        name: 'Yogesh (Admin)',
+        email: 'yklove0001@gmail.com',
+        role: 'admin',
+        points: 9999,
+        deliveryAddresses: [],
+        subscription: { plan: 'none', status: 'none', expiresAt: '' },
+        createdAt: new Date().toISOString()
+      };
+      localUsers.push({ ...newAdmin, passwordHash });
+      localStorage.setItem('tawabox_local_users', JSON.stringify(localUsers));
+      localStorage.setItem('tawabox_auth_pref', 'local');
+      return newAdmin;
+    }
+    throw new Error('No local account found with this email.');
+  }
+
+  if (found.passwordHash !== passwordHash) {
+    throw new Error('Incorrect password.');
+  }
+
+  const profileData: User = {
+    id: found.id,
+    name: found.name,
+    email: found.email,
+    role: found.role,
+    points: found.points || 0,
+    deliveryAddresses: found.deliveryAddresses || [],
+    subscription: found.subscription || { plan: 'none', status: 'none', expiresAt: '' },
+    createdAt: found.createdAt || new Date().toISOString()
+  };
+
+  localStorage.setItem('tawabox_auth_pref', 'local');
+  return profileData;
+};
+
 const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [authMethod, setAuthMethod] = useState<'firebase' | 'local'>(() => {
+    return (localStorage.getItem('tawabox_auth_pref') as 'firebase' | 'local') || 'local';
+  });
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1422,6 +1016,19 @@ const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
     
     const inputEmail = email.trim().toLowerCase();
     const isTargetAdmin = inputEmail === 'yklove0001@gmail.com' && (password === 'Yogesg#321' || password === 'Yogesh#321');
+
+    if (authMethod === 'local') {
+      try {
+        const localUser = handleLocalLogin(inputEmail, password);
+        onLogin(localUser);
+        navigate(localUser.role === 'admin' ? '/admin' : '/dashboard');
+      } catch (localErr: any) {
+        setError(localErr.message || 'Local Sandbox Login failed');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
 
     try {
       let userCred;
@@ -1499,7 +1106,13 @@ const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
         return;
       }
       
-      setError(err.message || 'Invalid email or password');
+      if (err.code === 'auth/operation-not-allowed') {
+        setError('Firebase Email/Password login is currently disabled in your cloud project. We have selected the "Sandbox Auth" tab for you instead — please login with your Sandbox credentials or register below!');
+        setAuthMethod('local');
+        localStorage.setItem('tawabox_auth_pref', 'local');
+      } else {
+        setError(err.message || 'Invalid email or password');
+      }
     } finally {
       setLoading(false);
     }
@@ -1565,40 +1178,89 @@ const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
         animate={{ opacity: 1, y: 0 }}
         className="glass-card p-10 rounded-[3rem]"
       >
-        <h2 className="text-4xl font-display font-black text-brand-primary mb-8 text-center">Login</h2>
+        <h2 className="text-4xl font-display font-black text-brand-primary mb-6 text-center">Login</h2>
+
+        {/* Dynamic Auth Method Segmented Picker */}
+        <div className="flex bg-[#F1F6F0] p-1.5 rounded-2xl border border-brand-primary/10 mb-6">
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMethod('local');
+              localStorage.setItem('tawabox_auth_pref', 'local');
+            }}
+            className={`flex-1 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
+              authMethod === 'local'
+                ? 'bg-brand-primary text-white shadow-md'
+                : 'text-[#5A3825]/60 hover:text-[#5A3825]'
+            }`}
+          >
+            Sandbox Auth (Local)
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMethod('firebase');
+              localStorage.setItem('tawabox_auth_pref', 'firebase');
+            }}
+            className={`flex-1 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
+              authMethod === 'firebase'
+                ? 'bg-brand-primary text-white shadow-md'
+                : 'text-[#5A3825]/60 hover:text-[#5A3825]'
+            }`}
+          >
+            Firebase Auth (Cloud)
+          </button>
+        </div>
+
         <form className="space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-2xl text-sm flex items-center gap-2">
-              <AlertCircle className="w-4 h-4" />
-              {error}
+            <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-2xl text-xs leading-relaxed flex flex-col gap-2">
+              <div className="flex items-center gap-2 font-bold">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>Authentication Notice</span>
+              </div>
+              <p>{error}</p>
+              {authMethod === 'firebase' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMethod('local');
+                    localStorage.setItem('tawabox_auth_pref', 'local');
+                    setError('Switched to local Sandbox Auth mode. Feel free to register or sign-in instantly!');
+                  }}
+                  className="mt-1 self-start text-[10px] bg-brand-primary text-white font-extrabold px-3 py-1.5 rounded-lg hover:bg-brand-secondary transition-all"
+                >
+                  Switch to Sandbox Auth (No Firebase Setup)
+                </button>
+              )}
             </div>
           )}
           <div className="space-y-2">
-            <label className="text-sm font-bold text-brand-primary ml-1">Email Address</label>
+            <label className="text-sm font-bold text-[#5A3825] ml-1">Email Address</label>
             <input 
               type="email" 
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-white/5 border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary outline-none transition-all" 
+              className="w-full bg-[#FAF8F4] border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary outline-none transition-all text-[#5A3825] placeholder-[#5A3825]/40" 
               placeholder="your@email.com" 
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-bold text-brand-primary ml-1">Password</label>
+            <label className="text-sm font-bold text-[#5A3825] ml-1">Password</label>
             <div className="relative">
               <input 
                 type={showPassword ? "text" : "password"} 
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary outline-none transition-all pr-14" 
+                className="w-full bg-[#FAF8F4] border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary outline-none transition-all pr-14 text-[#5A3825] placeholder-[#5A3825]/40" 
                 placeholder="••••••••" 
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white/40 hover:text-brand-primary transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-[#5A3825]/40 hover:text-brand-primary transition-colors"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -1610,20 +1272,20 @@ const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
             disabled={loading}
             className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Processing...' : authMethod === 'local' ? 'Login (Sandbox)' : 'Login (Firebase)'}
           </button>
           
           <div className="relative flex py-2 items-center">
-            <div className="flex-grow border-t border-white/10"></div>
-            <span className="flex-shrink mx-4 text-white/40 text-xs font-mono">OR</span>
-            <div className="flex-grow border-t border-white/10"></div>
+            <div className="flex-grow border-t border-brand-primary/10"></div>
+            <span className="flex-shrink mx-4 text-[#5A3825]/40 text-xs font-mono">OR</span>
+            <div className="flex-grow border-t border-brand-primary/10"></div>
           </div>
 
           <button 
             onClick={handleGoogleLogin}
             type="button"
             disabled={loading}
-            className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 transition-all cursor-pointer"
+            className="w-full bg-[#FAF8F4] hover:bg-brand-primary/5 border border-brand-primary/10 text-[#5A3825] py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 transition-all cursor-pointer"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.111C18.281 1.09 15.545 0 12.24 0 5.581 0 0 5.373 0 12s5.581 12 12.24 12c6.96 0 11.57-4.894 11.57-11.79 0-.795-.085-1.4-.192-1.925H12.24Z" />
@@ -1631,8 +1293,8 @@ const LoginPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
             Continue with Google
           </button>
 
-          <p className="text-center text-white/60 text-sm">
-            Don't have an account? <Link to="/register" className="text-brand-accent font-bold">Register Now</Link>
+          <p className="text-center text-[#5A3825]/60 text-sm">
+            Don't have an account? <Link to="/register" className="text-brand-primary font-bold hover:underline">Register Now</Link>
           </p>
         </form>
       </motion.div>
@@ -1647,12 +1309,31 @@ const RegisterPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [authMethod, setAuthMethod] = useState<'firebase' | 'local'>(() => {
+    return (localStorage.getItem('tawabox_auth_pref') as 'firebase' | 'local') || 'local';
+  });
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    const inputEmail = email.trim().toLowerCase();
+
+    if (authMethod === 'local') {
+      try {
+        const localUser = handleLocalRegister(name, inputEmail, password);
+        onLogin(localUser);
+        navigate(localUser.role === 'admin' ? '/admin' : '/dashboard');
+      } catch (localErr: any) {
+        setError(localErr.message || 'Local Sandbox Registration failed');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     try {
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
       const uid = userCred.user.uid;
@@ -1679,7 +1360,13 @@ const RegisterPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
       navigate(profileData.role === 'admin' ? '/admin' : '/dashboard');
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Registration failed');
+      if (err.code === 'auth/operation-not-allowed') {
+        setError('Firebase Email/Password registration is currently disabled in your cloud project. We have selected the "Sandbox Auth" tab for you instead — please register your Sandbox credentials below!');
+        setAuthMethod('local');
+        localStorage.setItem('tawabox_auth_pref', 'local');
+      } else {
+        setError(err.message || 'Registration failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -1745,51 +1432,100 @@ const RegisterPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
         animate={{ opacity: 1, y: 0 }}
         className="glass-card p-10 rounded-[3rem]"
       >
-        <h2 className="text-4xl font-display font-black text-brand-primary mb-8 text-center">Register</h2>
+        <h2 className="text-4xl font-display font-black text-brand-primary mb-6 text-center">Register</h2>
+
+        {/* Dynamic Auth Method Segmented Picker */}
+        <div className="flex bg-[#F1F6F0] p-1.5 rounded-2xl border border-brand-primary/10 mb-6">
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMethod('local');
+              localStorage.setItem('tawabox_auth_pref', 'local');
+            }}
+            className={`flex-1 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
+              authMethod === 'local'
+                ? 'bg-brand-primary text-white shadow-md'
+                : 'text-[#5A3825]/60 hover:text-[#5A3825]'
+            }`}
+          >
+            Sandbox Auth (Local)
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMethod('firebase');
+              localStorage.setItem('tawabox_auth_pref', 'firebase');
+            }}
+            className={`flex-1 py-2.5 text-[11px] font-black uppercase tracking-wider rounded-xl transition-all cursor-pointer ${
+              authMethod === 'firebase'
+                ? 'bg-brand-primary text-white shadow-md'
+                : 'text-[#5A3825]/60 hover:text-[#5A3825]'
+            }`}
+          >
+            Firebase Auth (Cloud)
+          </button>
+        </div>
+
         <form className="space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-2xl text-sm flex items-center gap-2">
-              <AlertCircle className="w-4 h-4" />
-              {error}
+            <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-2xl text-xs leading-relaxed flex flex-col gap-2">
+              <div className="flex items-center gap-2 font-bold">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>Authentication Notice</span>
+              </div>
+              <p>{error}</p>
+              {authMethod === 'firebase' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMethod('local');
+                    localStorage.setItem('tawabox_auth_pref', 'local');
+                    setError('Switched to local Sandbox Auth mode. Feel free to register or sign-in instantly!');
+                  }}
+                  className="mt-1 self-start text-[10px] bg-brand-primary text-white font-extrabold px-3 py-1.5 rounded-lg hover:bg-brand-secondary transition-all"
+                >
+                  Switch to Sandbox Auth (No Firebase Setup)
+                </button>
+              )}
             </div>
           )}
           <div className="space-y-2">
-            <label className="text-sm font-bold text-brand-primary ml-1">Full Name</label>
+            <label className="text-sm font-bold text-[#5A3825] ml-1">Full Name</label>
             <input 
               type="text" 
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-white/5 border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary outline-none transition-all" 
+              className="w-full bg-[#FAF8F4] border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary outline-none transition-all text-[#5A3825] placeholder-[#5A3825]/40" 
               placeholder="John Doe" 
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-bold text-brand-primary ml-1">Email Address</label>
+            <label className="text-sm font-bold text-[#5A3825] ml-1">Email Address</label>
             <input 
               type="email" 
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-white/5 border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary outline-none transition-all" 
+              className="w-full bg-[#FAF8F4] border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary outline-none transition-all text-[#5A3825] placeholder-[#5A3825]/40" 
               placeholder="your@email.com" 
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-bold text-brand-primary ml-1">Password</label>
+            <label className="text-sm font-bold text-[#5A3825] ml-1">Password</label>
             <div className="relative">
               <input 
                 type={showPassword ? "text" : "password"} 
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white/5 border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary outline-none transition-all pr-14" 
+                className="w-full bg-[#FAF8F4] border border-brand-primary/10 rounded-2xl px-6 py-4 focus:ring-2 focus:ring-brand-primary outline-none transition-all pr-14 text-[#5A3825] placeholder-[#5A3825]/40" 
                 placeholder="••••••••" 
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-white/40 hover:text-brand-primary transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-[#5A3825]/40 hover:text-brand-primary transition-colors"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -1801,20 +1537,20 @@ const RegisterPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
             disabled={loading}
             className="w-full bg-brand-primary text-white py-5 rounded-2xl font-bold text-lg shadow-xl shadow-brand-primary/20 hover:bg-brand-secondary transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
           >
-            {loading ? 'Creating Account...' : 'Create Account'}
+            {loading ? 'Creating Account...' : authMethod === 'local' ? 'Create Sandbox Account' : 'Create Cloud Account'}
           </button>
 
           <div className="relative flex py-2 items-center">
-            <div className="flex-grow border-t border-white/10"></div>
-            <span className="flex-shrink mx-4 text-white/40 text-xs font-mono">OR</span>
-            <div className="flex-grow border-t border-white/10"></div>
+            <div className="flex-grow border-t border-brand-primary/10"></div>
+            <span className="flex-shrink mx-4 text-[#5A3825]/40 text-xs font-mono">OR</span>
+            <div className="flex-grow border-t border-brand-primary/10"></div>
           </div>
 
           <button 
             onClick={handleGoogleLogin}
             type="button"
             disabled={loading}
-            className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 transition-all cursor-pointer"
+            className="w-full bg-[#FAF8F4] hover:bg-brand-primary/5 border border-brand-primary/10 text-[#5A3825] py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 transition-all cursor-pointer"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.578-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.111C18.281 1.09 15.545 0 12.24 0 5.581 0 0 5.373 0 12s5.581 12 12.24 12c6.96 0 11.57-4.894 11.57-11.79 0-.795-.085-1.4-.192-1.925H12.24Z" />
@@ -1822,8 +1558,8 @@ const RegisterPage = ({ onLogin }: { onLogin: (user: User) => void }) => {
             Continue with Google
           </button>
 
-          <p className="text-center text-white/60 text-sm">
-            Already have an account? <Link to="/login" className="text-brand-accent font-bold">Login</Link>
+          <p className="text-center text-[#5A3825]/60 text-sm">
+            Already have an account? <Link to="/login" className="text-brand-primary font-bold hover:underline">Login</Link>
           </p>
         </form>
       </motion.div>
@@ -3500,53 +3236,6 @@ const CartModal = ({
   const [isProcessing, setIsProcessing] = useState(false);
   const [placedOrder, setPlacedOrder] = useState<OrderDetails | null>(null);
 
-  // Razorpay Gateway Integration States
-  const [razorpayKey, setRazorpayKey] = useState<string>(
-    // Ensure we safely fallback if key doesn't exist
-    (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_RAZORPAY_KEY_ID) || 
-    localStorage.getItem('VITE_RAZORPAY_KEY_ID') || ''
-  );
-  const [useSimulator, setUseSimulator] = useState<boolean>(
-    !((typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_RAZORPAY_KEY_ID) || localStorage.getItem('VITE_RAZORPAY_KEY_ID'))
-  );
-  const [showSimulatorModal, setShowSimulatorModal] = useState<boolean>(false);
-  const [showRzpManual, setShowRzpManual] = useState<boolean>(false);
-  const [rzpLoading, setRzpLoading] = useState<boolean>(false);
-
-  // Razorpay Simulator UI Form States
-  const [simTab, setSimTab] = useState<'methods' | 'card' | 'upi' | 'processing'>('methods');
-  const [simCardNo, setSimCardNo] = useState('');
-  const [simExpiry, setSimExpiry] = useState('');
-  const [simCVV, setSimCVV] = useState('');
-  const [simHolder, setSimHolder] = useState('');
-  const [simUPIId, setSimUPIId] = useState('user@upi');
-
-  // Online Payment Options States
-  const [onlinePayOption, setOnlinePayOption] = useState<'stripe_checkout' | 'stripe_elements' | 'upi_id' | 'app_redirect'>('stripe_checkout');
-  const [onlineUpiId, setOnlineUpiId] = useState('');
-  const [onlineRedirectApp, setOnlineRedirectApp] = useState<'gpay' | 'phonepe' | 'paytm' | 'bhim'>('gpay');
-  const [showRedirectOverlay, setShowRedirectOverlay] = useState<boolean>(false);
-  const [redirectOverlayMessage, setRedirectOverlayMessage] = useState<string>('');
-  const [stripePromise, setStripePromise] = useState<any>(null);
-  const [stripeMisconfigured, setStripeMisconfigured] = useState<boolean>(false);
-
-  // Fetch Razorpay config dynamically
-  useEffect(() => {
-    fetch(getApiUrl('/api/payments/razorpay/config'))
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.configured) {
-          setRazorpayKey(data.keyId);
-          setUseSimulator(false);
-        } else {
-          setUseSimulator(true);
-        }
-      })
-      .catch(() => {
-        setUseSimulator(true);
-      });
-  }, []);
-
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discount = pointsToRedeem / 10;
   const finalTotal = Math.max(0, total - discount);
@@ -3559,161 +3248,10 @@ const CartModal = ({
         setPlacedOrder(null);
         setIsProcessing(false);
         setPointsToRedeem(0);
-        setShowRedirectOverlay(false);
-        setRedirectOverlayMessage('');
-        setOnlineUpiId('');
       }, 500);
       return () => clearTimeout(timer);
     }
   }, [isOpen, setPointsToRedeem]);
-
-  // Auto-complete simulator payments after a standard bank processing duration
-  useEffect(() => {
-    if (showSimulatorModal && simTab === 'processing') {
-      const timer = setTimeout(() => {
-        setShowSimulatorModal(false);
-        setSimTab('methods');
-        setIsProcessing(true);
-        // Trigger full authentic confirmation state via verify-payment backend
-        onConfirmOrder(async (order) => {
-          try {
-            const rzpOrderId = `order_sim_${Math.random().toString(36).substr(2, 9)}`;
-            const rzpPaymentId = `pay_sim_${Math.random().toString(36).substr(2, 9)}`;
-            const response = await fetch(getApiUrl('/api/payments/razorpay/verify-payment'), {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                razorpay_order_id: rzpOrderId,
-                razorpay_payment_id: rzpPaymentId,
-                razorpay_signature: 'security_simulated_sha256',
-                metadata: {
-                  orderId: order.id,
-                  userId: order.userId,
-                  userName: order.userName,
-                  userEmail: order.userEmail,
-                  mobile: order.mobile,
-                  address: order.address,
-                  notes: order.notes || '',
-                  total: String(order.total),
-                  pointsToRedeem: String(pointsToRedeem || 0),
-                  pointsEarned: String(order.loyaltyPointsEarned || 0)
-                }
-              })
-            });
-
-            if (!response.ok) {
-              const errText = await response.text();
-              throw new Error(`Simulated payment verification failed: ${errText || response.statusText}`);
-            }
-
-            const result = await response.json();
-            if (!result.success) {
-              throw new Error(result.error || 'Signature verification mismatch');
-            }
-
-            if (setOrders) {
-              setOrders(prev => {
-                const updated = prev.map(o => o.id === order.id ? { ...o, status: 'paid' as const } : o);
-                localStorage.setItem('orders', JSON.stringify(updated));
-                return updated;
-              });
-            }
-            setPlacedOrder({
-              ...order,
-              paymentMethod: 'online',
-              status: 'paid', // Mark as paid since verified!
-              razorpayPaymentId: rzpPaymentId,
-              razorpayOrderId: rzpOrderId,
-              razorpaySignature: 'security_simulated_sha256'
-            });
-            setStep('confirmation');
-          } catch (err: any) {
-            console.error('[Simulator Verify Client Error]', err);
-            alert(err.message || 'Simulated payment verification failed.');
-          } finally {
-            setIsProcessing(false);
-          }
-        });
-      }, 2500);
-      return () => clearTimeout(timer);
-    }
-  }, [showSimulatorModal, simTab, onConfirmOrder, pointsToRedeem]);
-
-  // Auto-complete custom online payment simulator after verification/redirect processing
-  useEffect(() => {
-    if (showRedirectOverlay) {
-      setIsProcessing(true);
-      const timer = setTimeout(() => {
-        setShowRedirectOverlay(false);
-        setIsProcessing(false);
-        // Trigger full authentic confirmation state via verify-payment backend
-        onConfirmOrder(async (order) => {
-          try {
-            const rzpOrderId = `order_sim_${Math.random().toString(36).substr(2, 9)}`;
-            const rzpPaymentId = `pay_sim_${Math.random().toString(36).substr(2, 9)}`;
-            const response = await fetch(getApiUrl('/api/payments/razorpay/verify-payment'), {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                razorpay_order_id: rzpOrderId,
-                razorpay_payment_id: rzpPaymentId,
-                razorpay_signature: 'security_simulated_sha256',
-                metadata: {
-                  orderId: order.id,
-                  userId: order.userId,
-                  userName: order.userName,
-                  userEmail: order.userEmail,
-                  mobile: order.mobile,
-                  address: order.address,
-                  notes: order.notes || '',
-                  total: String(order.total),
-                  pointsToRedeem: String(pointsToRedeem || 0),
-                  pointsEarned: String(order.loyaltyPointsEarned || 0)
-                }
-              })
-            });
-
-            if (!response.ok) {
-              const errText = await response.text();
-              throw new Error(`Simulated payment verification failed: ${errText || response.statusText}`);
-            }
-
-            const result = await response.json();
-            if (!result.success) {
-              throw new Error(result.error || 'Signature verification mismatch');
-            }
-
-            if (setOrders) {
-              setOrders(prev => {
-                const updated = prev.map(o => o.id === order.id ? { ...o, status: 'paid' as const } : o);
-                localStorage.setItem('orders', JSON.stringify(updated));
-                return updated;
-              });
-            }
-            setPlacedOrder({
-              ...order,
-              paymentMethod: 'online',
-              status: 'paid', // Mark as paid since verified!
-              razorpayPaymentId: rzpPaymentId,
-              razorpayOrderId: rzpOrderId,
-              razorpaySignature: 'security_simulated_sha256'
-            });
-            setStep('confirmation');
-          } catch (err: any) {
-            console.error('[Redirect Simulator Verify Client Error]', err);
-            alert(err.message || 'Simulated redirection payment verification failed.');
-          } finally {
-            setIsProcessing(false);
-          }
-        });
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [showRedirectOverlay, onConfirmOrder, pointsToRedeem]);
 
   const handleGetLocation = () => {
     if ("geolocation" in navigator) {
@@ -3773,177 +3311,16 @@ const CartModal = ({
     if (step === 'payment') setStep('delivery');
   };
 
-  // Load Razorpay script dynamically
-  const loadRazorpayScript = (): Promise<boolean> => {
-    return new Promise((resolve) => {
-      if ((window as any).Razorpay) {
-        resolve(true);
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.id = 'razorpay-sdk-script';
-      script.async = true;
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
   const handlePlaceOrder = async () => {
-    if (orderPaymentMethod === 'cod') {
-      setIsProcessing(true);
-      onConfirmOrder((order) => {
-        setPlacedOrder({
-          ...order,
-          paymentMethod: 'cod',
-          status: 'pending'
-        });
-        setStep('confirmation');
+    setIsProcessing(true);
+    onConfirmOrder((order) => {
+      setPlacedOrder({
+        ...order,
+        paymentMethod: 'cod',
+        status: 'pending'
       });
-      return;
-    }
-
-    if (orderPaymentMethod === 'online') {
-      if (useSimulator) {
-        setShowSimulatorModal(true);
-        return;
-      }
-      setIsProcessing(true);
-      try {
-        const scriptLoaded = await loadRazorpayScript();
-        if (!scriptLoaded) {
-          throw new Error('Failed to load Razorpay Checkout SDK. Please check your internet connection.');
-        }
-
-        const tempOrderId = Math.random().toString(36).substr(2, 6).toUpperCase();
-
-        // Create secure order on the backend
-        const response = await fetch(getApiUrl('/api/payments/razorpay/create-order'), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            amount: finalTotal,
-            orderId: tempOrderId
-          })
-        });
-
-        if (!response.ok) {
-          let errorText = '';
-          try {
-            errorText = await response.text();
-          } catch (_) {}
-          
-          if (response.status === 404) {
-            throw new Error('Payment server endpoint not found (404). If you recently changed the code, please click the "Deploy" button in the top right to deploy the latest backend updates to your domain, wait a minute, and then try again!');
-          } else {
-            throw new Error(`Failed to create secure Razorpay order with server (Status ${response.status}: ${errorText || response.statusText || 'Internal Server Error'})`);
-          }
-        }
-
-        const rzpData = await response.json();
-
-        // Options for Razorpay Popup Integration
-        const options = {
-          key: rzpData.keyId || razorpayKey || 'rzp_test_placeholder',
-          amount: rzpData.amount,
-          currency: rzpData.currency || 'INR',
-          name: "The Tawa Box",
-          description: "Fresh Tiffin & Daliya Subscription",
-          image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=128&auto=format&fit=crop&q=80",
-          order_id: rzpData.id,
-          handler: function (paymentResponse: any) {
-            setIsProcessing(true);
-            onConfirmOrder(async (order) => {
-              try {
-                const response = await fetch(getApiUrl('/api/payments/razorpay/verify-payment'), {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    razorpay_order_id: paymentResponse.razorpay_order_id || rzpData.id,
-                    razorpay_payment_id: paymentResponse.razorpay_payment_id || `pay_${Math.random().toString(36).substr(2, 9)}`,
-                    razorpay_signature: paymentResponse.razorpay_signature || 'security_simulated_sha256',
-                    metadata: {
-                      orderId: order.id,
-                      userId: order.userId,
-                      userName: order.userName,
-                      userEmail: order.userEmail,
-                      mobile: order.mobile,
-                      address: order.address,
-                      notes: order.notes || '',
-                      total: String(order.total),
-                      pointsToRedeem: String(pointsToRedeem || 0),
-                      pointsEarned: String(order.loyaltyPointsEarned || 0)
-                    }
-                  })
-                });
-
-                if (!response.ok) {
-                  const errText = await response.text();
-                  throw new Error(`Server payment verification failed: ${errText || response.statusText}`);
-                }
-
-                const result = await response.json();
-                if (!result.success) {
-                  throw new Error(result.error || 'Signature verification mismatch');
-                }
-
-                if (setOrders) {
-                  setOrders(prev => {
-                    const updated = prev.map(o => o.id === order.id ? { ...o, status: 'paid' as const } : o);
-                    localStorage.setItem('orders', JSON.stringify(updated));
-                    return updated;
-                  });
-                }
-                setPlacedOrder({
-                  ...order,
-                  paymentMethod: 'online',
-                  status: 'paid', // verified payment!
-                  razorpayPaymentId: paymentResponse.razorpay_payment_id || `pay_${Math.random().toString(36).substr(2, 9)}`,
-                  razorpayOrderId: paymentResponse.razorpay_order_id || rzpData.id,
-                  razorpaySignature: paymentResponse.razorpay_signature || 'security_simulated_sha256'
-                });
-                setStep('confirmation');
-              } catch (err: any) {
-                console.error('[Razorpay Verify Client Error]', err);
-                alert(err.message || 'Payment verification failed. Please contact support.');
-              } finally {
-                setIsProcessing(false);
-              }
-            });
-          },
-          prefill: {
-            name: orderName,
-            email: auth.currentUser?.email || "customer@tawabox.com",
-            contact: orderMobile
-          },
-          notes: {
-            address: orderAddress,
-            notes: orderNotes
-          },
-          theme: {
-            color: "#5A3825"
-          },
-          modal: {
-            ondismiss: function () {
-              setIsProcessing(false);
-            }
-          }
-        };
-
-        const rzp = new (window as any).Razorpay(options);
-        rzp.open();
-      } catch (err: any) {
-        console.error('[Razorpay Checkout Error]', err);
-        alert(err.message || 'An error occurred during Razorpay Checkout setup.');
-        setIsProcessing(false);
-      }
-      return;
-    }
+      setStep('confirmation');
+    });
   };
 
   return (
@@ -4005,8 +3382,96 @@ const CartModal = ({
                           <p className="text-[#5A3825] font-serif font-bold text-base">Your box is empty.<br/>Start adding some desi goodness!</p>
                         </div>
                       ) : (
-                        <div className="space-y-3">
-                          {cartItems.map((item) => (
+                        <div className="space-y-4">
+                          {/* Progress Bar in Cart Modal */}
+                          <div className="bg-white/60 backdrop-blur-sm border border-brand-primary/10 rounded-[1.75rem] p-5 shadow-sm space-y-3.5">
+                            <div className="flex justify-between items-center">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-[#5A3825]/60 flex items-center gap-1.5">
+                                <Trophy className="w-3.5 h-3.5 text-brand-secondary" />
+                                Your Rewards & Perks
+                              </span>
+                              <span className="text-xs font-black text-[#5A3825]">
+                                {total < 350 ? (
+                                  <span>Rs. <span className="text-brand-secondary font-black">{350 - total}</span> to Free Delivery</span>
+                                ) : total < 600 ? (
+                                  <span className="text-brand-secondary font-black">Rs. {600 - total} to Bonus Points!</span>
+                                ) : (
+                                  <span className="text-emerald-700 font-black flex items-center gap-1">✨ All Perks Unlocked!</span>
+                                )}
+                              </span>
+                            </div>
+
+                            {/* Main Progress Bar track with milestone nodes */}
+                            <div className="relative pt-2 pb-6">
+                              {/* Background track */}
+                              <div className="h-2.5 w-full bg-brand-primary/10 rounded-full relative overflow-hidden">
+                                {/* Fill */}
+                                <div 
+                                  className="h-full bg-gradient-to-r from-brand-primary to-brand-secondary rounded-full transition-all duration-700 ease-out"
+                                  style={{ width: `${Math.min(100, (total / 600) * 100)}%` }}
+                                />
+                              </div>
+
+                              {/* Milestone Marker 1: Free Delivery at Rs. 350 (350/600 = 58.3%) */}
+                              <div 
+                                className="absolute top-1/2 -translate-y-1/2 left-[58.3%] flex flex-col items-center"
+                                style={{ transform: 'translate(-50%, -40%)' }}
+                              >
+                                <div className={`w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all shadow-md ${
+                                  total >= 350 
+                                    ? 'bg-brand-primary border-brand-primary text-white scale-110' 
+                                    : 'bg-[#E8EFE5] border-brand-primary/20 text-[#5A3825]/40'
+                                }`}>
+                                  <span className="text-[9px] font-black">🚚</span>
+                                </div>
+                                <span className={`text-[9px] font-extrabold mt-1.5 whitespace-nowrap transition-colors ${
+                                  total >= 350 ? 'text-brand-primary font-black' : 'text-[#5A3825]/40'
+                                }`}>
+                                  Free Delivery
+                                </span>
+                                <span className="text-[8px] font-mono text-[#5A3825]/30 mt-0.5 font-bold">Rs. 350</span>
+                              </div>
+
+                              {/* Milestone Marker 2: Reward Points at Rs. 600 (100%) */}
+                              <div 
+                                className="absolute top-1/2 -translate-y-1/2 right-0 flex flex-col items-center"
+                                style={{ transform: 'translate(40%, -40%)' }}
+                              >
+                                <div className={`w-5 h-5 rounded-full flex items-center justify-center border-2 transition-all shadow-md ${
+                                  total >= 600 
+                                    ? 'bg-brand-secondary border-brand-secondary text-white scale-110' 
+                                    : 'bg-[#E8EFE5] border-brand-primary/20 text-[#5A3825]/40'
+                                }`}>
+                                  <span className="text-[9px] font-black">👑</span>
+                                </div>
+                                <span className={`text-[9px] font-extrabold mt-1.5 whitespace-nowrap transition-colors ${
+                                  total >= 600 ? 'text-brand-secondary font-black' : 'text-[#5A3825]/40'
+                                }`}>
+                                  +20 Points
+                                </span>
+                                <span className="text-[8px] font-mono text-[#5A3825]/30 mt-0.5 font-bold">Rs. 600</span>
+                              </div>
+                            </div>
+
+                            {/* Status message */}
+                            <div className="bg-[#F1F6F0] rounded-xl p-3 border border-brand-primary/5 flex items-center gap-2.5 mt-2">
+                              <span className="text-base">
+                                {total < 350 ? "💡" : total < 600 ? "🎉" : "🏆"}
+                              </span>
+                              <p className="text-[11px] font-serif font-black text-brand-primary leading-tight">
+                                {total < 350 ? (
+                                  <>Add <span className="text-brand-secondary font-extrabold">Rs. {350 - total}</span> more to unlock <span className="underline decoration-brand-secondary decoration-2">Free Home Delivery</span>!</>
+                                ) : total < 600 ? (
+                                  <>Awesome! <span className="text-brand-secondary font-extrabold">Free Delivery is Unlocked</span>! Add <span className="text-brand-secondary font-extrabold">Rs. {600 - total}</span> more to earn 20 bonus reward points!</>
+                                ) : (
+                                  <>Fantastic! You have unlocked both <span className="text-emerald-700">Free Home Delivery</span> and <span className="text-emerald-700">20 Bonus Reward Points</span>!</>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            {cartItems.map((item) => (
                             <div key={item.id} className="flex flex-col bg-[#F1F6F0] p-4 rounded-2xl shadow-sm border border-brand-primary/10">
                               <div className="flex gap-4 items-center w-full">
                                 <div className="flex-1">
@@ -4053,6 +3518,7 @@ const CartModal = ({
                               )}
                             </div>
                           ))}
+                        </div>
                         </div>
                       )}
                     </motion.div>
@@ -4234,6 +3700,51 @@ const CartModal = ({
                         </div>
                       </div>
 
+                      {placedOrder.whatsapp && (
+                        <div className="w-full text-left bg-slate-900 text-slate-100 rounded-3xl p-6 font-mono text-[11px] overflow-x-auto border border-slate-800 shadow-lg">
+                          <p className="text-emerald-400 font-bold mb-3 text-[10px] uppercase tracking-wider">WhatsApp Order Confirmation Metadata</p>
+                          <pre className="whitespace-pre-wrap select-all">
+                            {JSON.stringify({
+                              sender_number: "9058028729",
+                              recipient_whatsapp: placedOrder.whatsapp,
+                              order_status: "confirmed",
+                              order_details: {
+                                items: placedOrder.items.map(i => `${i.name} (x${i.quantity}) - Rs. ${i.price * i.quantity}`),
+                                total_amount: `Rs. ${placedOrder.total}`
+                              },
+                              whatsapp_template_message: `Hello! Your order has been successfully placed. Here are your details: ${placedOrder.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}. Total: Rs. ${placedOrder.total}. Thank you for ordering with us!`
+                            }, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+
+                      {placedOrder.whatsapp && (() => {
+                        let cleanPhone = placedOrder.whatsapp.replace(/\D/g, '');
+                        if (cleanPhone.length === 10) {
+                          cleanPhone = '91' + cleanPhone;
+                        }
+                        const messageText = encodeURIComponent(
+                          `Hello! Your order has been successfully placed. Here are your details: ${placedOrder.items.map(i => `${i.name} (x${i.quantity})`).join(', ')}. Total: Rs. ${placedOrder.total}. Thank you for ordering with us!`
+                        );
+                        const waUrl = `https://wa.me/${cleanPhone}?text=${messageText}`;
+
+                        return (
+                          <div className="w-full">
+                            <a
+                              href={waUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center justify-center gap-2.5 w-full bg-[#25D366] text-white py-4 rounded-2xl font-black uppercase tracking-wider hover:bg-[#20ba5a] transition-all shadow-lg shadow-emerald-500/20 active:scale-95 text-center text-sm"
+                            >
+                              <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.665.989 3.3 1.489 4.938 1.491 5.388 0 9.773-4.381 9.776-9.77.001-2.61-1.015-5.064-2.862-6.916C16.6 2.107 14.151.91 11.54.91c-5.389 0-9.774 4.382-9.777 9.771a9.71 9.71 0 001.442 5.01l-.996 3.635 3.72-.976zM15.84 13c-.224-.112-1.324-.653-1.53-.728-.205-.074-.354-.112-.504.112-.149.224-.578.728-.709.877-.13.15-.26.168-.485.056-.224-.112-.947-.349-1.802-1.112-.665-.593-1.114-1.326-1.245-1.55-.13-.224-.014-.346.098-.457.101-.1.224-.261.336-.392.112-.13.149-.224.224-.374.075-.15.037-.281-.019-.393-.056-.113-.505-1.217-.691-1.666-.181-.435-.366-.377-.504-.383-.13-.006-.28-.008-.43-.008-.15 0-.393.056-.599.28-.206.224-.785.766-.785 1.867s.8 2.17 1.914 2.32c.112.015 2.132 3.256 5.165 4.566.721.312 1.285.499 1.724.639.725.23 1.385.197 1.906.12.581-.086 1.324-.54 1.51-.1.186-.465.186-.864.13-.938-.056-.075-.205-.112-.43-.224z" />
+                              </svg>
+                              Open in WhatsApp
+                            </a>
+                          </div>
+                        );
+                      })()}
+
                       <div className="w-full space-y-3 pt-4">
                         <button 
                           onClick={() => {
@@ -4276,7 +3787,7 @@ const CartModal = ({
                       <div className="text-right">
                         <span className="text-brand-primary/50 text-[10px] font-bold uppercase tracking-widest">Method</span>
                         <div className="text-brand-secondary font-bold uppercase text-xs tracking-widest">
-                          {orderPaymentMethod === 'cod' ? 'Pay on Delivery' : 'Online Payment'}
+                          Pay on Delivery
                         </div>
                       </div>
                     )}
@@ -4299,7 +3810,7 @@ const CartModal = ({
                         </>
                       ) : (
                         <>
-                          {orderPaymentMethod === 'cod' ? 'Place Order' : 'Pay & Place Order'}
+                          Place Order
                           <ChevronRight className="w-5 h-5" />
                         </>
                       )}
@@ -4318,425 +3829,6 @@ const CartModal = ({
                 </div>
               )}
 
-          {showSimulatorModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-[#0F172A]/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4 font-sans text-slate-800"
-            >
-              <motion.div
-                initial={{ scale: 0.9, y: 15 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 15 }}
-                className="w-full max-w-[420px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-100 flex flex-col"
-              >
-                {/* Secure Gateway Brand Header */}
-                <div className="bg-[#5A3825] text-white p-5 relative">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                        <h4 className="text-[10px] font-mono tracking-widest text-[#EADBBD] uppercase font-black">SECURE GATEWAY</h4>
-                      </div>
-                      <h3 className="text-lg font-serif font-black tracking-wide mt-1 text-white">The Tawa Box Checkout</h3>
-                      <p className="text-xs text-[#FAF6ED]/80 font-sans mt-0.5 font-bold">Amount to pay: <span className="font-sans font-black text-[#EADBBD]">Rs. {finalTotal.toFixed(2)}</span></p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowSimulatorModal(false);
-                        setSimTab('methods');
-                      }}
-                      className="text-white/70 hover:text-white transition-colors p-1.5 bg-white/10 rounded-full cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="mt-4 flex items-center justify-between text-[11px] text-[#EADBBD] bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 font-mono">
-                    <span>Contact: {orderMobile || '9999999999'}</span>
-                    <span>🔒 Secured SSL Integration</span>
-                  </div>
-                </div>
-
-                {/* Content Panel */}
-                <div className="p-6 bg-slate-50 min-h-[300px] flex flex-col justify-between">
-                  {simTab === 'methods' && (
-                    <div className="space-y-3 flex-1">
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2 font-mono">Select Payment Option</p>
-                      
-                      {/* CARD option */}
-                      <button
-                        type="button"
-                        onClick={() => setSimTab('card')}
-                        className="w-full bg-white hover:bg-[#FAF8F4] p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer hover:border-[#D4AF37]/50"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="p-2.5 bg-amber-50 text-[#9E5638] rounded-lg group-hover:bg-[#EADBBD]/25 transition-colors">
-                            <CreditCard className="w-5 h-5" />
-                          </div>
-                          <div className="text-left">
-                            <div className="text-sm font-bold text-[#5A3825]">Credit / Debit Card</div>
-                            <div className="text-[10px] text-slate-400">Visa, Mastercard, RuPay, Maestro</div>
-                          </div>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-                      </button>
-
-                      {/* UPI option */}
-                      <button
-                        type="button"
-                        onClick={() => setSimTab('upi')}
-                        className="w-full bg-white hover:bg-[#FAF8F4] p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer hover:border-[#D4AF37]/50"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg group-hover:bg-emerald-100/70 transition-colors">
-                            <Smartphone className="w-5 h-5" />
-                          </div>
-                          <div className="text-left">
-                            <div className="text-sm font-bold text-[#5A3825]">UPI / Instant QR Code</div>
-                            <div className="text-[10px] text-slate-400">BHIM, GooglePay, PhonePe, Paytm</div>
-                          </div>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-                      </button>
-
-                      {/* Netbanking option */}
-                      <button
-                        type="button"
-                        onClick={() => setSimTab('processing')}
-                        className="w-full bg-white hover:bg-[#FAF8F4] p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer hover:border-[#D4AF37]/50"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="p-2.5 bg-amber-50 text-amber-600 rounded-lg group-hover:bg-amber-100/70 transition-colors">
-                            <Landmark className="w-5 h-5" />
-                          </div>
-                          <div className="text-left">
-                            <div className="text-sm font-bold text-[#5A3825]">Netbanking</div>
-                            <div className="text-[10px] text-slate-400">All Indian banks supported</div>
-                          </div>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-                      </button>
-
-                      {/* Wallet option */}
-                      <button
-                        type="button"
-                        onClick={() => setSimTab('processing')}
-                        className="w-full bg-white hover:bg-[#FAF8F4] p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center justify-between group transition-all cursor-pointer hover:border-[#D4AF37]/50"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="p-2.5 bg-purple-50 text-purple-600 rounded-lg group-hover:bg-purple-100/70 transition-colors">
-                            <Wallet className="w-5 h-5" />
-                          </div>
-                          <div className="text-left">
-                            <div className="text-sm font-bold text-[#5A3825]">Mobile Wallets</div>
-                            <div className="text-[10px] text-slate-400">AmazonPay, Paytm, Mobikwik</div>
-                          </div>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
-                      </button>
-                    </div>
-                  )}
-
-                  {simTab === 'card' && (
-                    <div className="space-y-4 flex-1 flex flex-col justify-between">
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2 mb-1">
-                          <button type="button" onClick={() => setSimTab('methods')} className="text-xs font-bold text-[#9E5638] hover:underline flex items-center gap-1 cursor-pointer">
-                            ← Other Methods
-                          </button>
-                          <span className="text-slate-300">|</span>
-                          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest font-mono">Fill Card Details</span>
-                        </div>
-
-                        {/* Card Form */}
-                        <div className="space-y-2.5">
-                          <div>
-                            <label className="text-[10px] uppercase font-bold text-slate-400 font-sans tracking-wide">Card Number</label>
-                            <input
-                              type="text"
-                              value={simCardNo}
-                              onChange={(e) => {
-                                const val = e.target.value.replace(/\D/g, '').substring(0, 16);
-                                const parts = val.match(/.{1,4}/g);
-                                setSimCardNo(parts ? parts.join(' ') : val);
-                              }}
-                              placeholder="4111 2222 3333 4444"
-                              className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#9E5638] font-mono shadow-sm"
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-3.5">
-                            <div>
-                              <label className="text-[10px] uppercase font-bold text-slate-400 font-sans tracking-wide">Expiry Date</label>
-                              <input
-                                type="text"
-                                value={simExpiry}
-                                onChange={(e) => {
-                                  const val = e.target.value.replace(/\D/g, '').substring(0, 4);
-                                  if (val.length >= 2) {
-                                    setSimExpiry(val.substring(0, 2) + '/' + val.substring(2));
-                                  } else {
-                                    setSimExpiry(val);
-                                  }
-                                }}
-                                placeholder="MM/YY"
-                                className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#9E5638] font-mono shadow-sm text-center"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-[10px] uppercase font-bold text-slate-400 font-sans tracking-wide">CVV / CVN</label>
-                              <input
-                                type="password"
-                                value={simCVV}
-                                onChange={(e) => setSimCVV(e.target.value.replace(/\D/g, '').substring(0, 3))}
-                                placeholder="•••"
-                                className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-[#0F172A] focus:outline-none focus:border-[#9E5638] font-mono shadow-sm text-center tracking-widest"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="text-[10px] uppercase font-bold text-slate-400 font-sans tracking-wide">Cardholder Name</label>
-                            <input
-                              type="text"
-                              value={simHolder}
-                              onChange={(e) => setSimHolder(e.target.value)}
-                              placeholder="e.g. AMAN SHARMA"
-                              className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#9E5638] font-sans font-semibold uppercase shadow-sm"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setSimTab('processing')}
-                        className="w-full bg-[#5A3825] hover:bg-[#9E5638] font-serif text-white py-3.5 rounded-xl text-sm font-black tracking-wide shadow-lg shadow-[#5A3825]/20 active:scale-95 transition-all text-center cursor-pointer mt-4"
-                      >
-                        Securely Pay Rs. {finalTotal.toFixed(2)}
-                      </button>
-                    </div>
-                  )}
-
-                  {simTab === 'upi' && (
-                    <div className="space-y-4 flex-1 flex flex-col justify-between">
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-2">
-                          <button type="button" onClick={() => setSimTab('methods')} className="text-xs font-bold text-[#9E5638] hover:underline flex items-center gap-1 cursor-pointer">
-                            ← Other Methods
-                          </button>
-                          <span className="text-slate-300">|</span>
-                          <span className="text-xs font-bold text-slate-500 uppercase tracking-widest font-mono">Pay via UPI</span>
-                        </div>
-
-                        <div className="flex flex-col items-center justify-center p-3.5 bg-white border border-slate-200 rounded-xl shadow-inner space-y-3">
-                          <span className="text-xs font-bold text-slate-500 font-sans">Option A: Scan UPI QR Code</span>
-                          <div className="w-28 h-28 bg-slate-50 flex items-center justify-center rounded-lg relative border-2 border-slate-200">
-                            {/* Visual QR Simulator */}
-                            <div className="absolute inset-2 border border-slate-500 grid grid-cols-4 grid-rows-4 gap-1 p-1">
-                              {[...Array(16)].map((_, i) => (
-                                <div key={i} className={`rounded-sm ${(i % 3 === 0 || i % 5 === 2) ? 'bg-slate-800' : 'bg-transparent'}`} />
-                              ))}
-                            </div>
-                          </div>
-                          <span className="text-[10px] text-slate-400 font-semibold font-sans italic text-center">Scan QR code using any UPI App (GPay, PhonePe, Paytm, etc)</span>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <label className="text-[10px] uppercase font-bold text-slate-400 font-sans tracking-wide">Option B: Enter UPI ID</label>
-                          <input
-                            type="text"
-                            value={simUPIId}
-                            onChange={(e) => setSimUPIId(e.target.value)}
-                            placeholder="username@upi"
-                            className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 focus:outline-none focus:border-[#9E5638] shadow-sm"
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setSimTab('processing')}
-                        className="w-full bg-[#5A3825] hover:bg-[#9E5638] font-serif text-white py-3.5 rounded-xl text-sm font-black tracking-wide shadow-lg shadow-[#5A3825]/20 active:scale-95 transition-all text-center cursor-pointer mt-4"
-                      >
-                        Securely Pay Rs. {finalTotal.toFixed(2)}
-                      </button>
-                    </div>
-                  )}
-
-                  {simTab === 'processing' && (
-                    <div className="py-6 flex flex-col items-center justify-center text-center space-y-6 flex-1">
-                      <div className="relative">
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-                          className="w-16 h-16 border-4 border-slate-200 border-t-[#9E5638] rounded-full"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <Check className="w-6 h-6 text-[#7A8B6B] animate-pulse" />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <h4 className="text-sm font-black text-slate-800 font-sans">Authorizing Secure Payment Session</h4>
-                        <p className="text-[11px] text-slate-400 leading-normal max-w-[280px] font-sans">Verifying transaction details securely with your banking partner. Please do not close this window or reload.</p>
-                        <p className="text-[10px] text-[#7A8B6B] font-bold font-sans mt-3 animate-pulse bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 inline-block">⏳ Authorizing and returning securely in seconds...</p>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-3.5 w-full pt-4 font-sans">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowSimulatorModal(false);
-                            setSimTab('methods');
-                            setIsProcessing(true);
-                            onConfirmOrder(async (order) => {
-                              try {
-                                const rzpOrderId = `order_sim_${Math.random().toString(36).substr(2, 9)}`;
-                                const rzpPaymentId = `pay_sim_${Math.random().toString(36).substr(2, 9)}`;
-                                const response = await fetch(getApiUrl('/api/payments/razorpay/verify-payment'), {
-                                  method: 'POST',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                  },
-                                  body: JSON.stringify({
-                                    razorpay_order_id: rzpOrderId,
-                                    razorpay_payment_id: rzpPaymentId,
-                                    razorpay_signature: 'security_simulated_sha256',
-                                    metadata: {
-                                      orderId: order.id,
-                                      userId: order.userId,
-                                      userName: order.userName,
-                                      userEmail: order.userEmail,
-                                      mobile: order.mobile,
-                                      address: order.address,
-                                      notes: order.notes || '',
-                                      total: String(order.total),
-                                      pointsToRedeem: String(pointsToRedeem || 0),
-                                      pointsEarned: String(order.loyaltyPointsEarned || 0)
-                                    }
-                                  })
-                                });
-
-                                if (!response.ok) {
-                                  const errText = await response.text();
-                                  throw new Error(`Simulated payment verification failed: ${errText || response.statusText}`);
-                                }
-
-                                const result = await response.json();
-                                if (!result.success) {
-                                  throw new Error(result.error || 'Signature verification mismatch');
-                                }
-
-                                if (setOrders) {
-                                  setOrders(prev => {
-                                    const updated = prev.map(o => o.id === order.id ? { ...o, status: 'paid' as const } : o);
-                                    localStorage.setItem('orders', JSON.stringify(updated));
-                                    return updated;
-                                  });
-                                }
-                                setPlacedOrder({
-                                  ...order,
-                                  paymentMethod: 'online',
-                                  status: 'paid', // Mark as paid since verified!
-                                  razorpayPaymentId: rzpPaymentId,
-                                  razorpayOrderId: rzpOrderId,
-                                  razorpaySignature: 'security_simulated_sha256'
-                                });
-                                setStep('confirmation');
-                              } catch (err: any) {
-                                console.error('[Simulator Verify Client Error]', err);
-                                alert(err.message || 'Simulated payment verification failed.');
-                              } finally {
-                                setIsProcessing(false);
-                              }
-                            });
-                          }}
-                          className="bg-[#7A8B6B] hover:bg-[#667657] text-white py-3 px-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-[#7A8B6B]/15 cursor-pointer animate-pulse"
-                        >
-                          ✔️ Confirm Approval
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSimTab('methods');
-                          }}
-                          className="bg-red-500 hover:bg-red-600 text-white py-3 px-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-red-500/10 cursor-pointer"
-                        >
-                          ❌ Cancel Verification
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Footer Seal */}
-                <div className="bg-slate-100 px-5 py-3.5 border-t border-slate-200/60 flex justify-between items-center text-[10px] text-slate-400 font-sans font-semibold">
-                  <span className="flex items-center gap-1">🔒 256-BIT ENCRYPTED</span>
-                  <span>POWERED BY SECURE MERCHANT SERVICES</span>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-
-          {showRedirectOverlay && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-[#5A3825]/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 font-sans"
-            >
-              <motion.div
-                initial={{ scale: 0.9, y: 15 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 15 }}
-                className="w-full max-w-md bg-white text-brand-primary rounded-[2.5rem] shadow-2xl p-8 border border-brand-primary/10 flex flex-col items-center text-center space-y-6"
-              >
-                <div className="relative w-20 h-20 flex items-center justify-center bg-[#EADBBD]/25 rounded-full border-2 border-brand-primary/15">
-                  <div className="absolute inset-0 rounded-full border-4 border-[#9E5638]/20 border-t-[#9E5638] animate-spin" />
-                  <span className="text-3xl">🛡️</span>
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="text-xl font-serif font-black text-brand-primary">
-                    Processing Your Payment
-                  </h3>
-                  <p className="text-sm text-brand-primary/70 leading-relaxed">
-                    {redirectOverlayMessage}
-                  </p>
-                </div>
-
-                <div className="w-full bg-[#FAF8F4] rounded-2xl p-4 border border-brand-primary/5 space-y-2 text-left font-sans text-xs">
-                  <div className="flex justify-between font-bold">
-                    <span>Order Subtotal:</span>
-                    <span>Rs. {total}</span>
-                  </div>
-                  {discount > 0 && (
-                    <div className="flex justify-between text-brand-secondary font-bold">
-                      <span>Loyalty Discount:</span>
-                      <span>- Rs. {discount}</span>
-                    </div>
-                  )}
-                  <div className="border-t border-brand-primary/10 pt-2 flex justify-between text-sm font-black text-brand-primary">
-                    <span>Total Amount:</span>
-                    <span>Rs. {finalTotal}</span>
-                  </div>
-                </div>
-
-                <p className="text-[10px] text-brand-primary/40 flex items-center gap-1 font-semibold">
-                  <span>🔒 Secure 256-Bit SSL Encryption</span>
-                </p>
-              </motion.div>
-            </motion.div>
-          )}
-
-          {/* Removed Gokwik block */}
-
-
-
-
             </motion.div>
           </motion.div>
         </>
@@ -4744,6 +3836,7 @@ const CartModal = ({
     </AnimatePresence>
   );
 };
+
 
 const Footer = () => (
   <footer className="bg-black/40 backdrop-blur-md text-white pt-20 pb-10 px-6 border-t border-white/5">
@@ -4776,19 +3869,12 @@ const Footer = () => (
   </footer>
 );
 
-function ScrollToHash({ setActiveHomeTab }: { setActiveHomeTab: (t: 'daliya' | 'thali') => void }) {
+function ScrollToHash() {
   const location = useLocation();
 
   useEffect(() => {
     if (location.hash) {
       const id = location.hash.replace('#', '');
-      if (id === 'morning-daliya') {
-        setActiveHomeTab('daliya');
-      } else if (id === 'breakfast-lunch-combos') {
-        setActiveHomeTab('thali');
-      } else if (id === 'diet-and-meals-tabs') {
-        // any default hash can go here
-      }
       
       const el = document.getElementById(id);
       if (el) {
@@ -4797,7 +3883,7 @@ function ScrollToHash({ setActiveHomeTab }: { setActiveHomeTab: (t: 'daliya' | '
         }, 120);
       }
     }
-  }, [location, setActiveHomeTab]);
+  }, [location]);
 
   return null;
 }
@@ -4829,7 +3915,6 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [orders, setOrders] = useState<OrderDetails[]>([]);
   const [isEmailLogsOpen, setIsEmailLogsOpen] = useState(false);
-  const [activeHomeTab, setActiveHomeTab] = useState<'daliya' | 'thali'>('thali');
   
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -4978,6 +4063,19 @@ export default function App() {
     setCurrentUser(updatedUser);
     localStorage.setItem('currentUser', JSON.stringify(updatedUser));
 
+    if (currentUser.id.startsWith('local_')) {
+      const localUsersRaw = localStorage.getItem('tawabox_local_users');
+      if (localUsersRaw) {
+        const localUsers: any[] = JSON.parse(localUsersRaw);
+        const idx = localUsers.findIndex(u => u.id === currentUser.id);
+        if (idx !== -1) {
+          localUsers[idx] = { ...localUsers[idx], ...updatedFields };
+          localStorage.setItem('tawabox_local_users', JSON.stringify(localUsers));
+        }
+      }
+      return;
+    }
+
     try {
       await updateDoc(doc(db, 'users', currentUser.id), updatedFields);
       console.log('User profile successfully updated in Firestore');
@@ -5040,6 +4138,25 @@ export default function App() {
     const finalTotal = Math.max(0, subtotal - discount);
     const pointsEarned = Math.floor(finalTotal / 10);
 
+    // Prompt the user for their WhatsApp number before finishing checkout
+    let whatsappNum = '';
+    while (true) {
+      const input = window.prompt(
+        `Review your order:\n${cart.map(i => `• ${i.name} (x${i.quantity}) - Rs. ${i.price * i.quantity}`).join('\n')}\nTotal: Rs. ${finalTotal}\n\nPlease enter your WhatsApp number so we can send you your order details:`
+      );
+      if (input === null) {
+        // User clicked cancel, abort checkout
+        return;
+      }
+      const trimmed = input.trim();
+      if (trimmed && /^\+?[0-9\s\-()]{10,20}$/.test(trimmed)) {
+        whatsappNum = trimmed;
+        break;
+      } else {
+        alert("A valid WhatsApp/mobile number is required to proceed (at least 10 digits).");
+      }
+    }
+
     const newOrder: OrderDetails = {
       id: Math.random().toString(36).substr(2, 6).toUpperCase(),
       userId: currentUser ? currentUser.id : 'guest',
@@ -5056,7 +4173,8 @@ export default function App() {
       paymentMethod: orderPaymentMethod,
       status: 'pending',
       createdAt: new Date().toISOString(),
-      estimatedDelivery: new Date(Date.now() + 45 * 60000).toISOString()
+      estimatedDelivery: new Date(Date.now() + 45 * 60000).toISOString(),
+      whatsapp: whatsappNum
     };
 
     const updatedOrders = [...orders, newOrder];
@@ -5133,7 +4251,7 @@ export default function App() {
 
   return (
     <Router>
-      <ScrollToHash setActiveHomeTab={setActiveHomeTab} />
+      <ScrollToHash />
       <div className="min-h-screen bg-brand-bg selection:bg-brand-accent selection:text-white flex flex-col pb-20 md:pb-0">
         <Navbar 
           cartCount={cart.reduce((s, i) => s + i.quantity, 0)} 
@@ -5159,9 +4277,8 @@ export default function App() {
                 </AnimatePresence>
                 <HeroAnimation 
                   onExploreMenu={() => {
-                    setActiveHomeTab('thali');
                     setTimeout(() => {
-                      const el = document.getElementById('diet-and-meals-tabs');
+                      const el = document.getElementById('breakfast-lunch-combos');
                       if (el) {
                         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                       }
@@ -5173,69 +4290,8 @@ export default function App() {
                   hasActiveOrders={orders.some(o => o.userId === currentUser?.id && o.status !== 'delivered' && o.status !== 'cancelled')}
                 />
 
-                {/* Compact, Segmented Tab switcher for mobile-friendly easy layout */}
-                <div id="diet-and-meals-tabs" className="bg-[#FAF8F4] pt-8 pb-4 border-b border-[#5A3825]/5 select-none scroll-mt-24">
-                  <div className="max-w-5xl mx-auto px-4">
-                    <div className="text-center mb-6">
-                      <span className="text-[#9E5638] font-mono text-[9px] sm:text-[10px] uppercase font-black tracking-[0.25em] block mb-1">OUR DAILY EXPERT PROGRAM</span>
-                      <h2 className="text-xl sm:text-2xl font-serif font-black text-[#5A3825] uppercase tracking-wider">Select Health Category</h2>
-                    </div>
-
-                    <div className="bg-[#EADBBD]/20 p-1.5 rounded-2xl border border-[#5A3825]/10 grid grid-cols-2 gap-1 shadow-xs max-w-2xl mx-auto">
-                      {[
-                        { id: 'thali', label: '🍱 Desi Thali', desc: '6-Day Cycle' },
-                        { id: 'daliya', label: '🥣 Daliya Diet', desc: '6-Day Program' }
-                      ].map((tab) => {
-                        const isActive = activeHomeTab === tab.id;
-                        return (
-                          <button
-                            key={tab.id}
-                            onClick={() => setActiveHomeTab(tab.id as any)}
-                            className={`relative flex flex-col items-center justify-center py-2.5 px-1 sm:px-3 rounded-xl transition-all font-serif font-black text-center cursor-pointer overflow-hidden ${
-                              isActive
-                                ? 'bg-[#9E5638] text-white shadow-md'
-                                : 'text-[#5A3825]/85 hover:bg-[#FAF6ED] hover:text-[#5A3825]'
-                            }`}
-                          >
-                            <span className="text-xs sm:text-sm">{tab.label}</span>
-                            <span className={`text-[8px] sm:text-[9.5px] font-sans font-bold tracking-tight uppercase leading-none mt-1 ${isActive ? 'text-white/80' : 'text-[#2E1C12]/50'}`}>
-                              {tab.desc}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Tab content panel */}
-                <div className="relative">
-                  <AnimatePresence mode="wait">
-                    {activeHomeTab === 'thali' && (
-                      <motion.div
-                        key="thali"
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -15 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <WeeklyShowcase onAddToCart={addToCart} onOpenCart={() => setIsCartOpen(true)} />
-                      </motion.div>
-                    )}
-
-                    {activeHomeTab === 'daliya' && (
-                      <motion.div
-                        key="daliya"
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -15 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <MorningDaliyaSection onAddToCart={addToCart} />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                {/* Main Menu Showcase */}
+                <WeeklyShowcase onAddToCart={addToCart} onOpenCart={() => setIsCartOpen(true)} />
 
                 <QuickOrderSteps />
               </>
