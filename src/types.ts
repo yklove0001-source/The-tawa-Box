@@ -11,6 +11,9 @@ export interface User {
   email: string;
   mobile: string;
   role: UserRole;
+  auth_provider?: 'local' | 'google';
+  google_sub?: string;
+  avatar_url?: string;
 }
 
 export interface MediaItem {
@@ -55,6 +58,10 @@ export interface PublicProperty {
   status: PropertyStatus;
   approval_status: ApprovalStatus;
   unlock_status: UnlockStatus;
+  is_featured?: boolean;
+  featured_position?: number; // 1, 2, 3...
+  featured_start_date?: string;
+  featured_end_date?: string;
   views: number;
   unlocks_count: number;
   created_at: string;

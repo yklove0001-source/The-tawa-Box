@@ -120,9 +120,181 @@ async function startServer() {
         name: user.name,
         email: user.email,
         mobile: user.mobile,
-        role: user.role
+        role: user.role,
+        auth_provider: user.auth_provider,
+        google_sub: user.google_sub,
+        avatar_url: user.avatar_url
       }
     });
+  });
+
+  // --- GOOGLE AUTHENTICATION ENDPOINTS ---
+  // 1. Verify Google identity / credential or mock credential & check user status
+  app.post('/api/auth/google/verify', (req, res) => {
+    try {
+      const { credential, email, name, sub, picture } = req.body;
+      let googleSub = sub;
+      let userEmail = email;
+      let userName = name;
+      let userPicture = picture;
+
+      // If a JWT credential was supplied (from Google Identity Services credential response)
+      if (credential && !googleSub) {
+        try {
+          const parts = credential.split('.');
+          if (parts.length === 3) {
+            const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8'));
+            googleSub = payload.sub || googleSub;
+            userEmail = payload.email || userEmail;
+            userName = payload.name || userName;
+            userPicture = payload.picture || userPicture;
+          }
+        } catch (jwtErr) {
+          console.warn('Could not parse Google JWT credential payload, using body fields:', jwtErr);
+        }
+      }
+
+      if (!userEmail) {
+        return res.status(400).json({ error: 'Google email is required.' });
+      }
+
+      const normalizedEmail = userEmail.trim().toLowerCase();
+      // Generate consistent sub if not provided
+      if (!googleSub) {
+        googleSub = `g_${Buffer.from(normalizedEmail).toString('hex').substring(0, 16)}`;
+      }
+
+      // 1. Check if user already exists with this Google sub ID (primary stable identity)
+      const existingGoogleUser = db.findUserByGoogleSub(googleSub);
+      if (existingGoogleUser) {
+        return res.json({
+          status: 'existing_user',
+          user: {
+            id: existingGoogleUser.id,
+            name: existingGoogleUser.name,
+            email: existingGoogleUser.email,
+            mobile: existingGoogleUser.mobile,
+            role: existingGoogleUser.role,
+            auth_provider: existingGoogleUser.auth_provider || 'google',
+            avatar_url: existingGoogleUser.avatar_url || userPicture
+          },
+          token: existingGoogleUser.id
+        });
+      }
+
+      // 2. Check if an account already exists with the same email address (for secure linking)
+      const existingEmailUser = db.findUserByEmail(normalizedEmail);
+      if (existingEmailUser) {
+        return res.json({
+          status: 'account_exists_linking_required',
+          message: 'An account with this Gmail address already exists. Link this account to continue.',
+          existingUser: {
+            id: existingEmailUser.id,
+            name: existingEmailUser.name,
+            email: existingEmailUser.email,
+            mobile: existingEmailUser.mobile,
+            role: existingEmailUser.role
+          },
+          googleProfile: {
+            sub: googleSub,
+            email: normalizedEmail,
+            name: userName || existingEmailUser.name,
+            picture: userPicture
+          }
+        });
+      }
+
+      // 3. New Google user -> needs role selection (buyer vs seller)
+      return res.json({
+        status: 'new_user_selection_required',
+        message: 'Google identity verified. Please select how you want to use the platform.',
+        googleProfile: {
+          sub: googleSub,
+          email: normalizedEmail,
+          name: userName || normalizedEmail.split('@')[0],
+          picture: userPicture
+        }
+      });
+    } catch (err: any) {
+      console.error('Error in /api/auth/google/verify:', err);
+      res.status(500).json({ error: err.message || 'Google verification failed' });
+    }
+  });
+
+  // 2. Complete registration for new Google user after role selection
+  app.post('/api/auth/google/register', (req, res) => {
+    try {
+      const { sub, email, name, picture, role, mobile } = req.body;
+      if (!email || !sub) {
+        return res.status(400).json({ error: 'Google sub ID and email are required.' });
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+      // Check again if already created
+      let user = db.findUserByGoogleSub(sub) || db.findUserByEmail(normalizedEmail);
+      if (user) {
+        // Link and return
+        db.linkGoogleAccount(user.id, sub, picture);
+      } else {
+        user = db.createUser({
+          name: name || normalizedEmail.split('@')[0],
+          email: normalizedEmail,
+          mobile: mobile ? mobile.trim() : '+91 9800000000',
+          role: role === 'seller' ? 'seller' : 'buyer',
+          auth_provider: 'google',
+          google_sub: sub,
+          avatar_url: picture
+        });
+      }
+
+      res.json({
+        success: true,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          mobile: user.mobile,
+          role: user.role,
+          auth_provider: user.auth_provider,
+          avatar_url: user.avatar_url
+        },
+        token: user.id
+      });
+    } catch (err: any) {
+      console.error('Error in /api/auth/google/register:', err);
+      res.status(500).json({ error: err.message || 'Failed to complete Google registration' });
+    }
+  });
+
+  // 3. Link existing account to Google identity
+  app.post('/api/auth/google/link', (req, res) => {
+    try {
+      const { userId, sub, picture } = req.body;
+      if (!userId || !sub) {
+        return res.status(400).json({ error: 'User ID and Google sub are required.' });
+      }
+
+      const updated = db.linkGoogleAccount(userId, sub, picture);
+      if (!updated) {
+        return res.status(404).json({ error: 'Account not found to link.' });
+      }
+
+      res.json({
+        success: true,
+        user: {
+          id: updated.id,
+          name: updated.name,
+          email: updated.email,
+          mobile: updated.mobile,
+          role: updated.role,
+          auth_provider: updated.auth_provider,
+          avatar_url: updated.avatar_url
+        },
+        token: updated.id
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message || 'Account linking failed' });
+    }
   });
 
   // Switch demo account endpoint for 1-click user testing
@@ -132,7 +304,9 @@ async function startServer() {
       name: u.name,
       email: u.email,
       mobile: u.mobile,
-      role: u.role
+      role: u.role,
+      auth_provider: u.auth_provider,
+      avatar_url: u.avatar_url
     }));
     res.json({ users });
   });
@@ -419,6 +593,25 @@ async function startServer() {
     }
   });
 
+  // Edit / Update property details (Admin or Seller owner)
+  app.put('/api/properties/:id', (req, res) => {
+    try {
+      const user = getAuthUser(req);
+      if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+      const updated = db.updateProperty(req.params.id, req.body, user.id, user.role);
+      if (!updated) return res.status(404).json({ error: 'Property not found' });
+
+      res.json({
+        success: true,
+        message: 'Property details updated successfully',
+        property: db.formatPublicProperty(updated)
+      });
+    } catch (err: any) {
+      res.status(403).json({ error: err.message });
+    }
+  });
+
   // Admin approval / rejection
   app.patch('/api/properties/:id/approval', (req, res) => {
     try {
@@ -437,18 +630,47 @@ async function startServer() {
     }
   });
 
-  // Delete property
+  // Admin Feature / Pin listing controls (Priority / Top position / Dates)
+  app.patch('/api/properties/:id/feature', (req, res) => {
+    try {
+      const user = getAuthUser(req);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required to feature/pin listings' });
+      }
+
+      const { is_featured, featured_position, featured_start_date, featured_end_date } = req.body;
+      const updated = db.updateFeaturedListing(req.params.id, {
+        is_featured: !!is_featured,
+        featured_position: featured_position ? Number(featured_position) : undefined,
+        featured_start_date,
+        featured_end_date
+      });
+
+      if (!updated) return res.status(404).json({ error: 'Listing not found' });
+
+      res.json({
+        success: true,
+        message: is_featured ? 'Listing pinned to top / featured successfully' : 'Listing unpinned / unfeatured',
+        property: updated
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Delete property (Admin has absolute permission; sellers can only deactivate/mark sold or delete their own; normal buyers cannot)
   app.delete('/api/properties/:id', (req, res) => {
     try {
       const user = getAuthUser(req);
-      if (!user) return res.status(401).json({ error: 'Unauthorized' });
+      if (!user) return res.status(401).json({ error: 'Unauthorized: Authentication required.' });
 
+      // Check if user is admin or the owner seller
       const deleted = db.deleteProperty(req.params.id, user.id, user.role);
       if (!deleted) return res.status(404).json({ error: 'Property not found' });
 
-      res.json({ success: true, message: 'Property deleted successfully' });
+      res.json({ success: true, message: 'Property listing deleted permanently' });
     } catch (err: any) {
-      res.status(403).json({ error: err.message });
+      res.status(403).json({ error: err.message || 'Unauthorized: Only Admin has deletion permission.' });
     }
   });
 

@@ -117,9 +117,17 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/20 hover:border-white/30 bg-white/15 text-white text-sm font-semibold transition"
                 >
-                  <div className="w-7 h-7 rounded-full bg-white text-[#126180] flex items-center justify-center text-xs font-bold uppercase">
-                    {currentUser.name.charAt(0)}
-                  </div>
+                  {currentUser.avatar_url ? (
+                    <img
+                      src={currentUser.avatar_url}
+                      alt={currentUser.name}
+                      className="w-7 h-7 rounded-full object-cover border border-white/50"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-white text-[#126180] flex items-center justify-center text-xs font-bold uppercase">
+                      {currentUser.name.charAt(0)}
+                    </div>
+                  )}
                   <span className="max-w-[100px] truncate hidden md:inline">{currentUser.name}</span>
                   <span className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase bg-white/20 text-white hidden lg:inline">
                     {currentUser.role}
@@ -134,9 +142,16 @@ export const Header: React.FC<HeaderProps> = ({
                     onClick={() => setUserDropdownOpen(false)}
                   >
                     <div className="px-4 py-3 border-b border-slate-100">
-                      <p className="text-xs font-medium text-slate-400">Signed in as</p>
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="text-xs font-medium text-slate-400">Signed in as</p>
+                        {currentUser.auth_provider === 'google' && (
+                          <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                            Gmail Linked
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm font-bold text-slate-900 truncate">{currentUser.name}</p>
-                      <p className="text-xs text-slate-500">{currentUser.mobile}</p>
+                      <p className="text-xs text-slate-500 truncate">{currentUser.email || currentUser.mobile}</p>
                     </div>
 
                     <div className="py-1">

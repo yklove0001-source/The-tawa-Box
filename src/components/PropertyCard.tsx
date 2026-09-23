@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Maximize2, Camera, Video, ArrowRight, CheckCircle, AlertCircle } from 'lucide-react';
+import { MapPin, Maximize2, Camera, Video, ArrowRight, CheckCircle, AlertCircle, Star } from 'lucide-react';
 import { PublicProperty } from '../types';
 import { formatIndianPrice, formatArea } from '../utils/format';
 
@@ -12,7 +12,11 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
   const isAvailable = property.status === 'Available';
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-md transition duration-200 flex flex-col group">
+    <div className={`bg-white rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition duration-200 flex flex-col group relative ${
+      property.is_featured
+        ? 'border-2 border-amber-400 ring-2 ring-amber-400/20 shadow-amber-100/50'
+        : 'border border-slate-200'
+    }`}>
       
       {/* Property Photo & Indicators */}
       <div className="relative aspect-16/10 w-full bg-slate-100 overflow-hidden">
@@ -24,7 +28,14 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
         />
 
         {/* Status Badge */}
-        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+        <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5 max-w-[85%]">
+          {property.is_featured && (
+            <span className="bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 text-xs font-black px-2.5 py-1 rounded-full shadow-md flex items-center gap-1 border border-yellow-200 uppercase tracking-wide animate-pulse">
+              <Star className="w-3.5 h-3.5 fill-slate-950 text-slate-950" />
+              ⭐ Featured{property.featured_position ? ` #${property.featured_position}` : ''}
+            </span>
+          )}
+
           <span
             className={`text-xs font-bold px-2.5 py-1 rounded-full shadow-xs flex items-center gap-1 ${
               isAvailable

@@ -123,6 +123,13 @@ export const api = {
     });
   },
 
+  async updateProperty(id: string, updates: any): Promise<{ success: boolean; message: string; property: PublicProperty }> {
+    return request(`/properties/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updates)
+    });
+  },
+
   async deleteProperty(id: string): Promise<{ success: boolean; message: string }> {
     return request(`/properties/${id}`, {
       method: 'DELETE'
@@ -149,6 +156,21 @@ export const api = {
     });
   },
 
+  async adminUpdateFeatured(
+    id: string,
+    payload: {
+      is_featured: boolean;
+      featured_position?: number;
+      featured_start_date?: string;
+      featured_end_date?: string;
+    }
+  ): Promise<any> {
+    return request(`/properties/${id}/feature`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    });
+  },
+
   // Auth
   async login(identifier: string, password?: string, role?: string): Promise<{ user: User; token: string }> {
     return request('/auth/login', {
@@ -170,5 +192,56 @@ export const api = {
 
   async getDemoUsers(): Promise<{ users: User[] }> {
     return request('/auth/demo-users');
+  },
+
+  // Google / Gmail Auth
+  async verifyGoogleAuth(payload: {
+    credential?: string;
+    sub?: string;
+    email?: string;
+    name?: string;
+    picture?: string;
+  }): Promise<{
+    status: 'existing_user' | 'account_exists_linking_required' | 'new_user_selection_required';
+    user?: User;
+    token?: string;
+    message?: string;
+    existingUser?: User;
+    googleProfile?: {
+      sub: string;
+      email: string;
+      name: string;
+      picture?: string;
+    };
+  }> {
+    return request('/auth/google/verify', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  async registerGoogleUser(payload: {
+    sub: string;
+    email: string;
+    name: string;
+    picture?: string;
+    role: 'buyer' | 'seller';
+    mobile?: string;
+  }): Promise<{ success: boolean; user: User; token: string }> {
+    return request('/auth/google/register', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  async linkGoogleAccount(payload: {
+    userId: string;
+    sub: string;
+    picture?: string;
+  }): Promise<{ success: boolean; user: User; token: string }> {
+    return request('/auth/google/link', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
   }
 };

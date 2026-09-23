@@ -8,6 +8,9 @@ export interface UserRecord {
   mobile: string;
   password?: string;
   role: 'buyer' | 'seller' | 'admin';
+  auth_provider?: 'local' | 'google';
+  google_sub?: string;
+  avatar_url?: string;
   created_at: string;
 }
 
@@ -69,6 +72,10 @@ export interface PropertyRecord {
   status: 'Available' | 'Sold';
   approval_status: 'Pending Approval' | 'Approved' | 'Rejected';
   unlock_status: 'LOCKED' | 'UNLOCKED';
+  is_featured?: boolean;
+  featured_position?: number;
+  featured_start_date?: string;
+  featured_end_date?: string;
   views: number;
   unlocks_count: number;
   created_at: string;
@@ -186,6 +193,10 @@ function getInitialData(): DatabaseSchema {
       status: 'Available',
       approval_status: 'Approved',
       unlock_status: 'LOCKED',
+      is_featured: true,
+      featured_position: 1,
+      featured_start_date: '2026-09-01',
+      featured_end_date: '2026-10-31',
       views: 184,
       unlocks_count: 3,
       created_at: new Date(Date.now() - 3 * 86400000).toISOString(),
@@ -214,6 +225,10 @@ function getInitialData(): DatabaseSchema {
       status: 'Available',
       approval_status: 'Approved',
       unlock_status: 'LOCKED',
+      is_featured: true,
+      featured_position: 2,
+      featured_start_date: '2026-09-15',
+      featured_end_date: '2026-10-15',
       views: 240,
       unlocks_count: 5,
       created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
@@ -607,6 +622,27 @@ export class Database {
     return this.data.users.find(u => u.id === id);
   }
 
+  public findUserByGoogleSub(googleSub: string): UserRecord | undefined {
+    return this.data.users.find(u => u.google_sub === googleSub);
+  }
+
+  public findUserByEmail(email: string): UserRecord | undefined {
+    const clean = email.trim().toLowerCase();
+    return this.data.users.find(u => u.email.toLowerCase() === clean);
+  }
+
+  public linkGoogleAccount(userId: string, googleSub: string, avatarUrl?: string): UserRecord | null {
+    const user = this.data.users.find(u => u.id === userId);
+    if (!user) return null;
+    user.google_sub = googleSub;
+    if (avatarUrl && !user.avatar_url) {
+      user.avatar_url = avatarUrl;
+    }
+    user.auth_provider = 'google';
+    this.saveData(this.data);
+    return user;
+  }
+
   public findUserByEmailOrMobile(identifier: string): UserRecord | undefined {
     const clean = identifier.trim().toLowerCase();
     return this.data.users.find(u => 
@@ -677,19 +713,62 @@ export class Database {
         );
       }
 
-      // Sorting
-      if (filters.sort === 'price_asc') {
-        result.sort((a, b) => a.price - b.price);
-      } else if (filters.sort === 'price_desc') {
-        result.sort((a, b) => b.price - a.price);
-      } else if (filters.sort === 'area_asc') {
-        result.sort((a, b) => a.area - b.area);
-      } else if (filters.sort === 'area_desc') {
-        result.sort((a, b) => b.area - a.area);
-      } else {
-        // default newest
-        result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      }
+      // Secondary sorting function for tied priority
+      const getSecondarySort = (a: PropertyRecord, b: PropertyRecord) => {
+        if (filters.sort === 'price_asc') return a.price - b.price;
+        if (filters.sort === 'price_desc') return b.price - a.price;
+        if (filters.sort === 'area_asc') return a.area - b.area;
+        if (filters.sort === 'area_desc') return b.area - a.area;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      };
+
+      // Sorting with Featured Priority & Availability Priority:
+      // Priority 1: Admin Featured/Pinned listings (ordered by featured_position asc: 1, 2, 3...)
+      // Priority 2: Available listings
+      // Priority 3: Sold / Unavailable listings
+      // Followed by secondary sorting (e.g. price, area, created_at)
+      result.sort((a, b) => {
+        const aFeatured = a.is_featured ? 1 : 0;
+        const bFeatured = b.is_featured ? 1 : 0;
+
+        if (aFeatured !== bFeatured) {
+          return bFeatured - aFeatured; // Featured first (Priority 1)
+        }
+
+        // If both are featured, sort by position (Position 1 -> Position 2 -> Position 3)
+        if (aFeatured && bFeatured) {
+          const aPos = a.featured_position ?? 9999;
+          const bPos = b.featured_position ?? 9999;
+          if (aPos !== bPos) {
+            return aPos - bPos;
+          }
+        }
+
+        // Availability priority: Available (priority 2) before Sold (priority 3)
+        const aAvail = a.status === 'Available' ? 0 : 1;
+        const bAvail = b.status === 'Available' ? 0 : 1;
+        if (aAvail !== bAvail) {
+          return aAvail - bAvail;
+        }
+
+        return getSecondarySort(a, b);
+      });
+    } else {
+      // Default sorting when no filters object
+      result.sort((a, b) => {
+        const aFeatured = a.is_featured ? 1 : 0;
+        const bFeatured = b.is_featured ? 1 : 0;
+        if (aFeatured !== bFeatured) return bFeatured - aFeatured;
+        if (aFeatured && bFeatured) {
+          const aPos = a.featured_position ?? 9999;
+          const bPos = b.featured_position ?? 9999;
+          if (aPos !== bPos) return aPos - bPos;
+        }
+        const aAvail = a.status === 'Available' ? 0 : 1;
+        const bAvail = b.status === 'Available' ? 0 : 1;
+        if (aAvail !== bAvail) return aAvail - bAvail;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
     }
 
     // Strip private seller info and address before returning publicly
@@ -729,6 +808,10 @@ export class Database {
       status: p.status,
       approval_status: p.approval_status,
       unlock_status: 'LOCKED' as const,
+      is_featured: !!p.is_featured,
+      featured_position: p.featured_position,
+      featured_start_date: p.featured_start_date,
+      featured_end_date: p.featured_end_date,
       views: p.views,
       unlocks_count: p.unlocks_count,
       created_at: p.created_at,
@@ -1066,6 +1149,70 @@ export class Database {
     const prop = this.data.properties.find(p => p.id === id);
     if (!prop) return null;
     prop.approval_status = approval_status;
+    prop.updated_at = new Date().toISOString();
+    this.saveData(this.data);
+    return prop;
+  }
+
+  public updateProperty(
+    id: string,
+    updates: Partial<PropertyRecord>,
+    userId: string,
+    role: string
+  ) {
+    const prop = this.data.properties.find(p => p.id === id);
+    if (!prop) return null;
+    if (prop.seller_id !== userId && role !== 'admin') {
+      throw new Error('Unauthorized');
+    }
+
+    if (updates.title !== undefined) prop.title = updates.title;
+    if (updates.property_type !== undefined) prop.property_type = updates.property_type;
+    if (updates.price !== undefined) prop.price = Number(updates.price);
+    if (updates.area !== undefined) prop.area = Number(updates.area);
+    if (updates.area_unit !== undefined) prop.area_unit = updates.area_unit;
+    if (updates.city !== undefined) prop.city = updates.city;
+    if (updates.locality !== undefined) prop.locality = updates.locality;
+    if (updates.address !== undefined) prop.address = updates.address;
+    if (updates.landmark !== undefined) prop.landmark = updates.landmark;
+    if (updates.pincode !== undefined) prop.pincode = updates.pincode;
+    if (updates.seller_name !== undefined) prop.seller_name = updates.seller_name;
+    if (updates.seller_mobile !== undefined) prop.seller_mobile = updates.seller_mobile;
+    if (updates.seller_whatsapp !== undefined) prop.seller_whatsapp = updates.seller_whatsapp;
+    if (updates.seller_type !== undefined) prop.seller_type = updates.seller_type;
+    if (updates.description !== undefined) prop.description = updates.description;
+    if (updates.status !== undefined) prop.status = updates.status;
+
+    prop.updated_at = new Date().toISOString();
+    this.saveData(this.data);
+    return prop;
+  }
+
+  public updateFeaturedListing(
+    id: string,
+    options: {
+      is_featured: boolean;
+      featured_position?: number;
+      featured_start_date?: string;
+      featured_end_date?: string;
+    }
+  ) {
+    const prop = this.data.properties.find(p => p.id === id);
+    if (!prop) return null;
+
+    prop.is_featured = options.is_featured;
+    if (options.is_featured) {
+      prop.featured_position = options.featured_position !== undefined && options.featured_position > 0 
+        ? options.featured_position 
+        : 1;
+      prop.featured_start_date = options.featured_start_date || new Date().toISOString().split('T')[0];
+      prop.featured_end_date = options.featured_end_date || new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
+    } else {
+      prop.featured_position = undefined;
+      prop.featured_start_date = undefined;
+      prop.featured_end_date = undefined;
+    }
+
     prop.updated_at = new Date().toISOString();
     this.saveData(this.data);
     return prop;
